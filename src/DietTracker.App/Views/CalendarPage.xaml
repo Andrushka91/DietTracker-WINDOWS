@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DietTracker.App.Views.CalendarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:DietTracker.App.ViewModels">
+
+    <ScrollViewer Padding="24,16,24,24">
+        <StackPanel Spacing="16" MaxWidth="{StaticResource PageMaxContentWidth}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Style="{StaticResource PageTitleStyle}" Text="{x:Bind ViewModel.MonthLabel, Mode=OneWay}" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button x:Uid="Calendar_PreviousMonth" Content="Previous" Command="{x:Bind ViewModel.PreviousMonthCommand}" />
+                    <Button x:Uid="Calendar_NextMonth" Content="Next" Command="{x:Bind ViewModel.NextMonthCommand}" />
+                    <Button x:Uid="Calendar_OpenDay" Content="Open day" Command="{x:Bind ViewModel.OpenSelectedDayCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.SelectedSummary, Mode=OneWay}" />
+
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Days}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="112" ItemHeight="96" MaximumRowsOrColumns="7" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CalendarDayViewModel">
+                        <Button
+                            Margin="2"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Tag="{x:Bind}"
+                            Click="OnDayClick">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{x:Bind DayNumber}" FontWeight="SemiBold" />
+                                <ProgressBar Maximum="100" Value="{x:Bind Percentage, Mode=OneWay}" Height="4" />
+                                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind Completed, Mode=OneWay}" />
+                                <FontIcon
+                                    Glyph="&#xE91B;"
+                                    FontSize="12"
+                                    Visibility="{x:Bind HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Style="{StaticResource CaptionStyle}" x:Uid="Calendar_PhotoHint" Text="A photo icon marks days that have photographs." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: diettracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: diettracker
+      POSTGRES_USER: diettracker
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - diettracker_data:/var/lib/postgresql/data
+      - ./diettracker-postgres.sql:/docker-entrypoint-initdb.d/01-diettracker.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U diettracker -d diettracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+volumes:
+  diettracker_data:

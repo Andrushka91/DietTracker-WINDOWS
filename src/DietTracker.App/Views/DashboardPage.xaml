@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DietTracker.App.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:DietTracker.App.Controls">
+
+    <ScrollViewer Padding="24,16,24,24">
+        <StackPanel Spacing="16" MaxWidth="{StaticResource PageMaxContentWidth}">
+
+            <!-- Daily progress: completed / total slots and the completion percentage -->
+            <Border Style="{StaticResource ProgressCardStyle}">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Bind ViewModel.DateLabel, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button x:Uid="Dashboard_PreviousDay" Content="Previous" Command="{x:Bind ViewModel.PreviousDayCommand}" />
+                            <Button x:Uid="Common_Today" Content="Today" Command="{x:Bind ViewModel.TodayCommand}" />
+                            <Button x:Uid="Dashboard_NextDay" Content="Next" Command="{x:Bind ViewModel.NextDayCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <ProgressBar Maximum="100" Value="{x:Bind ViewModel.Percentage, Mode=OneWay}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.CompletedLabel}" />
+                            <TextBlock Text="{x:Bind ViewModel.CompletedCount, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.PendingLabel}" />
+                            <TextBlock Text="{x:Bind ViewModel.PendingCount, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.MissedLabel}" />
+                            <TextBlock Text="{x:Bind ViewModel.MissedCount, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Uid="Dashboard_CopyYesterday" Content="Copy yesterday" Command="{x:Bind ViewModel.CopyYesterdayCommand}" />
+                        <Button x:Uid="Dashboard_SaveDayTemplate" Content="Save day as template" Command="{x:Bind ViewModel.SaveDayTemplateCommand}" />
+                        <TextBlock
+                            Style="{StaticResource CaptionStyle}"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- The five permanent meal cards: all cards share the same height and reflow into as many
+                 columns as fit (row-major order = the order of the meals is always preserved). -->
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Cards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <controls:UniformWrapPanel
+                            MinItemWidth="320"
+                            HorizontalSpacing="16"
+                            VerticalSpacing="16"
+                            UniformHeight="True" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:MealCardControl Card="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ProgressRing IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" HorizontalAlignment="Center" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

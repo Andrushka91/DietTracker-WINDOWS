@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <RootNamespace>DietTracker.IntegrationTests</RootNamespace>
+    <AssemblyName>DietTracker.Sync.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!--
+      The integration tests are written to a separate artifact folder. This keeps them out of the
+      source tree and avoids environments where an application control policy blocks freshly built
+      binaries under the project folder.
+    -->
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\tests\integration\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DietTracker.Core\DietTracker.Core.csproj" />
+    <ProjectReference Include="..\..\src\DietTracker.Infrastructure\DietTracker.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The integration tests reuse the test doubles and the environment builder of the unit tests. -->
+    <Compile Include="..\DietTracker.UnitTests\Support\*.cs" LinkBase="Support" />
+    <Compile Include="..\DietTracker.UnitTests\TestLogger.cs" Link="Support\TestLogger.cs" />
+  </ItemGroup>
+
+</Project>

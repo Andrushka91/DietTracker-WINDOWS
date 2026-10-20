@@ -1,0 +1,15 @@
+{
+  "name": "diettracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Command shortcuts for the DietTracker WinUI 3 desktop application. There is no Node.js code in this repository - npm is only used as a convenient command launcher (no npm install needed).",
+  "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1",
+    "build": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
+    "start:debug": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1 -Configuration Debug",
+    "build:debug": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Debug -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
+    "test": "dotnet test tests/DietTracker.UnitTests/DietTracker.UnitTests.csproj -c Debug -p:Platform=x64",
+    "test:all": "dotnet test tests/DietTracker.UnitTests/DietTracker.UnitTests.csproj -c Debug -p:Platform=x64 && dotnet test tests/DietTracker.IntegrationTests/DietTracker.IntegrationTests.csproj -c Debug -p:Platform=x64",
+    "test:ui": "dotnet test tests/DietTracker.UITests/DietTracker.UITests.csproj -c Debug -p:Platform=x64"
+  }
+}

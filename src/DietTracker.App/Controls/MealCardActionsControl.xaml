@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DietTracker.App.Controls.MealCardActionsControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:DietTracker.App.Controls">
+
+    <controls:UniformWrapPanel UniformHeight="False" MinItemWidth="64" HorizontalSpacing="6" VerticalSpacing="6">
+        <Button
+            x:Uid="Meal_MarkDone"
+            Content="Mark as DONE"
+            Style="{StaticResource AccentButtonStyle}"
+            Command="{x:Bind Card.MarkDoneCommand}" />
+        <Button x:Uid="Meal_Undo" Content="Undo" Command="{x:Bind Card.UndoCommand}" />
+        <Button x:Uid="Meal_MarkMissed" Content="Mark as missed" Command="{x:Bind Card.MarkMissedCommand}" />
+        <Button x:Uid="Common_Edit" Content="Edit" Command="{x:Bind Card.EditCommand}" />
+        <Button x:Uid="Photo_Add" Content="Add photo" Command="{x:Bind Card.AddPhotoCommand}" />
+        <Button x:Uid="Meal_CopyToDate" Content="Copy to date" Command="{x:Bind Card.CopyToDateCommand}" />
+        <Button x:Uid="Meal_SaveTemplate" Content="Save as template" Command="{x:Bind Card.SaveAsTemplateCommand}" />
+    </controls:UniformWrapPanel>
+</UserControl>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_DisplayName" xml:space="preserve"><value>DietTracker</value></data>
+  <data name="App_Tagline" xml:space="preserve"><value>Cinco comidas al día, planificadas y registradas localmente</value></data>
+  <data name="Common_Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Common_Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Common_Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Common_Today" xml:space="preserve"><value>Hoy</value></data>
+  <data name="Common_ChooseDate" xml:space="preserve"><value>Elige una fecha</value></data>
+  <data name="Common_EnterName" xml:space="preserve"><value>Introduce un nombre</value></data>
+  <data name="Nav_Dashboard" xml:space="preserve"><value>Hoy</value></data>
+  <data name="Nav_Calendar" xml:space="preserve"><value>Calendario</value></data>
+  <data name="Nav_Statistics" xml:space="preserve"><value>Estadísticas</value></data>
+  <data name="Nav_Templates" xml:space="preserve"><value>Plantillas</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Nav_AccountSync" xml:space="preserve"><value>Cuenta y sincronización</value></data>
+  <data name="Tray_Open" xml:space="preserve"><value>Abrir DietTracker</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>Salir</value></data>
+  <data name="Meal_Breakfast_Name" xml:space="preserve"><value>Desayuno</value></data>
+  <data name="Meal_MorningSnack_Name" xml:space="preserve"><value>Almuerzo</value></data>
+  <data name="Meal_Lunch_Name" xml:space="preserve"><value>Comida</value></data>
+  <data name="Meal_AfternoonSnack_Name" xml:space="preserve"><value>Merienda</value></data>
+  <data name="Meal_Dinner_Name" xml:space="preserve"><value>Cena</value></data>
+  <data name="Status_Pending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="Status_Done" xml:space="preserve"><value>Consumida</value></data>
+  <data name="Status_Missed" xml:space="preserve"><value>No realizada</value></data>
+  <data name="Unit_None" xml:space="preserve"><value>-</value></data>
+  <data name="Unit_Gram" xml:space="preserve"><value>g</value></data>
+  <data name="Unit_Kilogram" xml:space="preserve"><value>kg</value></data>
+  <data name="Unit_Milliliter" xml:space="preserve"><value>ml</value></data>
+  <data name="Unit_Liter" xml:space="preserve"><value>l</value></data>
+  <data name="Unit_Unit" xml:space="preserve"><value>ud</value></data>
+  <data name="Unit_Tablespoon" xml:space="preserve"><value>cda</value></data>
+  <data name="Unit_Teaspoon" xml:space="preserve"><value>cdta</value></data>
+  <data name="Unit_Cup" xml:space="preserve"><value>taza</value></data>
+  <data name="Unit_Slice" xml:space="preserve"><value>rebanada</value></data>
+  <data name="Unit_Portion" xml:space="preserve"><value>porción</value></data>
+  <data name="Unit_Pinch" xml:space="preserve"><value>pizca</value></data>
+  <data name="Dashboard_PreviousDay" xml:space="preserve"><value>Día anterior</value></data>
+  <data name="Dashboard_NextDay" xml:space="preserve"><value>Día siguiente</value></data>
+  <data name="Dashboard_Summary" xml:space="preserve"><value>{0} de {1} comidas confirmadas ({2:0.#} %)</value></data>
+  <data name="Dashboard_Completed" xml:space="preserve"><value>Confirmadas</value></data>
+  <data name="Dashboard_Pending" xml:space="preserve"><value>Pendientes</value></data>
+  <data name="Dashboard_Missed" xml:space="preserve"><value>No realizadas</value></data>
+  <data name="Dashboard_CopyYesterday" xml:space="preserve"><value>Copiar el día de ayer</value></data>
+  <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Guardar el día como plantilla</value></data>
+  <data name="Dashboard_NothingToCopy" xml:space="preserve"><value>No hay contenido que copiar del día anterior.</value></data>
+  <data name="Dashboard_CopiedMeals" xml:space="preserve"><value>{0} comida(s) copiada(s).</value></data>
+  <data name="Meal_Title" xml:space="preserve"><value>Título</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Descripción de los alimentos</value></data>
+  <data name="Meal_Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="Meal_PlannedTime" xml:space="preserve"><value>Hora prevista</value></data>
+  <data name="Meal_AddIngredient" xml:space="preserve"><value>Añadir ingrediente</value></data>
+  <data name="Meal_IngredientName" xml:space="preserve"><value>Ingrediente</value></data>
+  <data name="Meal_IngredientAmount" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="Meal_RemoveIngredient" xml:space="preserve"><value>Quitar ingrediente</value></data>
+  <data name="Meal_MarkDone" xml:space="preserve"><value>Marcar como DONE</value></data>
+  <data name="Meal_Undo" xml:space="preserve"><value>Deshacer</value></data>
+  <data name="Meal_MarkMissed" xml:space="preserve"><value>Marcar como no realizada</value></data>
+  <data name="Meal_CopyToDate" xml:space="preserve"><value>Copiar a otra fecha</value></data>
+  <data name="Meal_SaveTemplate" xml:space="preserve"><value>Guardar como plantilla</value></data>
+  <data name="Meal_Copied" xml:space="preserve"><value>La comida se copió al {0}.</value></data>
+  <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmada el</value></data>
+  <data name="Photo_Add" xml:space="preserve"><value>Añadir foto</value></data>
+  <data name="Photo_LimitReached" xml:space="preserve"><value>Una comida puede tener como máximo tres fotografías.</value></data>
+  <data name="Photo_RemoveTitle" xml:space="preserve"><value>¿Quitar la fotografía?</value></data>
+  <data name="Photo_RemoveMessage" xml:space="preserve"><value>La fotografía se elimina de este dispositivo y de la cuenta conectada en la próxima sincronización.</value></data>
+  <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Mes anterior</value></data>
+  <data name="Calendar_NextMonth" xml:space="preserve"><value>Mes siguiente</value></data>
+  <data name="Calendar_OpenDay" xml:space="preserve"><value>Abrir el día</value></data>
+  <data name="Calendar_DaySummary" xml:space="preserve"><value>{0} de {1} comidas confirmadas ({2:0.#} %)</value></data>
+  <data name="Calendar_PhotoHint" xml:space="preserve"><value>El icono de imagen marca los días con fotografías.</value></data>
+  <data name="Calendar_Weekdays" xml:space="preserve"><value>Lu Ma Mi Ju Vi Sá Do</value></data>
+  <data name="Statistics_Title" xml:space="preserve"><value>Progreso y estadísticas</value></data>
+  <data name="Statistics_PreviousWeek" xml:space="preserve"><value>Semana anterior</value></data>
+  <data name="Statistics_ThisWeek" xml:space="preserve"><value>Esta semana</value></data>
+  <data name="Statistics_NextWeek" xml:space="preserve"><value>Semana siguiente</value></data>
+  <data name="Statistics_Daily" xml:space="preserve"><value>Hoy</value></data>
+  <data name="Statistics_Weekly" xml:space="preserve"><value>Esta semana</value></data>
+  <data name="Statistics_Monthly" xml:space="preserve"><value>Este mes</value></data>
+  <data name="Statistics_Trend" xml:space="preserve"><value>Tendencia semanal</value></data>
+  <data name="Statistics_DailyText" xml:space="preserve"><value>{0} confirmadas, {1} pendientes, {2} no realizadas</value></data>
+  <data name="Statistics_WeeklyText" xml:space="preserve"><value>{0} de {1} comidas confirmadas ({2:0.#} %)</value></data>
+  <data name="Statistics_FullyCompleted" xml:space="preserve"><value>Días con las cinco comidas confirmadas: {0}</value></data>
+  <data name="Statistics_MonthlyText" xml:space="preserve"><value>{0} de {1} comidas confirmadas ({2:0.#} %)</value></data>
+  <data name="Statistics_Disclaimer" xml:space="preserve"><value>Las cifras reflejan las comidas que has registrado; no son una valoración médica.</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Plantillas</value></data>
+  <data name="Template_NameTitle" xml:space="preserve"><value>Nombre de la plantilla</value></data>
+  <data name="Template_Apply" xml:space="preserve"><value>Aplicar a una fecha</value></data>
+  <data name="Template_ApplyTitle" xml:space="preserve"><value>Aplicar la plantilla</value></data>
+  <data name="Template_Applied" xml:space="preserve"><value>La plantilla se aplicó al {0}.</value></data>
+  <data name="Template_Saved" xml:space="preserve"><value>La plantilla se ha guardado.</value></data>
+  <data name="Template_Empty" xml:space="preserve"><value>Aún no hay plantillas. Guarda una comida o un día completo.</value></data>
+  <data name="Template_KindDay" xml:space="preserve"><value>Día completo</value></data>
+  <data name="Template_KindMeal" xml:space="preserve"><value>Una sola comida</value></data>
+  <data name="Template_DaySummary" xml:space="preserve"><value>{0} comidas en la plantilla</value></data>
+  <data name="Template_Notice" xml:space="preserve"><value>Las plantillas nunca incluyen el estado de confirmación ni fotografías.</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Settings_General" xml:space="preserve"><value>General</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Settings_Reminders" xml:space="preserve"><value>Recordatorios</value></data>
+  <data name="Settings_StartWithWindows" xml:space="preserve"><value>Iniciar con Windows</value></data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimizar al área de notificación</value></data>
+  <data name="Settings_12Hour" xml:space="preserve"><value>Usar el reloj de 12 horas</value></data>
+  <data name="Settings_Saved" xml:space="preserve"><value>La configuración se ha guardado.</value></data>
+  <data name="Settings_Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
+  <data name="Settings_Export" xml:space="preserve"><value>Exportar datos</value></data>
+  <data name="Settings_Import" xml:space="preserve"><value>Restaurar copia</value></data>
+  <data name="Settings_Integrity" xml:space="preserve"><value>Comprobar integridad</value></data>
+  <data name="Settings_Privacy" xml:space="preserve"><value>Privacidad</value></data>
+  <data name="Settings_PrivacyHint" xml:space="preserve"><value>Estas acciones son independientes: cerrar sesión, desactivar la sincronización, borrar datos locales y borrar datos en la nube.</value></data>
+  <data name="Settings_DisableSync" xml:space="preserve"><value>Desactivar la sincronización</value></data>
+  <data name="Settings_DeletePhotos" xml:space="preserve"><value>Eliminar las fotografías</value></data>
+  <data name="Settings_DeleteLocal" xml:space="preserve"><value>Eliminar los datos locales</value></data>
+  <data name="Settings_DeleteCloud" xml:space="preserve"><value>Eliminar los datos en la nube</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>Acerca de</value></data>
+  <data name="Settings_SyncNow" xml:space="preserve"><value>Sincronizar ahora</value></data>
+  <data name="Settings_StorageUsage" xml:space="preserve"><value>Fotografías almacenadas: {0:0.##} MB</value></data>
+  <data name="Settings_AboutText" xml:space="preserve"><value>Versión {0} - {1}</value></data>
+  <data name="Settings_BackupCreated" xml:space="preserve"><value>Copia creada: {0} comidas y {1} fotografías.</value></data>
+  <data name="Settings_RestoreTitle" xml:space="preserve"><value>¿Restaurar la copia de seguridad?</value></data>
+  <data name="Settings_RestoreMessage" xml:space="preserve"><value>Los datos existentes no se eliminan; los registros se combinan por identificador.</value></data>
+  <data name="Settings_RestoreDone" xml:space="preserve"><value>Restauración finalizada: {0} comidas y {1} fotografías.</value></data>
+  <data name="Settings_IntegrityOk" xml:space="preserve"><value>La comprobación de integridad no encontró problemas.</value></data>
+  <data name="Settings_IntegrityIssues" xml:space="preserve"><value>{0} problema(s) de integridad: {1}</value></data>
+  <data name="Account_Title" xml:space="preserve"><value>Cuenta y sincronización</value></data>
+  <data name="Account_GuestInfo" xml:space="preserve"><value>Estás usando DietTracker sin cuenta</value></data>
+  <data name="Account_Current" xml:space="preserve"><value>Cuenta conectada</value></data>
+  <data name="Account_SignIn" xml:space="preserve"><value>Iniciar sesión</value></data>
+  <data name="Account_Microsoft" xml:space="preserve"><value>Iniciar sesión con Microsoft</value></data>
+  <data name="Account_Google" xml:space="preserve"><value>Iniciar sesión con Google</value></data>
+  <data name="Account_SignOut" xml:space="preserve"><value>Cerrar sesión</value></data>
+  <data name="Account_Sync" xml:space="preserve"><value>Sincronización</value></data>
+  <data name="Account_Preview" xml:space="preserve"><value>¿Qué hay en la nube?</value></data>
+  <data name="Account_Restore" xml:space="preserve"><value>Restaurar desde la nube</value></data>
+  <data name="Account_Switch" xml:space="preserve"><value>Cambiar de proveedor</value></data>
+  <data name="Account_SwitchToMicrosoft" xml:space="preserve"><value>Cambiar a Microsoft</value></data>
+  <data name="Account_SwitchToGoogle" xml:space="preserve"><value>Cambiar a Google</value></data>
+  <data name="Account_Consent" xml:space="preserve"><value>Subir mis comidas y fotografías</value></data>
+  <data name="Account_ConsentText" xml:space="preserve"><value>Se suben las comidas, las notas, el estado de confirmación, las plantillas, las preferencias y las fotografías. Se aplican los límites de espacio de la cuenta elegida.</value></data>
+  <data name="Account_ConsentRequired" xml:space="preserve"><value>Se requiere consentimiento explícito antes de la primera subida.</value></data>
+  <data name="Account_PrivacySummary" xml:space="preserve"><value>DietTracker mantiene los datos en local. La sincronización escribe directamente en la carpeta de la aplicación de tu propia cuenta.</value></data>
+  <data name="Account_ProviderNone" xml:space="preserve"><value>Sin cuenta (modo invitado)</value></data>
+  <data name="Account_ProviderMicrosoft" xml:space="preserve"><value>Microsoft OneDrive</value></data>
+  <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="Account_GuestDescription" xml:space="preserve"><value>Todas las funciones esenciales funcionan sin conexión y sin cuenta.</value></data>
+  <data name="Account_SignedIn" xml:space="preserve"><value>Sesión iniciada correctamente.</value></data>
+  <data name="Account_SignedOut" xml:space="preserve"><value>Sesión cerrada. Tus comidas y fotografías locales se han conservado.</value></data>
+  <data name="Account_Quota" xml:space="preserve"><value>Espacio en la nube disponible: {0:0.#} GB</value></data>
+  <data name="Account_SyncResult" xml:space="preserve"><value>Sincronización finalizada: {0} subidos, {1} descargados.</value></data>
+  <data name="Account_NoCloudData" xml:space="preserve"><value>No se encontraron datos de DietTracker en la cuenta conectada.</value></data>
+  <data name="Account_RestorePreview" xml:space="preserve"><value>En la nube: {0} comidas y {1} fotografías.</value></data>
+  <data name="Account_RestoreTitle" xml:space="preserve"><value>¿Restaurar desde la nube?</value></data>
+  <data name="Account_RestoreMessage" xml:space="preserve"><value>Los datos locales no se eliminan. Solo se añaden o actualizan los registros que existen en la nube.</value></data>
+  <data name="Account_RestoreDone" xml:space="preserve"><value>Restauración finalizada: {0} registro(s).</value></data>
+  <data name="Account_SwitchTitle" xml:space="preserve"><value>¿Cambiar de proveedor en la nube?</value></data>
+  <data name="Account_SwitchMessage" xml:space="preserve"><value>Elige cómo continuar. Los datos en la nube nunca se combinan ni se sobrescriben sin tu elección explícita.</value></data>
+  <data name="Account_SwitchKeepLocal" xml:space="preserve"><value>Mantener los datos locales y subirlos a la nueva cuenta</value></data>
+  <data name="Account_SwitchRestore" xml:space="preserve"><value>Restaurar los datos de la nueva cuenta</value></data>
+  <data name="Account_SwitchMerge" xml:space="preserve"><value>Combinar local y nube, resolviendo conflictos</value></data>
+  <data name="Account_SwitchDone" xml:space="preserve"><value>Cambio finalizado: {0} subidos, {1} descargados.</value></data>
+  <data name="Account_SwitchDetail" xml:space="preserve"><value>Proveedor actual: {0} ({1}). Registros locales: {2}. Cambios sin sincronizar: {3}.</value></data>
+  <data name="Account_Environment" xml:space="preserve"><value>Entorno</value></data>
+  <data name="Onboarding_Title" xml:space="preserve"><value>Te damos la bienvenida a DietTracker</value></data>
+  <data name="Onboarding_Description" xml:space="preserve"><value>Planifica cinco comidas al día, confirma lo que has comido y conserva el historial. Iniciar sesión permite sincronizar de forma segura y recuperar los datos tras reinstalar o en otro equipo.</value></data>
+  <data name="Onboarding_ChooseProvider" xml:space="preserve"><value>Elige cómo guardar tus datos</value></data>
+  <data name="Onboarding_ContinueWithoutAccount" xml:space="preserve"><value>Continuar sin cuenta</value></data>
+  <data name="Onboarding_GuestDescription" xml:space="preserve"><value>El modo invitado lo guarda todo en este dispositivo. Puedes conectar una cuenta cuando quieras sin perder datos.</value></data>
+  <data name="Onboarding_Consent" xml:space="preserve"><value>Acepto subir mis comidas y fotografías a la cuenta que elija</value></data>
+  <data name="Onboarding_ConsentText" xml:space="preserve"><value>Puedes desactivar la sincronización en cualquier momento en Configuración. Desactivarla no elimina los archivos ya subidos.</value></data>
+  <data name="Sync_NotConfigured" xml:space="preserve"><value>Sin cuenta conectada</value></data>
+  <data name="Sync_Synced" xml:space="preserve"><value>Sincronizado</value></data>
+  <data name="Sync_Syncing" xml:space="preserve"><value>Sincronizando</value></data>
+  <data name="Sync_PendingChanges" xml:space="preserve"><value>Cambios pendientes</value></data>
+  <data name="Sync_Offline" xml:space="preserve"><value>Sin conexión</value></data>
+  <data name="Sync_AuthenticationRequired" xml:space="preserve"><value>Vuelve a iniciar sesión</value></data>
+  <data name="Sync_Error" xml:space="preserve"><value>Error de sincronización</value></data>
+  <data name="Sync_Paused" xml:space="preserve"><value>Sincronización en pausa</value></data>
+  <data name="Sync_LastSuccess" xml:space="preserve"><value>Última sincronización correcta: {0}</value></data>
+  <data name="Sync_Never" xml:space="preserve"><value>Aún no se ha sincronizado</value></data>
+  <data name="Auth_Cancelled" xml:space="preserve"><value>Inicio de sesión cancelado.</value></data>
+  <data name="Auth_Unknown" xml:space="preserve"><value>El inicio de sesión no se completó.</value></data>
+  <data name="Auth_auth_no_account" xml:space="preserve"><value>No hay ninguna cuenta conectada.</value></data>
+  <data name="Auth_auth_interaction_required" xml:space="preserve"><value>El proveedor requiere una nueva autorización.</value></data>
+  <data name="Auth_auth_silent_failed" xml:space="preserve"><value>No se pudo restaurar la sesión automáticamente.</value></data>
+  <data name="Auth_auth_microsoft_failed" xml:space="preserve"><value>El inicio de sesión con Microsoft falló.</value></data>
+  <data name="Auth_graph_unauthorized" xml:space="preserve"><value>Microsoft Graph rechazó la solicitud; vuelve a iniciar sesión.</value></data>
+  <data name="Auth_google_unauthorized" xml:space="preserve"><value>Google rechazó la solicitud; vuelve a iniciar sesión.</value></data>
+  <data name="Auth_google_insufficient_permissions" xml:space="preserve"><value>La cuenta no concede permiso para la carpeta de la aplicación.</value></data>
+  <data name="Auth_google_refresh_rejected" xml:space="preserve"><value>La autorización de Google caducó o se revocó.</value></data>
+  <data name="Auth_google_loopback_unavailable" xml:space="preserve"><value>No se pudo abrir el puerto local de retorno.</value></data>
+  <data name="Auth_google_state_mismatch" xml:space="preserve"><value>No se pudo verificar la respuesta de autorización.</value></data>
+  <data name="Auth_google_code_exchange_failed" xml:space="preserve"><value>Falló el intercambio del código de autorización.</value></data>
+  <data name="Auth_google_identity_unavailable" xml:space="preserve"><value>No se pudo leer la identidad de la cuenta de Google.</value></data>
+  <data name="Auth_google_network_error" xml:space="preserve"><value>Error de red al iniciar sesión con Google.</value></data>
+  <data name="Auth_switch_signin_failed" xml:space="preserve"><value>El inicio de sesión con el nuevo proveedor falló.</value></data>
+  <data name="Auth_sync_offline" xml:space="preserve"><value>No hay conexión a internet.</value></data>
+  <data name="Auth_sync_authentication_required" xml:space="preserve"><value>Vuelve a iniciar sesión para seguir sincronizando.</value></data>
+  <data name="Auth_sync_quota_exceeded" xml:space="preserve"><value>El espacio de almacenamiento en la nube está lleno.</value></data>
+  <data name="Auth_sync_restore_failed" xml:space="preserve"><value>La restauración falló; tus datos locales están intactos.</value></data>
+  <data name="Auth_sync_failed" xml:space="preserve"><value>La sincronización falló; se volverá a intentar.</value></data>
+  <data name="Privacy_DeleteLocalTitle" xml:space="preserve"><value>¿Eliminar los datos locales?</value></data>
+  <data name="Privacy_DeleteLocalMessage" xml:space="preserve"><value>Se eliminan las comidas, plantillas, recordatorios y fotografías de este dispositivo. Los datos en la nube no se tocan y antes se crea una copia de seguridad.</value></data>
+  <data name="Privacy_DeleteLocalDone" xml:space="preserve"><value>Los datos locales se han eliminado.</value></data>
+  <data name="Privacy_DeleteCloudTitle" xml:space="preserve"><value>¿Eliminar los datos en la nube?</value></data>
+  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>Se eliminan los archivos de DietTracker de la cuenta conectada. Los datos locales permanecen en este dispositivo.</value></data>
+  <data name="Privacy_DeleteCloudDone" xml:space="preserve"><value>Se eliminaron {0} objeto(s) de la nube.</value></data>
+  <data name="Privacy_DeletePhotosTitle" xml:space="preserve"><value>¿Eliminar las fotografías?</value></data>
+  <data name="Privacy_DeletePhotosMessage" xml:space="preserve"><value>Se eliminan los archivos de imagen locales; los registros de las comidas permanecen.</value></data>
+  <data name="Privacy_DeletePhotosDone" xml:space="preserve"><value>Se eliminaron {0} archivo(s).</value></data>
+  <data name="Privacy_DisableSyncTitle" xml:space="preserve"><value>¿Desactivar la sincronización?</value></data>
+  <data name="Privacy_DisableSyncMessage" xml:space="preserve"><value>La autorización se conserva, pero no se sube ni se descarga nada. Los archivos ya presentes en la nube no se eliminan.</value></data>
+  <data name="Privacy_DisableSyncDone" xml:space="preserve"><value>La sincronización se ha desactivado.</value></data>
+  <data name="Error_meal_title_tooLong" xml:space="preserve"><value>El título es demasiado largo.</value></data>
+  <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>La descripción es demasiado larga.</value></data>
+  <data name="Error_meal_notes_tooLong" xml:space="preserve"><value>Las notas son demasiado largas.</value></data>
+  <data name="Error_meal_quantities_tooMany" xml:space="preserve"><value>Demasiados ingredientes.</value></data>
+  <data name="Error_meal_ingredient_negativeAmount" xml:space="preserve"><value>La cantidad no puede ser negativa.</value></data>
+  <data name="Error_meal_ingredient_amountTooLarge" xml:space="preserve"><value>La cantidad es poco realista.</value></data>
+  <data name="Error_meal_category_invalid" xml:space="preserve"><value>La categoría no es una de las cinco permanentes.</value></data>
+  <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Solo se admiten imágenes JPEG, PNG y WEBP.</value></data>
+  <data name="Error_photo_tooLarge" xml:space="preserve"><value>La fotografía supera los 10 MB.</value></data>
+  <data name="Error_photo_empty" xml:space="preserve"><value>El archivo está vacío.</value></data>
+  <data name="Error_photo_content_invalid" xml:space="preserve"><value>El contenido no coincide con el formato de imagen.</value></data>
+  <data name="Error_photo_limit_reached" xml:space="preserve"><value>Una comida puede tener como máximo tres fotografías.</value></data>
+  <data name="Error_photo_source_missing" xml:space="preserve"><value>El archivo seleccionado ya no existe.</value></data>
+</root>

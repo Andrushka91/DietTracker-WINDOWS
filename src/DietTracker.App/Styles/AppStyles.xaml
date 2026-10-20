@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:DietTracker.App.Converters">
+
+    <converters:MealStatusToBrushConverter x:Key="MealStatusToBrush" />
+    <converters:MealStatusToGlyphConverter x:Key="MealStatusToGlyph" />
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
+    <converters:TimeOnlyConverter x:Key="TimeOnly" />
+    <converters:PercentageToWidthConverter x:Key="PercentageToWidth" />
+    <converters:HexColorToBrushConverter x:Key="HexToBrush" />
+
+    <!-- Dimensions of the permanent cards: every meal card has the same height and is laid out by
+         UniformWrapPanel in a responsive grid, so the day stays readable at any window size. -->
+    <x:Double x:Key="MealCardMinHeight">232</x:Double>
+    <x:Double x:Key="CardCornerRadiusValue">12</x:Double>
+    <x:Double x:Key="PageMaxContentWidth">1440</x:Double>
+    <x:Double x:Key="CardSpacing">16</x:Double>
+
+    <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
+    <CornerRadius x:Key="PillCornerRadius">10</CornerRadius>
+
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource CardStrokeColorDefault}" />
+    <SolidColorBrush x:Key="SubtleTextBrush" Color="{ThemeResource TextFillColorSecondary}" />
+    <!-- Literal colour on purpose: theme lookups for AccentFillColorDefault are not available in every
+         WinAppSDK version and fail at render time, which used to take the application down. -->
+    <SolidColorBrush x:Key="AccentStatusBrush" Color="#FF0F6CBD" />
+
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,12,0,8" />
+    </Style>
+
+    <Style x:Key="CaptionStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="MealCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="StatusPillStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource PillCornerRadius}" />
+        <Setter Property="Padding" Value="8,2,10,2" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+    <Style x:Key="ProgressCardStyle" TargetType="Border" BasedOn="{StaticResource MealCardStyle}">
+        <Setter Property="Padding" Value="20" />
+    </Style>
+
+</ResourceDictionary>
