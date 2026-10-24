@@ -7,7 +7,7 @@ namespace DietTracker.Core.Services;
 
 /// <summary>
 /// Orchestrates every meal tracking use case: the five permanent cards, inline editing,
-/// DONE/PENDING/MISSED tracking, copying, templates, photographs, reminders and statistics.
+/// DONE/PENDING tracking, copying, templates, photographs, reminders and statistics.
 /// </summary>
 /// <remarks>
 /// Design notes:

@@ -23,6 +23,14 @@ internal static partial class GooglePkceFlow
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
+        if (options.ClientId.StartsWith("00000000", StringComparison.Ordinal))
+        {
+            // The built-in placeholder is not a real Google registration: opening the browser would
+            // only show Google's "The OAuth client was not found" (401 invalid_client) page, so the
+            // missing configuration is reported locally instead (see docs/authentication/setup.md).
+            throw new CloudAuthorizationRequiredException("google.not-configured");
+        }
+
         var verifier = CreateCodeVerifier();
         var challenge = CreateCodeChallenge(verifier);
         var state = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
@@ -108,12 +116,7 @@ internal static partial class GooglePkceFlow
 
     private static async Task WriteBrowserResponseAsync(HttpListenerContext context, bool success)
     {
-        var message = success
-            ? "DietTracker is connected. You can close this tab and return to the application."
-            : "Authorization was not completed. You can close this tab and try again in DietTracker.";
-
-        var html = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>DietTracker</title></head><body>"
-                   + "<h1>DietTracker</h1><p>" + message + "</p></body></html>";
+        var html = BuildResponsePage(success);
         var bytes = Encoding.UTF8.GetBytes(html);
 
         try
@@ -127,6 +130,80 @@ internal static partial class GooglePkceFlow
         {
             context.Response.Close();
         }
+    }
+
+    /// <summary>
+    /// Builds the page the browser lands on after the authorization redirect (RFC 8252 section 4.4
+    /// recommends that the local server responds with a user friendly instruction page). The page
+    /// follows the system light/dark preference like the application itself, and tries to close the
+    /// tab automatically; browsers refuse closing for tabs they did not open, so a clear instruction
+    /// remains visible as the fallback.
+    /// </summary>
+    private static string BuildResponsePage(bool success)
+    {
+        var title = success ? "You're connected" : "Sign-in was not completed";
+        var message = success
+            ? "DietTracker is now connected to your Google account. You can return to the application."
+            : "The authorization did not finish. You can close this tab and try again in DietTracker.";
+
+        // A filled circle with a check (success) or a cross (failure), drawn inline - the page must
+        // not depend on any external resource.
+        var badge = success
+            ? "<div class='badge ok'><svg viewBox='0 0 24 24' fill='none' stroke='#ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg></div>"
+            : "<div class='badge failed'><svg viewBox='0 0 24 24' fill='none' stroke='#ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M18 6L6 18M6 6l12 12'/></svg></div>";
+
+        return """
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DietTracker</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #f3f3f3; color: #1a1a1a; padding: 24px;
+  }
+  .card {
+    max-width: 420px; width: 100%; text-align: center;
+    background: #ffffff; border: 1px solid #e4e4e4; border-radius: 12px;
+    padding: 40px 32px 32px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  .brand { display: flex; align-items: center; justify-content: center; gap: 8px;
+           font-size: 13px; font-weight: 600; letter-spacing: 0.4px; margin-bottom: 28px; }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: #0f7b3f; }
+  .badge { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 20px;
+           display: flex; align-items: center; justify-content: center; }
+  .badge.ok { background: #0f7b3f; }
+  .badge.failed { background: #c4382d; }
+  .badge svg { width: 30px; height: 30px; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+  p { font-size: 14px; line-height: 1.55; opacity: 0.78; }
+  .hint { margin-top: 26px; font-size: 12px; opacity: 0.45; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1c1c; color: #f3f3f3; }
+    .card { background: #2b2b2b; border-color: #3a3a3a; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand"><span class="dot"></span>DietTracker</div>
+    BADGE_PLACEHOLDER
+    <h1>TITLE_PLACEHOLDER</h1>
+    <p>MESSAGE_PLACEHOLDER</p>
+    <p class="hint">This tab closes by itself in a moment. If it stays open, close it and return to DietTracker.</p>
+  </main>
+  <script>setTimeout(function () { window.close(); }, 2500);</script>
+</body>
+</html>
+"""
+            .Replace("BADGE_PLACEHOLDER", badge)
+            .Replace("TITLE_PLACEHOLDER", title)
+            .Replace("MESSAGE_PLACEHOLDER", message);
     }
 
     private static string CreateCodeVerifier() => Base64UrlEncode(RandomNumberGenerator.GetBytes(64));

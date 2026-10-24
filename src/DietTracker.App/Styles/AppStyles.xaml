@@ -4,13 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:DietTracker.App.Converters">
 
-    <converters:MealStatusToBrushConverter x:Key="MealStatusToBrush" />
-    <converters:MealStatusToGlyphConverter x:Key="MealStatusToGlyph" />
+    <converters:WidthMinusConverter x:Key="WidthMinus" />
     <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
     <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
     <converters:TimeOnlyConverter x:Key="TimeOnly" />
-    <converters:PercentageToWidthConverter x:Key="PercentageToWidth" />
-    <converters:HexColorToBrushConverter x:Key="HexToBrush" />
 
     <!-- Dimensions of the permanent cards: every meal card has the same height and is laid out by
          UniformWrapPanel in a responsive grid, so the day stays readable at any window size. -->
@@ -25,6 +22,10 @@
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource CardStrokeColorDefault}" />
     <SolidColorBrush x:Key="SubtleTextBrush" Color="{ThemeResource TextFillColorSecondary}" />
+    <!-- Track behind the statistics bars: the theme's control stroke colour, so the unfilled part
+         of the bar stays visible on dark and light backgrounds alike (a plain white tint would
+         disappear on a white card in light mode). -->
+    <SolidColorBrush x:Key="BarTrackBrush" Color="{ThemeResource ControlStrokeColorDefault}" />
     <!-- Literal colour on purpose: theme lookups for AccentFillColorDefault are not available in every
          WinAppSDK version and fail at render time, which used to take the application down. -->
     <SolidColorBrush x:Key="AccentStatusBrush" Color="#FF0F6CBD" />
@@ -63,6 +64,82 @@
 
     <Style x:Key="ProgressCardStyle" TargetType="Border" BasedOn="{StaticResource MealCardStyle}">
         <Setter Property="Padding" Value="20" />
+    </Style>
+
+    <!-- Day cell of the month calendar: the border never changes on hover (it carries the day
+         state color), only a subtle shade appears over the background, exactly like the Microsoft
+         calendar. Without this template the default Button style would repaint the border on hover. -->
+    <Style x:Key="CalendarDayButtonStyle" TargetType="Button">
+        <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <!-- Equal padding on every side: a corner text (day number, percentage) then sits at the
+             same distance from the two borders it touches - left/top for the number, left/bottom
+             for the percentage (12 padding + 2 border = 14 all round). -->
+        <Setter Property="Padding" Value="12,12" />
+        <!-- No MinHeight: the height of a day cell comes from the page (the height of its row, at
+             most as wide as the cell is), so the whole month always fits the panel. -->
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <!-- The content must fill the whole square (the default is Top, which would pack the day
+             number and the percentage at the top of the taller cell): only a filled content grid
+             can place the number above the middle and the percentage dead centre. -->
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border
+                            x:Name="RootBorder"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <!-- The only hover feedback: a faint shade over the background. -->
+                        <Border
+                            x:Name="HoverShade"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Background="{ThemeResource ButtonBackgroundPointerOver}"
+                            Opacity="0" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="HoverShade"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="HoverShade"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0.5"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="RootBorder"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0.5"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

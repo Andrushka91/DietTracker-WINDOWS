@@ -16,13 +16,6 @@
                     <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Onboarding_ChooseProvider" Text="Choose how to keep your data" />
 
                     <Button
-                        x:Uid="Account_Microsoft"
-                        Content="Sign in with Microsoft"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Command="{x:Bind ViewModel.SignInMicrosoftCommand}" />
-
-                    <Button
                         x:Uid="Account_Google"
                         Content="Sign in with Google"
                         HorizontalAlignment="Stretch"

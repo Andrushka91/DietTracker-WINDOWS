@@ -56,17 +56,19 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
     [ObservableProperty]
     private double _percentage;
 
+    /// <summary>Number of confirmed meals of the selected day (the green square).</summary>
     [ObservableProperty]
-    private int _completedCount;
+    private int _doneCount;
 
-    [ObservableProperty]
-    private int _pendingCount;
-
+    /// <summary>Number of missed meals of the selected day (the red square). Missed is derived at
+    /// read time: recorded, unconfirmed and past the planned time.</summary>
     [ObservableProperty]
     private int _missedCount;
 
+    /// <summary>Number of pending meals of the selected day (the gray square) - the untouched
+    /// placeholders and the meals whose planned time has not passed yet.</summary>
     [ObservableProperty]
-    private string _summaryText = string.Empty;
+    private int _pendingCount;
 
     [ObservableProperty]
     private string? _statusMessage;
@@ -82,27 +84,28 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
 
     public string TodayLabel => _localization.Get("Common_Today");
 
-    public string CompletedLabel => _localization.Get("Dashboard_Completed");
-
-    public string PendingLabel => _localization.Get("Dashboard_Pending");
-
-    public string MissedLabel => _localization.Get("Dashboard_Missed");
-
-    public string CopyYesterdayLabel => _localization.Get("Dashboard_CopyYesterday");
-
-    public string SaveDayTemplateLabel => _localization.Get("Dashboard_SaveDayTemplate");
-
-    /// <summary>Loads (or reloads) the dashboard. Called by the page when it is navigated to.</summary>
+    /// <summary>
+    /// Loads (or reloads) the dashboard. Called by the page when it is navigated to. A
+    /// <see cref="DateOnly"/> parameter (coming from the calendar) selects that day, so the cards
+    /// open with the date that was clicked instead of with today.
+    /// </summary>
     public async Task InitializeAsync(object? parameter = null)
     {
-        if (parameter is Guid mealEntryId)
+        switch (parameter)
         {
-            var today = await _tracking.GetDayAsync(_clock.Today);
-            var match = today.FirstOrDefault(e => e.Id == mealEntryId);
-            if (match is not null)
-            {
-                SelectedDate = match.Date;
-            }
+            case DateOnly date:
+                SelectedDate = date;
+                break;
+
+            case Guid mealEntryId:
+                var today = await _tracking.GetDayAsync(_clock.Today);
+                var match = today.FirstOrDefault(e => e.Id == mealEntryId);
+                if (match is not null)
+                {
+                    SelectedDate = match.Date;
+                }
+
+                break;
         }
 
         await LoadAsync();
@@ -128,22 +131,28 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
                 }
 
                 var card = new MealCardViewModel(entry, category, this);
+
                 await AttachPhotosAsync(card, cancellationToken);
                 Cards.Add(card);
             }
 
             Percentage = progress.Percentage;
-            CompletedCount = progress.Completed;
-            PendingCount = progress.Pending;
+            DoneCount = progress.Completed;
             MissedCount = progress.Missed;
+            PendingCount = progress.Pending;
+
             DateLabel = SelectedDate.ToDateTime(TimeOnly.MinValue).ToString("D");
-            SummaryText = _localization.Format("Dashboard_Summary", progress.Completed, progress.TotalSlots, progress.Percentage);
+
             OnPropertyChanged(nameof(IsToday));
             OnPropertyChanged(nameof(IsFutureDate));
         }
         finally
         {
             IsLoading = false;
+
+            // The two day-wide buttons (mark all done / mark all missed) enable and disable with the cards.
+            OnPropertyChanged(nameof(CanMarkAllDone));
+            OnPropertyChanged(nameof(CanMarkAllMissed));
         }
     }
 

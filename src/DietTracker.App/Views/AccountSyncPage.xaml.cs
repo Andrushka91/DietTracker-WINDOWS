@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace DietTracker.App.Views;
 
-/// <summary>Account and synchronization: provider selection, state, restore and switching.</summary>
+/// <summary>Account and synchronization: sign-in state, synchronization and restore.</summary>
 public sealed partial class AccountSyncPage : Page
 {
     public AccountSyncPage()
@@ -22,13 +22,5 @@ public sealed partial class AccountSyncPage : Page
     {
         base.OnNavigatedTo(e);
         await ViewModel.InitializeAsync(e.Parameter);
-    }
-
-    private void OnSwitch(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { Tag: string provider })
-        {
-            _ = ViewModel.SwitchProviderCommand.ExecuteAsync(provider);
-        }
     }
 }

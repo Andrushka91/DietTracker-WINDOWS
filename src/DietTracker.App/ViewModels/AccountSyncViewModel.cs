@@ -1,18 +1,19 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DietTracker.App.Services;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
+using Microsoft.UI.Xaml;
 
 namespace DietTracker.App.ViewModels;
 
 /// <summary>
-/// Account and synchronization screen: which provider the user picked, the current synchronization
-/// state, manual sync, restore and the guarded provider switch.
+/// Account and synchronization screen: the connected Google account, the current synchronization
+/// state, manual sync and restore.
 /// </summary>
 public sealed partial class AccountSyncViewModel : ObservableObject
 {
     private readonly IAuthenticationCoordinator _authentication;
-    private readonly IAccountSwitchCoordinator _switcher;
     private readonly IPrivacyService _privacy;
     private readonly ISyncEngine _syncEngine;
     private readonly IProfileService _profiles;
@@ -22,7 +23,6 @@ public sealed partial class AccountSyncViewModel : ObservableObject
 
     public AccountSyncViewModel(
         IAuthenticationCoordinator authentication,
-        IAccountSwitchCoordinator switcher,
         IPrivacyService privacy,
         ISyncEngine syncEngine,
         IProfileService profiles,
@@ -31,7 +31,6 @@ public sealed partial class AccountSyncViewModel : ObservableObject
         IAppEnvironment environment)
     {
         _authentication = authentication;
-        _switcher = switcher;
         _privacy = privacy;
         _syncEngine = syncEngine;
         _profiles = profiles;
@@ -65,7 +64,15 @@ public sealed partial class AccountSyncViewModel : ObservableObject
     private bool _consentGranted;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SignInVisibility))]
+    [NotifyPropertyChangedFor(nameof(SignedInVisibility))]
     private bool _isGuest = true;
+
+    /// <summary>Sign-in controls are visible in Guest Mode only.</summary>
+    public Visibility SignInVisibility => IsGuest ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Signed-in controls (sign out, synchronization) hide in Guest Mode.</summary>
+    public Visibility SignedInVisibility => IsGuest ? Visibility.Collapsed : Visibility.Visible;
 
     public string ConsentText => _localization.Get("Account_ConsentText");
 
@@ -108,9 +115,6 @@ public sealed partial class AccountSyncViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SignInMicrosoftAsync() => await SignInAsync(ProviderType.Microsoft);
-
-    [RelayCommand]
     private async Task SignInGoogleAsync() => await SignInAsync(ProviderType.Google);
 
     private async Task SignInAsync(ProviderType providerType)
@@ -130,7 +134,7 @@ public sealed partial class AccountSyncViewModel : ObservableObject
                 ? _localization.Get("Account_SignedIn")
                 : result.IsCancelled
                     ? _localization.Get("Auth_Cancelled")
-                    : _localization.Get(result.ReasonCode ?? "Auth_Unknown");
+                    : _localization.Get(LocalizationKeys.ForReason(result.ReasonCode));
 
             if (result.Succeeded)
             {

@@ -21,8 +21,6 @@ public static class MealContentRules
                || entry.CompletedAt is not null
                || !string.IsNullOrWhiteSpace(entry.Title)
                || !string.IsNullOrWhiteSpace(entry.Ingredients)
-               || !string.IsNullOrWhiteSpace(entry.Notes)
-               || entry.Quantities.Count > 0
                || entry.Photos.Count > 0
                || entry.PlannedTime is not null;
     }

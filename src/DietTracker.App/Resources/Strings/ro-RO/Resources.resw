@@ -44,46 +44,24 @@
   <data name="Meal_Dinner_Name" xml:space="preserve"><value>Cena / Cină</value></data>
 
   <data name="Status_Pending" xml:space="preserve"><value>În așteptare</value></data>
+  <data name="Status_Missed" xml:space="preserve"><value>Ratată</value></data>
   <data name="Status_Done" xml:space="preserve"><value>Consumat</value></data>
-  <data name="Status_Missed" xml:space="preserve"><value>Neefectuat</value></data>
 
-  <data name="Unit_None" xml:space="preserve"><value>-</value></data>
-  <data name="Unit_Gram" xml:space="preserve"><value>g</value></data>
-  <data name="Unit_Kilogram" xml:space="preserve"><value>kg</value></data>
-  <data name="Unit_Milliliter" xml:space="preserve"><value>ml</value></data>
-  <data name="Unit_Liter" xml:space="preserve"><value>l</value></data>
-  <data name="Unit_Unit" xml:space="preserve"><value>buc</value></data>
-  <data name="Unit_Tablespoon" xml:space="preserve"><value>lingură</value></data>
-  <data name="Unit_Teaspoon" xml:space="preserve"><value>linguriță</value></data>
-  <data name="Unit_Cup" xml:space="preserve"><value>cană</value></data>
-  <data name="Unit_Slice" xml:space="preserve"><value>felie</value></data>
-  <data name="Unit_Portion" xml:space="preserve"><value>porție</value></data>
-  <data name="Unit_Pinch" xml:space="preserve"><value>vârf de cuțit</value></data>
   <data name="Dashboard_PreviousDay" xml:space="preserve"><value>Ziua anterioară</value></data>
   <data name="Dashboard_NextDay" xml:space="preserve"><value>Ziua următoare</value></data>
-  <data name="Dashboard_Summary" xml:space="preserve"><value>{0} din {1} mese confirmate ({2:0.#} %)</value></data>
-  <data name="Dashboard_Completed" xml:space="preserve"><value>Confirmate</value></data>
-  <data name="Dashboard_Pending" xml:space="preserve"><value>În așteptare</value></data>
-  <data name="Dashboard_Missed" xml:space="preserve"><value>Neefectuate</value></data>
-  <data name="Dashboard_CopyYesterday" xml:space="preserve"><value>Copiază ziua de ieri</value></data>
-  <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Salvează ziua ca șablon</value></data>
-  <data name="Dashboard_NothingToCopy" xml:space="preserve"><value>Nu există conținut de copiat din ziua anterioară.</value></data>
-  <data name="Dashboard_CopiedMeals" xml:space="preserve"><value>{0} masă/mese copiate.</value></data>
+  <data name="Dashboard_CountDone" xml:space="preserve"><value>Consumate</value></data>
+  <data name="Dashboard_CountMissed" xml:space="preserve"><value>Ratate</value></data>
+  <data name="Dashboard_CountPending" xml:space="preserve"><value>În așteptare</value></data>
+  <data name="Dashboard_AllDone" xml:space="preserve"><value>Toate mesele sunt confirmate.</value></data>
+  <data name="Dashboard_AllMissed" xml:space="preserve"><value>Toate mesele sunt marcate ca ratate.</value></data>
+  <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Salvează ca șablon</value></data>
 
   <data name="Meal_Title" xml:space="preserve"><value>Titlu</value></data>
-  <data name="Meal_Ingredients" xml:space="preserve"><value>Descrierea alimentelor</value></data>
-  <data name="Meal_Notes" xml:space="preserve"><value>Notițe</value></data>
-  <data name="Meal_PlannedTime" xml:space="preserve"><value>Ora planificată</value></data>
-  <data name="Meal_AddIngredient" xml:space="preserve"><value>Adaugă ingredient</value></data>
-  <data name="Meal_IngredientName" xml:space="preserve"><value>Ingredient</value></data>
-  <data name="Meal_IngredientAmount" xml:space="preserve"><value>Cantitate</value></data>
-  <data name="Meal_RemoveIngredient" xml:space="preserve"><value>Elimină ingredientul</value></data>
+  <data name="Meal_PlannedTime" xml:space="preserve"><value>Ora</value></data>
+  <data name="Meal_InvalidTime" xml:space="preserve"><value>Introdu ora în formatul HH:MM (24 de ore) sau lasă gol pentru ora implicită.</value></data>
+
   <data name="Meal_MarkDone" xml:space="preserve"><value>Marchează ca DONE</value></data>
-  <data name="Meal_Undo" xml:space="preserve"><value>Anulează confirmarea</value></data>
-  <data name="Meal_MarkMissed" xml:space="preserve"><value>Marchează ca neefectuat</value></data>
-  <data name="Meal_CopyToDate" xml:space="preserve"><value>Copiază în altă zi</value></data>
-  <data name="Meal_SaveTemplate" xml:space="preserve"><value>Salvează ca șablon</value></data>
-  <data name="Meal_Copied" xml:space="preserve"><value>Masa a fost copiată în {0}.</value></data>
+  <data name="Meal_MarkMissed" xml:space="preserve"><value>Marchează ca ratată</value></data>
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmat la</value></data>
 
   <data name="Photo_Add" xml:space="preserve"><value>Adaugă fotografie</value></data>
@@ -94,8 +72,11 @@
   <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Luna anterioară</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>Luna următoare</value></data>
   <data name="Calendar_OpenDay" xml:space="preserve"><value>Deschide ziua</value></data>
-  <data name="Calendar_DaySummary" xml:space="preserve"><value>{0} din {1} mese confirmate ({2:0.#} %)</value></data>
-  <data name="Calendar_PhotoHint" xml:space="preserve"><value>Pictograma de imagine marchează zilele cu fotografii.</value></data>
+  <data name="Calendar_Today" xml:space="preserve"><value>Azi</value></data>
+  <data name="Calendar_LegendGreen" xml:space="preserve"><value>Verde: toate mesele consumate</value></data>
+  <data name="Calendar_LegendRed" xml:space="preserve"><value>Roșu: cel puțin o masă ratată</value></data>
+  <data name="Calendar_LegendPending" xml:space="preserve"><value>Gri: în așteptare</value></data>
+  <data name="Calendar_DaySummary" xml:space="preserve"><value>{0} confirmate, {1} ratate, {2} în așteptare</value></data>
   <data name="Calendar_Weekdays" xml:space="preserve"><value>Lu Ma Mi Jo Vi Sâ Du</value></data>
   <data name="Statistics_Title" xml:space="preserve"><value>Progres și statistici</value></data>
   <data name="Statistics_PreviousWeek" xml:space="preserve"><value>Săptămâna anterioară</value></data>
@@ -105,10 +86,13 @@
   <data name="Statistics_Weekly" xml:space="preserve"><value>Săptămâna curentă</value></data>
   <data name="Statistics_Monthly" xml:space="preserve"><value>Luna curentă</value></data>
   <data name="Statistics_Trend" xml:space="preserve"><value>Tendință săptămânală</value></data>
-  <data name="Statistics_DailyText" xml:space="preserve"><value>{0} confirmate, {1} în așteptare, {2} neefectuate</value></data>
-  <data name="Statistics_WeeklyText" xml:space="preserve"><value>{0} din {1} mese confirmate ({2:0.#} %)</value></data>
-  <data name="Statistics_FullyCompleted" xml:space="preserve"><value>Zile cu toate cele cinci mese confirmate: {0}</value></data>
-  <data name="Statistics_MonthlyText" xml:space="preserve"><value>{0} din {1} mese confirmate ({2:0.#} %)</value></data>
+  <data name="Statistics_MonthlyTrend" xml:space="preserve"><value>Tendință lunară</value></data>
+  <data name="Statistics_YearlyTrend" xml:space="preserve"><value>Tendință anuală</value></data>
+  <data name="Statistics_DayDone" xml:space="preserve"><value>Completat</value></data>
+  <data name="Statistics_DayMissed" xml:space="preserve"><value>Ratat</value></data>
+  <data name="Statistics_DayPending" xml:space="preserve"><value>În așteptare</value></data>
+  <data name="Statistics_DaysSummary" xml:space="preserve"><value>{0} zile: {1} completate, {2} ratate</value></data>
+  <data name="Statistics_Breakdown" xml:space="preserve"><value>Consumate {0:0.#} % · Ratate {1:0.#} % · În așteptare {2:0.#} %</value></data>
   <data name="Statistics_Disclaimer" xml:space="preserve"><value>Statisticile reflectă mesele pe care le-ai înregistrat; nu reprezintă o evaluare medicală.</value></data>
 
   <data name="Templates_Title" xml:space="preserve"><value>Șabloane</value></data>
@@ -155,21 +139,16 @@
   <data name="Account_GuestInfo" xml:space="preserve"><value>Folosești DietTracker fără cont</value></data>
   <data name="Account_Current" xml:space="preserve"><value>Cont conectat</value></data>
   <data name="Account_SignIn" xml:space="preserve"><value>Conectare</value></data>
-  <data name="Account_Microsoft" xml:space="preserve"><value>Conectare cu Microsoft</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Conectare cu Google</value></data>
   <data name="Account_SignOut" xml:space="preserve"><value>Deconectare</value></data>
   <data name="Account_Sync" xml:space="preserve"><value>Sincronizare</value></data>
   <data name="Account_Preview" xml:space="preserve"><value>Ce există în cloud?</value></data>
   <data name="Account_Restore" xml:space="preserve"><value>Restaurează din cloud</value></data>
-  <data name="Account_Switch" xml:space="preserve"><value>Schimbă furnizorul</value></data>
-  <data name="Account_SwitchToMicrosoft" xml:space="preserve"><value>Trece la Microsoft</value></data>
-  <data name="Account_SwitchToGoogle" xml:space="preserve"><value>Trece la Google</value></data>
   <data name="Account_Consent" xml:space="preserve"><value>Încarc mesele și fotografiile mele</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Sunt încărcate mesele, notele, starea de confirmare, șabloanele, preferințele și fotografiile. Se aplică limitele de spațiu ale contului ales.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Este necesar acordul explicit înainte de prima încărcare.</value></data>
   <data name="Account_PrivacySummary" xml:space="preserve"><value>DietTracker păstrează datele local. Sincronizarea se face direct în folderul aplicației din contul tău.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>Fără cont (mod invitat)</value></data>
-  <data name="Account_ProviderMicrosoft" xml:space="preserve"><value>Microsoft OneDrive</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Toate funcțiile esențiale funcționează offline, fără cont.</value></data>
   <data name="Account_SignedIn" xml:space="preserve"><value>Conectare reușită.</value></data>
@@ -181,13 +160,6 @@
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restaurezi din cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Datele locale nu sunt șterse. Se adaugă sau se actualizează doar înregistrările existente în cloud.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restaurare încheiată: {0} înregistrări.</value></data>
-  <data name="Account_SwitchTitle" xml:space="preserve"><value>Schimbi furnizorul de cloud?</value></data>
-  <data name="Account_SwitchMessage" xml:space="preserve"><value>Alege cum continuăm. Datele din cloud nu sunt niciodată combinate sau suprascrise fără alegerea ta.</value></data>
-  <data name="Account_SwitchKeepLocal" xml:space="preserve"><value>Păstrează datele locale și încarcă-le în noul cont</value></data>
-  <data name="Account_SwitchRestore" xml:space="preserve"><value>Restaurează datele din noul cont</value></data>
-  <data name="Account_SwitchMerge" xml:space="preserve"><value>Combină local și cloud, cu rezolvarea conflictelor</value></data>
-  <data name="Account_SwitchDone" xml:space="preserve"><value>Comutare încheiată: {0} încărcate, {1} descărcate.</value></data>
-  <data name="Account_SwitchDetail" xml:space="preserve"><value>Furnizor curent: {0} ({1}). Înregistrări locale: {2}. Modificări nesincronizate: {3}.</value></data>
   <data name="Account_Environment" xml:space="preserve"><value>Mediu</value></data>
   <data name="Onboarding_Title" xml:space="preserve"><value>Bine ai venit la DietTracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Planifică cinci mese pe zi, bifează ce ai consumat și păstrează istoricul. Conectarea la un cont permite sincronizarea securizată și recuperarea datelor după reinstalare sau pe alt calculator.</value></data>
@@ -203,6 +175,8 @@
   <data name="Sync_PendingChanges" xml:space="preserve"><value>Modificări în așteptare</value></data>
   <data name="Sync_Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="Sync_AuthenticationRequired" xml:space="preserve"><value>Este necesară reconectarea</value></data>
+  <data name="Sync_BalloonTitle" xml:space="preserve"><value>DietTracker sincronizat</value></data>
+  <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} încărcate, {1} descărcate.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Eroare de sincronizare</value></data>
   <data name="Sync_Paused" xml:space="preserve"><value>Sincronizare oprită</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Ultima sincronizare reușită: {0}</value></data>
@@ -212,8 +186,6 @@
   <data name="Auth_auth_no_account" xml:space="preserve"><value>Nu există un cont conectat.</value></data>
   <data name="Auth_auth_interaction_required" xml:space="preserve"><value>Furnizorul cere o nouă autorizare.</value></data>
   <data name="Auth_auth_silent_failed" xml:space="preserve"><value>Sesiunea nu a putut fi restabilită automat.</value></data>
-  <data name="Auth_auth_microsoft_failed" xml:space="preserve"><value>Conectarea Microsoft nu a reușit.</value></data>
-  <data name="Auth_graph_unauthorized" xml:space="preserve"><value>Microsoft Graph a refuzat cererea; reconectează-te.</value></data>
   <data name="Auth_google_unauthorized" xml:space="preserve"><value>Google a refuzat cererea; reconectează-te.</value></data>
   <data name="Auth_google_insufficient_permissions" xml:space="preserve"><value>Contul nu acordă permisiunea pentru folderul aplicației.</value></data>
   <data name="Auth_google_refresh_rejected" xml:space="preserve"><value>Autorizarea Google a expirat sau a fost revocată.</value></data>
@@ -222,7 +194,12 @@
   <data name="Auth_google_code_exchange_failed" xml:space="preserve"><value>Schimbul codului de autorizare a eșuat.</value></data>
   <data name="Auth_google_identity_unavailable" xml:space="preserve"><value>Identitatea contului Google nu a putut fi citită.</value></data>
   <data name="Auth_google_network_error" xml:space="preserve"><value>Eroare de rețea la conectarea Google.</value></data>
-  <data name="Auth_switch_signin_failed" xml:space="preserve"><value>Conectarea la noul furnizor a eșuat.</value></data>
+  <data name="Auth_google_not_configured" xml:space="preserve"><value>Conectarea Google nu este configurată. Setați googleClientId în fișierul appsettings.json din DietTracker și reporniți aplicația (vezi docs/authentication/setup.md).</value></data>
+  <data name="Auth_google_access_denied" xml:space="preserve"><value>Google a refuzat cererea de autorizare.</value></data>
+  <data name="Auth_google_authorization_cancelled" xml:space="preserve"><value>Autorizarea Google a fost anulată.</value></data>
+  <data name="Auth_google_invalid_token_response" xml:space="preserve"><value>Google a returnat un răspuns de token neașteptat.</value></data>
+  <data name="Auth_google_refresh_failed" xml:space="preserve"><value>Sesiunea Google nu a putut fi reînnoită; conectați-vă din nou.</value></data>
+  <data name="Auth_google_refresh_token_missing" xml:space="preserve"><value>Nu există niciun refresh token Google stocat; conectați-vă din nou.</value></data>
   <data name="Auth_sync_offline" xml:space="preserve"><value>Nu există conexiune la internet.</value></data>
   <data name="Auth_sync_authentication_required" xml:space="preserve"><value>Este necesară reconectarea pentru sincronizare.</value></data>
   <data name="Auth_sync_quota_exceeded" xml:space="preserve"><value>Spațiul din cloud este insuficient.</value></data>
@@ -243,11 +220,6 @@
   <data name="Privacy_DisableSyncDone" xml:space="preserve"><value>Sincronizarea a fost oprită.</value></data>
 
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>Titlul este prea lung.</value></data>
-  <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>Descrierea este prea lungă.</value></data>
-  <data name="Error_meal_notes_tooLong" xml:space="preserve"><value>Notițele sunt prea lungi.</value></data>
-  <data name="Error_meal_quantities_tooMany" xml:space="preserve"><value>Prea multe ingrediente.</value></data>
-  <data name="Error_meal_ingredient_negativeAmount" xml:space="preserve"><value>Cantitatea nu poate fi negativă.</value></data>
-  <data name="Error_meal_ingredient_amountTooLarge" xml:space="preserve"><value>Cantitatea este nerealist de mare.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>Categoria nu este una dintre cele cinci permanente.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Sunt acceptate doar imagini JPEG, PNG sau WEBP.</value></data>
   <data name="Error_photo_tooLarge" xml:space="preserve"><value>Fotografia depășește 10 MB.</value></data>
@@ -255,4 +227,6 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>Conținutul nu corespunde formatului imaginii.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>O masă poate avea cel mult trei fotografii.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>Fișierul selectat nu mai există.</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Descrierea alimentelor</value></data>
+  <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>Descrierea este prea lungă.</value></data>
 </root>

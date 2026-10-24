@@ -55,7 +55,7 @@ public sealed class TestEnvironment : IAsyncDisposable
     /// <summary>Creates an isolated environment. Set <paramref name="connectAccount"/> to simulate a signed-in user.</summary>
     public static async Task<TestEnvironment> CreateAsync(
         bool connectAccount = false,
-        ProviderType provider = ProviderType.Microsoft,
+        ProviderType provider = ProviderType.Google,
         string? rootPath = null)
     {
         var root = rootPath ?? Path.Combine(Path.GetTempPath(), "diettracker-tests", Guid.NewGuid().ToString("N"));
@@ -104,7 +104,6 @@ public sealed class TestEnvironment : IAsyncDisposable
         services.AddSingleton<IConflictResolver, ConflictResolver>();
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncJournal, SyncJournal>();
-        services.AddSingleton<IAccountSwitchCoordinator, AccountSwitchCoordinator>();
         services.AddSingleton<IUserInterfaceContext>(new TestUserInterfaceContext());
         services.AddSingleton<IAuthenticationCoordinator>(new TestAuthenticationCoordinator());
 
@@ -123,7 +122,7 @@ public sealed class TestEnvironment : IAsyncDisposable
     }
 
     /// <summary>Creates the active cloud account row so the journal and the engine are enabled.</summary>
-    public async Task ConnectAccountAsync(ProviderType provider = ProviderType.Microsoft, string email = "user@example.com")
+    public async Task ConnectAccountAsync(ProviderType provider = ProviderType.Google, string email = "user@example.com")
     {
         var account = new CloudAccount
         {

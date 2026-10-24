@@ -96,25 +96,6 @@ public static class SqliteValue
     /// <summary>Serializes a collection into a JSON column.</summary>
     public static string ToJson<T>(T value) => JsonSerializer.Serialize(value, DietTrackerJson.Compact);
 
-    /// <summary>Deserializes a JSON column, returning an empty collection when the value is unusable.</summary>
-    public static IReadOnlyList<T> FromJsonList<T>(object? value)
-    {
-        var text = GetStringOrNull(value);
-        if (text is null)
-        {
-            return [];
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<List<T>>(text, DietTrackerJson.Compact) ?? [];
-        }
-        catch (JsonException)
-        {
-            return [];
-        }
-    }
-
     /// <summary>Deserializes a JSON column, returning <see langword="null"/> when the value is unusable.</summary>
     public static T? FromJson<T>(object? value) where T : class
     {

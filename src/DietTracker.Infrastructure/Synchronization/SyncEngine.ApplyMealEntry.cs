@@ -105,8 +105,6 @@ public sealed partial class SyncEngine
 
                 target.Title = remote.Title;
                 target.Ingredients = remote.Ingredients;
-                target.Quantities = remote.Quantities;
-                target.Notes = remote.Notes;
                 target.PlannedTime = remote.PlannedTime;
                 target.Status = remote.Status;
                 target.CompletedAt = remote.CompletedAt;

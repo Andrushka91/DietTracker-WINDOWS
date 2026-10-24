@@ -51,18 +51,17 @@ ConflictResolver    -> repositories + outbox (no dependency on the journal servi
 | Placeholder slots carry no content (`PlannedTime = null`) | An untouched card produces no cloud traffic and no journal noise. |
 | Photographs as files, metadata in SQLite | Keeps the database small and fast; thumbnails are generated with the Windows Imaging Component. |
 | Content hashes (SHA-256) per record and per photograph | Idempotent uploads, duplicate detection and integrity verification. |
-| Provider agnostic synchronization engine | OneDrive and Google Drive differ in cursors, revisions and folder semantics; the engine only sees `ICloudStorageProvider`. |
+| Provider agnostic synchronization engine | Google Drive has its own cursor, revision and folder semantics; the engine only sees `ICloudStorageProvider`. |
 | Cloud payload = per-record JSON documents in the application folder | Incremental transfers, no whole-dataset rewrites, no SQLite file synchronization. |
 | DPAPI (current user) + file based token store | Windows-backed protection without extra services; a copied file is useless on another account or machine. |
 | Notification area icon via `Shell_NotifyIcon` | The Windows App SDK has no tray API; the documented Win32 API is used behind `ITrayIconService`. |
 
 ## Documented deviations from the specification
 
-1. **Microsoft Graph and Google Drive are called through their REST APIs** (`HttpClient`) instead of the
-   `Microsoft.Graph` and `Google.Apis.Drive.v3` client libraries. This keeps the dependency footprint
-   small, gives precise control over app-folder addressing, resumable uploads and optimistic
-   concurrency, and avoids blocking APIs in the desktop process. `MSAL.NET` **is** used for Microsoft
-   authentication, exactly as specified.
+1. **Google Drive is called through its REST API** (`HttpClient`) instead of the `Google.Apis.Drive.v3`
+   client library. This keeps the dependency footprint small, gives precise control over app-folder
+   addressing, resumable uploads and optimistic concurrency, and avoids blocking APIs in the desktop
+   process.
 2. **Google OAuth uses a loopback redirect** (`http://127.0.0.1:{port}`) which is the flow Google
    requires for desktop applications; the authorization page is always shown by the external browser.
 3. **`IUiContext`/localization lookups** are provided by the application layer so that view models stay

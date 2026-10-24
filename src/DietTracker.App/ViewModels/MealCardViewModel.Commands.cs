@@ -48,11 +48,7 @@ public sealed partial class MealCardViewModel
     [RelayCommand]
     private Task MarkDoneAsync() => _host.ChangeStatusAsync(this, MealStatus.Done);
 
-    /// <summary>Reverts a DONE or MISSED meal back to PENDING.</summary>
-    [RelayCommand]
-    private Task UndoAsync() => _host.ChangeStatusAsync(this, MealStatus.Pending);
-
-    /// <summary>Marks the meal as MISSED (only offered for today or earlier).</summary>
+    /// <summary>Marks the meal as MISSED (red); only available on today or a past date.</summary>
     [RelayCommand]
     private Task MarkMissedAsync() => _host.ChangeStatusAsync(this, MealStatus.Missed);
 
@@ -69,16 +65,4 @@ public sealed partial class MealCardViewModel
     [RelayCommand]
     private Task OpenPhotoAsync(MealPhotoViewModel? photo)
         => photo is null ? Task.CompletedTask : _host.OpenPhotoAsync(photo);
-
-    /// <summary>Copies the meal content to another date (without status or photographs).</summary>
-    [RelayCommand]
-    private Task CopyToDateAsync() => _host.CopyToDateAsync(this);
-
-    /// <summary>Saves the meal as a reusable template.</summary>
-    [RelayCommand]
-    private Task SaveAsTemplateAsync() => _host.SaveAsTemplateAsync(this);
-
-    /// <summary>Adds an empty ingredient line to the editor.</summary>
-    [RelayCommand]
-    private void AddIngredientLine() => Quantities.Add(new IngredientLineViewModel(new IngredientLine(), RemoveIngredientLine));
 }

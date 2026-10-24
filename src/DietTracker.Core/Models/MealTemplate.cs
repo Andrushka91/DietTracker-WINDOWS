@@ -49,9 +49,5 @@ public sealed class MealTemplateContent
 
     public string Ingredients { get; set; } = string.Empty;
 
-    public IList<IngredientLine> Quantities { get; set; } = new List<IngredientLine>();
-
-    public string Notes { get; set; } = string.Empty;
-
     public TimeOnly? PlannedTime { get; set; }
 }

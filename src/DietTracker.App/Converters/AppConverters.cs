@@ -1,35 +1,28 @@
-using DietTracker.Core.Enums;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
 
 namespace DietTracker.App.Converters;
 
-/// <summary>Maps a meal status to the brush used for the status pill and the card accent.</summary>
-public sealed class MealStatusToBrushConverter : IValueConverter
+/// <summary>
+/// Subtracts a fixed gutter (<c>ConverterParameter</c>, invariant-culture double) from the bound
+/// width. Used to cap the dashboard content stack inside the ScrollViewer padding, so the two card
+/// columns stay within the visible window no matter how wide the ScrollViewer measures its content.
+/// </summary>
+public sealed class WidthMinusConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, string language) => value switch
+    /// <inheritdoc />
+    public object Convert(object value, Type targetType, object parameter, string language)
     {
-        MealStatus.Done => new SolidColorBrush(ColorHelper.FromArgb(255, 16, 124, 16)),
-        MealStatus.Missed => new SolidColorBrush(ColorHelper.FromArgb(255, 164, 38, 44)),
-        _ => new SolidColorBrush(ColorHelper.FromArgb(255, 96, 94, 92)),
-    };
+        if (value is double width
+            && double.TryParse(parameter as string, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var gutter))
+        {
+            return Math.Max(0d, width - gutter);
+        }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotSupportedException();
-}
+        return value;
+    }
 
-/// <summary>Maps a status to a glyph shown on the card (checkmark, warning, clock).</summary>
-public sealed class MealStatusToGlyphConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language) => value switch
-    {
-        MealStatus.Done => "\uE73E",
-        MealStatus.Missed => "\uE7BA",
-        _ => "\uE823",
-    };
-
+    /// <inheritdoc />
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();
 }
@@ -80,61 +73,4 @@ public sealed class TimeOnlyConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Maps a completion percentage (0..100) to the width of the trend bar.</summary>
-public sealed class PercentageToWidthConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        // A layout property must never receive NaN or an infinity: the native measure fails with
-        // COMException (0x80004005) and the application exits.
-        var percentage = value is double number && double.IsFinite(number) ? number : 0d;
 
-        var maximum = 100d;
-        if (parameter is string text
-            && double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
-            && double.IsFinite(parsed)
-            && parsed > 0)
-        {
-            maximum = parsed;
-        }
-
-        var scaled = Math.Clamp(percentage, 0d, 100d) / 100d * maximum;
-        return double.IsFinite(scaled) ? scaled : 0d;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotSupportedException();
-}
-
-/// <summary>Returns a color brush from a <c>#AARRGGBB</c> string (used for the custom card colours).</summary>
-public sealed class HexColorToBrushConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        var text = value as string;
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return new SolidColorBrush(Colors.Gray);
-        }
-
-        var hex = text.TrimStart('#');
-        if (hex.Length == 6)
-        {
-            hex = "FF" + hex;
-        }
-
-        if (hex.Length != 8 || !uint.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var argb))
-        {
-            return new SolidColorBrush(Colors.Gray);
-        }
-
-        return new SolidColorBrush(ColorHelper.FromArgb(
-            (byte)(argb >> 24),
-            (byte)(argb >> 16),
-            (byte)(argb >> 8),
-            (byte)argb));
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotSupportedException();
-}

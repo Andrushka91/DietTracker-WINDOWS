@@ -109,52 +109,92 @@ public sealed class CompletionRulesTests
     }
 
     [Fact]
-    public void Undo_returns_the_meal_to_pending_and_clears_the_timestamp()
+    public void Marking_missed_sets_the_missed_state_and_clears_the_timestamp()
     {
         var entry = CreateEntry(new DateOnly(2026, 3, 10));
         CompletionRules.MarkDone(entry, DateTimeOffset.UtcNow);
 
-        var outcome = CompletionRules.UndoToPending(entry, DateTimeOffset.UtcNow);
+        var outcome = CompletionRules.MarkMissed(entry, DateTimeOffset.UtcNow);
 
         Assert.True(outcome.Changed);
+        Assert.Equal("marked-missed", outcome.Reason);
+        Assert.Equal(MealStatus.Missed, entry.Status);
+        Assert.Null(entry.CompletedAt);
+    }
+
+    [Fact]
+    public void Repeated_missed_actions_keep_the_meal_missed_and_never_change_anything()
+    {
+        var entry = CreateEntry(new DateOnly(2026, 3, 10));
+        CompletionRules.MarkMissed(entry, DateTimeOffset.UtcNow);
+        var revision = entry.Revision;
+
+        var outcome = CompletionRules.MarkMissed(entry, DateTimeOffset.UtcNow);
+
+        Assert.False(outcome.Changed);
+        Assert.Equal("already-missed", outcome.Reason);
+        Assert.Equal(MealStatus.Missed, entry.Status);
+        Assert.Equal(revision, entry.Revision);
+    }
+
+    [Fact]
+    public void A_missed_meal_of_a_past_day_can_still_be_confirmed_as_eaten()
+    {
+        // The user comes back to a forgotten day and records what actually happened.
+        var entry = CreateEntry(new DateOnly(2026, 3, 10));
+        CompletionRules.MarkMissed(entry, DateTimeOffset.UtcNow);
+
+        var outcome = CompletionRules.MarkDone(entry, DateTimeOffset.UtcNow);
+
+        Assert.True(outcome.Changed);
+        Assert.Equal(MealStatus.Done, entry.Status);
+        Assert.NotNull(entry.CompletedAt);
+    }
+
+    [Fact]
+    public void A_future_meal_is_locked_in_pending_no_matter_which_button_is_pressed()
+    {
+        // Tomorrow's meals can be neither confirmed nor marked missed.
+        var tomorrow = DateOnly.FromDateTime(DateTime.Now).AddDays(1);
+        var entry = CreateEntry(tomorrow);
+
+        var done = CompletionRules.MarkDone(entry, DateTimeOffset.Now);
+        var missed = CompletionRules.MarkMissed(entry, DateTimeOffset.Now);
+
+        Assert.False(done.Changed);
+        Assert.Equal("future-locked", done.Reason);
+        Assert.False(missed.Changed);
+        Assert.Equal("future-locked", missed.Reason);
         Assert.Equal(MealStatus.Pending, entry.Status);
         Assert.Null(entry.CompletedAt);
     }
 
     [Fact]
-    public void A_future_meal_can_never_be_classified_as_missed()
+    public void The_meal_status_model_has_exactly_three_states()
     {
-        var today = new DateOnly(2026, 3, 10);
-        var entry = CreateEntry(today.AddDays(1));
+        // PENDING is the default, DONE the confirmation and MISSED the explicit red state; the
+        // stored values must stay stable because they live in the database and in sync payloads.
+        var states = Enum.GetValues<MealStatus>();
 
-        var outcome = CompletionRules.MarkMissed(entry, today, DateTimeOffset.UtcNow);
-
-        Assert.False(outcome.Changed);
-        Assert.Equal("future-date-cannot-be-missed", outcome.Reason);
-        Assert.Equal(MealStatus.Pending, entry.Status);
+        Assert.Equal(3, states.Length);
+        Assert.Equal(MealStatus.Pending, Enum.Parse<MealStatus>("0"));
+        Assert.Equal(MealStatus.Done, Enum.Parse<MealStatus>("1"));
+        Assert.Equal(MealStatus.Missed, Enum.Parse<MealStatus>("2"));
     }
 
     [Fact]
-    public void A_past_pending_meal_can_be_marked_as_missed()
+    public void A_past_pending_meal_stays_pending_until_the_user_confirms_it()
     {
+        // The app never reclassifies a meal: what the user never confirmed simply stays PENDING,
+        // no matter how old the date is.
         var today = new DateOnly(2026, 3, 10);
         var entry = CreateEntry(today.AddDays(-2));
 
-        var outcome = CompletionRules.MarkMissed(entry, today, DateTimeOffset.UtcNow);
+        Assert.Equal(MealStatus.Pending, entry.Status);
 
-        Assert.True(outcome.Changed);
-        Assert.Equal(MealStatus.Missed, entry.Status);
-    }
+        CompletionRules.MarkDone(entry, DateTimeOffset.UtcNow);
 
-    [Fact]
-    public void The_historical_rule_only_applies_to_days_before_today()
-    {
-        var today = new DateOnly(2026, 3, 10);
-        var yesterday = CreateEntry(today.AddDays(-1));
-        var current = CreateEntry(today);
-
-        Assert.True(CompletionRules.IsHistoricallyMissed(yesterday, today, new TimeOnly(12, 0), TimeSpan.Zero));
-        Assert.False(CompletionRules.IsHistoricallyMissed(current, today, new TimeOnly(12, 0), TimeSpan.Zero));
+        Assert.Equal(MealStatus.Done, entry.Status);
     }
 }
 
@@ -170,9 +210,7 @@ public sealed class MealCopyRulesTests
             MealCategoryId = Guid.NewGuid(),
             Title = "Rice with vegetables",
             Ingredients = "Rice, peppers, onion",
-            Notes = "Light",
             PlannedTime = new TimeOnly(13, 30),
-            Quantities = [IngredientLine.Create("Rice", 80, MeasurementUnit.Gram)],
             Status = MealStatus.Done,
             CompletedAt = DateTimeOffset.UtcNow,
             Photos = [new MealPhoto { LocalFileId = "abc.jpg" }],
@@ -195,7 +233,7 @@ public sealed class MealCopyRulesTests
     }
 
     [Fact]
-    public void Copying_preserves_title_ingredients_quantities_notes_and_time()
+    public void Copying_preserves_title_ingredients_and_time()
     {
         var source = CreateCompletedEntryWithPhoto(new DateOnly(2026, 3, 10));
 
@@ -203,9 +241,7 @@ public sealed class MealCopyRulesTests
 
         Assert.Equal(source.Title, copy.Title);
         Assert.Equal(source.Ingredients, copy.Ingredients);
-        Assert.Equal(source.Notes, copy.Notes);
         Assert.Equal(source.PlannedTime, copy.PlannedTime);
-        Assert.Equal(source.Quantities.Count, copy.Quantities.Count);
     }
 
     [Fact]
@@ -228,13 +264,11 @@ public sealed class MealCopyRulesTests
         {
             MealCategoryKey = MealCategoryKey.Dinner,
             Title = "Soup",
-            Quantities = [IngredientLine.Create("Carrot", 2, MeasurementUnit.Unit)],
         };
 
         var entry = MealCopyRules.ApplyTemplateContent(content, Guid.NewGuid(), new DateOnly(2026, 4, 1), Guid.NewGuid(), DateTimeOffset.UtcNow);
 
         Assert.Equal(MealStatus.Pending, entry.Status);
         Assert.Equal("Soup", entry.Title);
-        Assert.Single(entry.Quantities);
     }
 }

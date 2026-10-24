@@ -26,10 +26,6 @@ public static class MealCopyRules
             MealCategoryKey = source.MealCategoryKey,
             Title = source.Title,
             Ingredients = source.Ingredients,
-            Quantities = source.Quantities
-                .Select(q => q with { })
-                .ToList(),
-            Notes = source.Notes,
             PlannedTime = source.PlannedTime,
             Status = Enums.MealStatus.Pending,
             CompletedAt = null,
@@ -116,8 +112,6 @@ public static class MealCopyRules
             MealCategoryKey = content.MealCategoryKey,
             Title = content.Title,
             Ingredients = content.Ingredients,
-            Quantities = content.Quantities.Select(q => q with { }).ToList(),
-            Notes = content.Notes,
             PlannedTime = content.PlannedTime,
             Status = Enums.MealStatus.Pending,
             CreatedAt = now,
@@ -135,8 +129,6 @@ public static class MealCopyRules
             MealCategoryKey = entry.MealCategoryKey,
             Title = entry.Title,
             Ingredients = entry.Ingredients,
-            Quantities = entry.Quantities.Select(q => q with { }).ToList(),
-            Notes = entry.Notes,
             PlannedTime = entry.PlannedTime,
         };
     }

@@ -55,7 +55,9 @@ public static class MealSlotRules
 
     /// <summary>
     /// Creates the default definition of the five permanent categories. Never returns fewer or
-    /// more than five items.
+    /// more than five items. The default pictograms are food emoji - a croissant for breakfast, a
+    /// plate with cutlery for lunch, a cookie for the two snack cards and a pot of food for dinner -
+    /// because the Segoe Fluent icon font contains no food glyphs.
     /// </summary>
     public static IReadOnlyList<MealCategory> CreateDefaults() =>
     [
@@ -64,7 +66,7 @@ public static class MealSlotRules
             FixedCategoryKey = MealCategoryKey.Breakfast,
             Name = string.Empty,
             Color = "#FF0F6CBD",
-            Icon = "\uE7C4",
+            Icon = "\U0001F950\uFE0F",
             DefaultTime = new TimeOnly(7, 30),
             DisplayOrder = 0,
         },
@@ -73,7 +75,7 @@ public static class MealSlotRules
             FixedCategoryKey = MealCategoryKey.MorningSnack,
             Name = string.Empty,
             Color = "#FF8764B8",
-            Icon = "\uE7C5",
+            Icon = "\U0001F36A\uFE0F",
             DefaultTime = new TimeOnly(10, 30),
             DisplayOrder = 1,
         },
@@ -82,7 +84,7 @@ public static class MealSlotRules
             FixedCategoryKey = MealCategoryKey.Lunch,
             Name = string.Empty,
             Color = "#FF107C10",
-            Icon = "\uE7C6",
+            Icon = "\U0001F37D\uFE0F",
             DefaultTime = new TimeOnly(13, 30),
             DisplayOrder = 2,
         },
@@ -91,7 +93,7 @@ public static class MealSlotRules
             FixedCategoryKey = MealCategoryKey.AfternoonSnack,
             Name = string.Empty,
             Color = "#FFCA5010",
-            Icon = "\uE7C7",
+            Icon = "\U0001F36A\uFE0F",
             DefaultTime = new TimeOnly(17, 0),
             DisplayOrder = 3,
         },
@@ -100,7 +102,7 @@ public static class MealSlotRules
             FixedCategoryKey = MealCategoryKey.Dinner,
             Name = string.Empty,
             Color = "#FFB146C2",
-            Icon = "\uE7C8",
+            Icon = "\U0001F372\uFE0F",
             DefaultTime = new TimeOnly(20, 0),
             DisplayOrder = 4,
         },

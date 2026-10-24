@@ -20,7 +20,8 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('Debug', 'Release')]
+    # Build configuration. Extra words typed after "npm start" (like "npm start builed") land here,
+    # so an unknown value is rejected below with a usage message instead of a validation error.
     [string] $Configuration = 'Release',
 
     # Starts what is already in the output folder without building first.
@@ -31,6 +32,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ($Configuration -notin 'Debug', 'Release') {
+    throw ("Unknown configuration '$Configuration'. " +
+        'Usage: npm start (builds and runs the Release app), ' +
+        'npm start -- -Configuration Debug (debug build), ' +
+        'npm run build (build only), npm run start:debug (debug build and run).')
+}
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $projectFile = Join-Path $repositoryRoot 'src\DietTracker.App\DietTracker.App.csproj'

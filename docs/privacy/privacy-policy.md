@@ -5,7 +5,7 @@
 ## Summary
 
 DietTracker stores your meal plan, your completion history and your photographs **on your own device**.
-If you choose to sign in with a Microsoft or Google account, the same data is copied to a private
+If you choose to sign in with a Google account, the same data is copied to a private
 application folder inside **your own** cloud storage. There is no DietTracker server: the application
 never sends your data to the vendor.
 
@@ -21,8 +21,8 @@ Contact for privacy questions and data deletion requests: `privacy@diettracker.e
 
 **Stored locally (always):**
 
-* meal plan content: titles, descriptions, ingredient lines with quantities and units, notes and planned times;
-* completion state and completion timestamps (DONE / PENDING / MISSED);
+* meal plan content: titles, descriptions and planned times;
+* completion state and completion timestamps (DONE / PENDING);
 * attached photographs and generated thumbnails;
 * meal and day templates, reminder configuration and card colours;
 * application preferences (language, time zone, reminder and window behaviour);
@@ -36,14 +36,14 @@ Contact for privacy questions and data deletion requests: `privacy@diettracker.e
   account is connected and to keep accounts apart.
 
 **Never collected:** advertising identifiers, location, contacts, health records, biometric data,
-other files on your device, or the content of your OneDrive/Google Drive outside the DietTracker
+other files on your device, or the content of your Google Drive outside the DietTracker
 application folder.
 
 ## 3. What stays local and what is uploaded
 
 | Data | Local | Uploaded when you sign in and enable synchronization |
 |---|---|---|
-| Meal content, notes, quantities, templates | yes | yes |
+| Meal content, templates | yes | yes |
 | Completion state and timestamps | yes | yes |
 | Photographs and thumbnails | yes | yes (original images; thumbnails are regenerated locally) |
 | Reminder settings and card colours | yes | yes |
@@ -56,8 +56,6 @@ shown before the first upload.
 
 ## 4. Where the data is stored in the cloud
 
-* **Microsoft account:** the application specific folder of your OneDrive
-  (`/me/drive/special/approot`), accessed with the delegated scope `Files.ReadWrite.AppFolder`.
 * **Google account:** the hidden `appDataFolder` of your Google Drive, accessed with the scope
   `https://www.googleapis.com/auth/drive.appdata`.
 
@@ -73,7 +71,7 @@ cross-device synchronization works in Guest Mode.
 ## 6. Encryption
 
 * All network traffic uses HTTPS/TLS to the provider endpoints.
-* Credentials (MSAL token cache, Google refresh tokens) are encrypted with **Windows DPAPI in the
+* Credentials (the Google refresh token) are encrypted with **Windows DPAPI in the
   current-user scope** and stored in the private application data folder.
 * Cloud backup contents are **not additionally encrypted by DietTracker**: they are protected by the
   provider's storage encryption and by the permissions of your account. This is not end-to-end

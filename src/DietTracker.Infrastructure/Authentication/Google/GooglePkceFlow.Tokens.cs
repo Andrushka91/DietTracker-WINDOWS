@@ -20,6 +20,7 @@ internal static partial class GooglePkceFlow
             ["refresh_token"] = refreshToken,
             ["grant_type"] = "refresh_token",
         };
+        AddClientSecret(form, options);
 
         using var response = await httpClient
             .PostAsync(options.TokenEndpoint, new FormUrlEncodedContent(form), cancellationToken)
@@ -28,7 +29,9 @@ internal static partial class GooglePkceFlow
         if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Unauthorized)
         {
             // The refresh token was revoked or expired: the user has to authorize again.
-            throw new CloudAuthorizationRequiredException("google.refresh-rejected");
+            throw new CloudAuthorizationRequiredException(
+                "google.refresh-rejected",
+                await DescribeTokenErrorAsync(response, cancellationToken).ConfigureAwait(false));
         }
 
         response.EnsureSuccessStatusCode();
@@ -51,6 +54,7 @@ internal static partial class GooglePkceFlow
             ["grant_type"] = "authorization_code",
             ["redirect_uri"] = redirectUri,
         };
+        AddClientSecret(form, options);
 
         using var response = await httpClient
             .PostAsync(options.TokenEndpoint, new FormUrlEncodedContent(form), cancellationToken)
@@ -58,12 +62,46 @@ internal static partial class GooglePkceFlow
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new CloudAuthorizationRequiredException("google.code-exchange-failed");
+            throw new CloudAuthorizationRequiredException(
+                "google.code-exchange-failed",
+                await DescribeTokenErrorAsync(response, cancellationToken).ConfigureAwait(false));
         }
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return ParseTokenResponse(json, refreshToken: null)
                ?? throw new CloudAuthorizationRequiredException("google.invalid-token-response");
+    }
+
+    /// <summary>
+    /// Adds the client secret when one is configured. Google's token endpoint expects the secret of
+    /// the Desktop app registration even though the secret of an installed application is explicitly
+    /// not treated as confidential (RFC 8252); it is read from the local settings file.
+    /// </summary>
+    private static void AddClientSecret(Dictionary<string, string> form, GoogleAuthenticationOptions options)
+    {
+        // Values that still look like an unfilled settings placeholder are treated as absent.
+        if (!string.IsNullOrEmpty(options.ClientSecret) && !options.ClientSecret.StartsWith('<'))
+        {
+            form["client_secret"] = options.ClientSecret;
+        }
+    }
+
+    /// <summary>Extracts the OAuth error fields of a failed token response for the diagnostic log.</summary>
+    private static async Task<string> DescribeTokenErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            var error = root.TryGetProperty("error", out var errorProperty) ? errorProperty.GetString() : null;
+            var description = root.TryGetProperty("error_description", out var descriptionProperty) ? descriptionProperty.GetString() : null;
+            return $"{(int)response.StatusCode} {error}: {description}";
+        }
+        catch (Exception)
+        {
+            return $"{(int)response.StatusCode} (no OAuth error payload)";
+        }
     }
 
     private static GoogleTokenSet? ParseTokenResponse(string json, string? refreshToken)

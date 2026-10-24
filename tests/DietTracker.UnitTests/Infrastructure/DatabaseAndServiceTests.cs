@@ -67,7 +67,7 @@ public sealed class DatabaseTests
         Assert.True(result.Upgraded);
         Assert.Equal(1, result.FromVersion);
         Assert.Equal(initializer.TargetSchemaVersion, result.ToVersion);
-        Assert.Equal(2, result.AppliedMigrations.Count);
+        Assert.Equal(initializer.TargetSchemaVersion - result.FromVersion, result.AppliedMigrations.Count);
 
         // A safety copy of the pre-migration state exists.
         Assert.NotNull(result.BackupPath);
@@ -254,13 +254,13 @@ public sealed class MealTrackingServiceTests
         var completed = await environment.Tracking.MarkDoneAsync(lunch.Id);
         var completedAt = completed.CompletedAt;
 
-        completed.Notes = "Added later";
+        completed.Title = "Edited later";
         await environment.Tracking.SaveEditsAsync(completed);
 
         var stored = await environment.Entries.GetAsync(lunch.Id);
         Assert.Equal(MealStatus.Done, stored!.Status);
         Assert.Equal(completedAt, stored.CompletedAt);
-        Assert.Equal("Added later", stored.Notes);
+        Assert.Equal("Edited later", stored.Title);
     }
 
     [Fact]
@@ -276,11 +276,16 @@ public sealed class MealTrackingServiceTests
 
         var progress = await environment.Tracking.GetDayProgressAsync(date);
         Assert.Equal(1, progress.Completed);
-        Assert.Equal(20d, progress.Percentage);
+        Assert.Equal(0, progress.Missed);
+
+        // The other four slots are untouched placeholders: they stay pending and are not part of
+        // the ratio, so one confirmed meal of one decided meal is one hundred percent.
+        Assert.Equal(4, progress.Pending);
+        Assert.Equal(100d, progress.Percentage);
     }
 
     [Fact]
-    public async Task Undo_removes_the_meal_from_the_daily_statistics()
+    public async Task Marking_a_meal_missed_moves_it_from_the_done_count_to_the_missed_count()
     {
         await using var environment = await TestEnvironment.CreateAsync();
         var date = new DateOnly(2026, 3, 10);
@@ -288,11 +293,12 @@ public sealed class MealTrackingServiceTests
         var dinner = day.First(e => e.MealCategoryKey == MealCategoryKey.Dinner);
 
         await environment.Tracking.MarkDoneAsync(dinner.Id);
-        await environment.Tracking.UndoDoneAsync(dinner.Id);
+        await environment.Tracking.MarkMissedAsync(dinner.Id);
 
         var progress = await environment.Tracking.GetDayProgressAsync(date);
         Assert.Equal(0, progress.Completed);
-        Assert.Equal(5, progress.Pending);
+        Assert.Equal(1, progress.Missed);
+        Assert.Equal(4, progress.Pending);
     }
 
     [Fact]
@@ -317,7 +323,6 @@ public sealed class MealTrackingServiceTests
         var day = await environment.Tracking.GetDayAsync(source);
         var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
         lunch.Title = "Pasta";
-        lunch.Ingredients = "Pasta, tomato";
         await environment.Tracking.SaveEditsAsync(lunch);
         await environment.Tracking.MarkDoneAsync(lunch.Id);
 

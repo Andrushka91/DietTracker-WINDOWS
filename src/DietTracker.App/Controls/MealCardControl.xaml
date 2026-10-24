@@ -12,7 +12,7 @@
     <Border
         Style="{StaticResource MealCardStyle}"
         MinHeight="{StaticResource MealCardMinHeight}"
-        BorderBrush="{x:Bind Card.Color, Converter={StaticResource HexToBrush}}"
+        BorderBrush="{x:Bind Card.CardBorderBrush, Mode=OneWay}"
         BorderThickness="1,1,1,4">
 
         <Grid RowSpacing="8">
@@ -23,7 +23,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Header: the permanent category can be customized but never deleted -->
+            <!-- Header: the permanent category can be customized but never deleted. The icon is
+                 nudged a few pixels up so its optical centre sits in line with the meal name and the
+                 planned-time stamp below it (emoji glyphs carry their own whitespace and render low
+                 when perfectly centred). -->
             <Grid Grid.Row="0" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -31,7 +34,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <FontIcon Grid.Column="0" Glyph="{x:Bind Card.Icon}" FontSize="20" VerticalAlignment="Center" />
+                <FontIcon Grid.Column="0" Glyph="{x:Bind Card.Icon}" FontFamily="{x:Bind Card.IconFontFamily}" FontSize="36" Margin="0,-6,0,6" VerticalAlignment="Center" />
 
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="{x:Bind Card.CategoryName}" FontWeight="SemiBold" />
@@ -44,10 +47,10 @@
                     Grid.Column="2"
                     Style="{StaticResource StatusPillStyle}"
                     VerticalAlignment="Top"
-                    Background="{x:Bind Card.Status, Mode=OneWay, Converter={StaticResource MealStatusToBrush}}">
+                    Background="{x:Bind Card.StatusPillBrush, Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <FontIcon
-                            Glyph="{x:Bind Card.Status, Mode=OneWay, Converter={StaticResource MealStatusToGlyph}}"
+                            Glyph="{x:Bind Card.StatusGlyph, Mode=OneWay}"
                             FontSize="12"
                             Foreground="White" />
                         <TextBlock Text="{x:Bind Card.StatusText, Mode=OneWay}" FontSize="12" Foreground="White" />
@@ -83,16 +86,6 @@
                     TextWrapping="Wrap"
                     MaxLines="3"
                     TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Style="{StaticResource CaptionStyle}"
-                    Text="{x:Bind Card.QuantitiesSummary, Mode=OneWay}"
-                    MaxLines="2"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Style="{StaticResource CaptionStyle}"
-                    Text="{x:Bind Card.CompletedAtText, Mode=OneWay}"
-                    MaxLines="1"
-                    TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
             <!-- Photographs are optional; a meal can always be marked DONE without one -->
@@ -115,11 +108,25 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <controls:MealCardActionsControl
-                x:Name="ActionsRow"
+            <!-- Bottom row of the card: the action buttons on the left and the confirmation stamp
+                 in the bottom right corner, both in the same full-width cell so the button row keeps
+                 its original width (in a sized column the photo button would wrap). Hidden while the
+                 inline editor is open, exactly like the read mode above. -->
+            <Grid
                 Grid.Row="3"
-                Card="{x:Bind Card}"
-                Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+                Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
+                <controls:MealCardActionsControl
+                    x:Name="ActionsRow"
+                    Card="{x:Bind Card}" />
+
+                <TextBlock
+                    Style="{StaticResource CaptionStyle}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    MaxLines="1"
+                    TextTrimming="CharacterEllipsis"
+                    Text="{x:Bind Card.CompletedAtText, Mode=OneWay}" />
+            </Grid>
         </Grid>
     </Border>
 </UserControl>

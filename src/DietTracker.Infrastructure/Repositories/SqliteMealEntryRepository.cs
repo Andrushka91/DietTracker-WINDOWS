@@ -11,7 +11,7 @@ namespace DietTracker.Infrastructure.Repositories;
 public sealed partial class SqliteMealEntryRepository : IMealEntryRepository
 {
     internal const string SelectColumns =
-        "Id, LocalProfileId, Date, MealCategoryId, MealCategoryKey, Title, Ingredients, Quantities, Notes, " +
+        "Id, LocalProfileId, Date, MealCategoryId, MealCategoryKey, Title, Ingredients, " +
         "PlannedTime, Status, CompletedAt, CreatedAt, UpdatedAt, Revision, SyncStatus, CloudRevision, ContentHash";
 
     private readonly ISqliteConnectionFactory _factory;

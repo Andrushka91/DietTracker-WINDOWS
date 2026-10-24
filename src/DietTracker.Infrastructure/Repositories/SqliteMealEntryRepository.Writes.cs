@@ -9,16 +9,14 @@ public sealed partial class SqliteMealEntryRepository
     private const string UpsertSql =
         """
         INSERT INTO MealEntry (
-            Id, LocalProfileId, Date, MealCategoryId, MealCategoryKey, Title, Ingredients, Quantities, Notes,
+            Id, LocalProfileId, Date, MealCategoryId, MealCategoryKey, Title, Ingredients,
             PlannedTime, Status, CompletedAt, CreatedAt, UpdatedAt, Revision, SyncStatus, CloudRevision, ContentHash)
         VALUES (
-            $id, $profile, $date, $categoryId, $categoryKey, $title, $ingredients, $quantities, $notes,
+            $id, $profile, $date, $categoryId, $categoryKey, $title, $ingredients,
             $plannedTime, $status, $completedAt, $createdAt, $updatedAt, $revision, $syncStatus, $cloudRevision, $contentHash)
         ON CONFLICT (LocalProfileId, Date, MealCategoryKey) DO UPDATE SET
             Title = excluded.Title,
             Ingredients = excluded.Ingredients,
-            Quantities = excluded.Quantities,
-            Notes = excluded.Notes,
             PlannedTime = excluded.PlannedTime,
             Status = excluded.Status,
             CompletedAt = excluded.CompletedAt,
@@ -90,8 +88,6 @@ public sealed partial class SqliteMealEntryRepository
         command.Parameters.AddWithValue("$categoryKey", (int)entry.MealCategoryKey);
         command.Parameters.AddWithValue("$title", entry.Title ?? string.Empty);
         command.Parameters.AddWithValue("$ingredients", entry.Ingredients ?? string.Empty);
-        command.Parameters.AddWithValue("$quantities", SqliteValue.ToJson(entry.Quantities));
-        command.Parameters.AddWithValue("$notes", entry.Notes ?? string.Empty);
         command.Parameters.AddWithValue("$plannedTime", entry.PlannedTime is { } time ? SqliteValue.ToDb(time) : DBNull.Value);
         command.Parameters.AddWithValue("$status", (int)entry.Status);
         command.Parameters.AddWithValue("$completedAt", entry.CompletedAt is { } completed ? SqliteValue.ToDb(completed) : DBNull.Value);

@@ -22,10 +22,6 @@
     <!-- Local persistence -->
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.13" />
 
-    <!-- Microsoft authentication (MSAL) + OneDrive/Graph -->
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.91.0" />
-    <PackageVersion Include="Microsoft.Identity.Client.Broker" Version="4.91.0" />
-
     <!-- Google authentication + Google Drive -->
     <PackageVersion Include="Google.Apis.Drive.v3" Version="1.77.0.4276" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.77.0" />

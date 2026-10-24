@@ -22,7 +22,11 @@ public sealed partial class DashboardViewModel
         ArgumentNullException.ThrowIfNull(card);
 
         var entry = await _tracking.GetOrCreateSlotAsync(card.Date, card.CategoryKey, cancellationToken);
-        card.ApplyEditsTo(entry);
+        if (!card.ApplyEditsTo(entry))
+        {
+            // Invalid planned time typed by the user; the card shows the explanation.
+            return;
+        }
 
         var validation = await _tracking.SaveEditsAsync(entry, cancellationToken);
         if (!validation.IsValid)
@@ -46,11 +50,13 @@ public sealed partial class DashboardViewModel
         card.IsBusy = true;
         try
         {
+            // The service enforces the date rules (future meals stay pending), so a click on a
+            // locked card resolves to a harmless no-op inside CompletionRules.
             var entry = target switch
             {
                 MealStatus.Done => await _tracking.MarkDoneAsync(card.Id, cancellationToken),
                 MealStatus.Missed => await _tracking.MarkMissedAsync(card.Id, cancellationToken),
-                _ => await _tracking.UndoDoneAsync(card.Id, cancellationToken),
+                _ => throw new InvalidOperationException("Pending is the default state, not a transition target."),
             };
 
             card.Reload(entry);
@@ -117,38 +123,6 @@ public sealed partial class DashboardViewModel
     {
         ArgumentNullException.ThrowIfNull(photo);
         return _filePicker.OpenWithShellAsync(photo.FullSizePath ?? photo.LocalPath ?? string.Empty);
-    }
-
-    /// <inheritdoc />
-    public async Task CopyToDateAsync(MealCardViewModel card, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(card);
-
-        var target = await _dialogs.PickDateAsync("Meal_CopyToDate", card.Date.AddDays(1));
-        if (target is null)
-        {
-            return;
-        }
-
-        await _tracking.CopyMealToDateAsync(card.Id, target.Value, cancellationToken);
-        StatusMessage = _localization.Format("Meal_Copied", target.Value.ToString("d"));
-    }
-
-    /// <inheritdoc />
-    public async Task SaveAsTemplateAsync(MealCardViewModel card, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(card);
-
-        var defaultName = string.IsNullOrWhiteSpace(card.Title) ? card.CategoryName : card.Title;
-        var name = await _dialogs.PromptTextAsync("Template_NameTitle", defaultName);
-        if (string.IsNullOrEmpty(name))
-        {
-            return;
-        }
-
-        var entry = await _tracking.GetOrCreateSlotAsync(card.Date, card.CategoryKey, cancellationToken);
-        await _tracking.SaveTemplateAsync(entry, name, cancellationToken);
-        StatusMessage = _localization.Get("Template_Saved");
     }
 
     /// <inheritdoc />

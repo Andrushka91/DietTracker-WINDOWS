@@ -40,9 +40,9 @@ public sealed partial class ReminderScheduler
             }
 
             var entry = meals.FirstOrDefault(m => m.MealCategoryKey == reminder.MealCategoryKey);
-            if (entry is null || entry.Status == MealStatus.Done)
+            if (entry is null || entry.Status != MealStatus.Pending)
             {
-                // Completed meals never remind again.
+                // Decided meals - eaten or explicitly missed - never remind again.
                 continue;
             }
 

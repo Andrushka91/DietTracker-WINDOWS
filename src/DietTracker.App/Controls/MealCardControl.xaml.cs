@@ -6,7 +6,7 @@ namespace DietTracker.App.Controls;
 
 /// <summary>
 /// The permanent meal card: reads and edits a <see cref="MealCardViewModel"/> and hosts the
-/// DONE/PENDING/MISSED actions, the photographs and the copying commands.
+/// DONE/PENDING actions, the photographs and the copying commands.
 /// All cards share the same structure and the same height; nothing scrolls inside a card.
 /// </summary>
 public sealed partial class MealCardControl : UserControl

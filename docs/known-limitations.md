@@ -5,16 +5,13 @@ than presented as finished.
 
 ## Not verified in this environment
 
-1. **Real Microsoft and Google sign-in.** The MSAL.NET integration (Windows Account Manager broker with
-   browser fallback) and the Google OAuth 2.0 + PKCE flow are implemented, but no client registrations
-   exist here and interactive consent needs a human. Configure the identifiers as described in
-   `docs/authentication/setup.md` and test the **packaged** build: the broker requires package identity
-   to behave exactly as in the Store build.
-2. **Real OneDrive / Google Drive synchronization.** The providers target the documented Microsoft Graph
-   and Google Drive v3 endpoints (app folder and `appDataFolder`, delta feed and modified-time
-   watermark, resumable uploads, quotas). They are covered by tests against an in-memory provider that
-   mimics revisions, cursors and change tracking, but they have not been executed against the real
-   services. Expect to adjust details (for example `@odata.nextLink` handling on very large folders).
+1. **Real Google sign-in.** The Google OAuth 2.0 + PKCE flow is implemented, but no client registration
+   existed here and interactive consent needs a human. Configure the identifiers as described in
+   `docs/authentication/setup.md` and verify the flow with your own registration.
+2. **Real Google Drive synchronization.** The provider targets the documented Google Drive v3
+   endpoints (`appDataFolder`, modified-time watermark, resumable uploads, quotas). It is covered by
+   tests against an in-memory provider that mimics revisions, cursors and change tracking, but it has
+   not been executed against the real service. Expect to adjust details on very large folders.
 3. **Microsoft Store certification and publication.** Not performed: it requires a Partner Center account,
    a reserved name and Microsoft review. See `docs/microsoft-store/submission.md`.
 4. **Packaged-app testing.** The MSIX package builds, but installing it and running the packaged
@@ -66,14 +63,23 @@ than presented as finished.
 15. **Application control policy.** On this machine an application control policy blocked the freshly
     built integration test assembly by name (`0x800711C7`). The assembly is therefore named
     `DietTracker.Sync.Tests` and its output is redirected to `artifacts/tests/integration`. On a normal
-    developer machine this workaround is unnecessary but harmless.
+    developer machine this workaround is unnecessary but harmless. The same policy (Windows Smart App
+    Control, Code Integrity events 3033/3077) also blocks `testhost.exe` from loading *newly written*
+    unsigned `DietTracker.Core/Infrastructure` copies, which surfaces as `No test is available` although
+    the build succeeded. The application itself and the `dist\exec` copies are not affected. Workaround
+    that keeps the tests honest: build normally (`npm run build`), then copy
+    `dist\exec\DietTracker.Core.dll` and `dist\exec\DietTracker.Infrastructure.dll` over the test output
+    folders (`tests\DietTracker.UnitTests\bin\**\win-x64` and `artifacts\tests\integration\**\win-x64`)
+    and run the tests with `--no-build`; every test run still executes the current sources because the
+    test assemblies themselves are freshly compiled. Alternatively turn Smart App Control off in
+    Windows Security.
 16. **NuGet packages folder.** `nuget.config` uses the default user profile packages folder; the earlier
     repository-local `.packages` folder was removed to keep the repository small.
 
 ## Suggested next steps
 
-1. Configure the two client registrations and verify both sign-in flows in the **packaged** build.
-2. Run a real two-device synchronization test with one OneDrive and one Google account and check the
+1. Verify the Google sign-in flow with your own client registration.
+2. Run a real two-device synchronization test with one Google account and check the
    conflict behaviour with genuinely concurrent edits.
 3. Add a Windows background task (or a scheduled toast) so reminders also fire when the application is
    not running.

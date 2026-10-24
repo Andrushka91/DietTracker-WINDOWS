@@ -85,8 +85,6 @@ public sealed partial class BackupService
             target.MealCategoryKey = meal.MealCategoryKey;
             target.Title = meal.Title;
             target.Ingredients = meal.Ingredients;
-            target.Quantities = meal.Quantities;
-            target.Notes = meal.Notes;
             target.PlannedTime = meal.PlannedTime;
             target.Status = meal.Status;
             target.CompletedAt = meal.CompletedAt;

@@ -29,11 +29,6 @@ public sealed class MealEntry
     /// <summary>Free-form food description.</summary>
     public string Ingredients { get; set; } = string.Empty;
 
-    /// <summary>Structured ingredient lines (quantities + units). Stored as JSON.</summary>
-    public IList<IngredientLine> Quantities { get; set; } = new List<IngredientLine>();
-
-    public string Notes { get; set; } = string.Empty;
-
     /// <summary>Planned consumption time.</summary>
     public TimeOnly? PlannedTime { get; set; }
 

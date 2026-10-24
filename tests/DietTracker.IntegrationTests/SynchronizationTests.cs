@@ -88,8 +88,8 @@ public sealed class SynchronizationTests
         await deviceA.Sync.SynchronizeAsync(SyncTrigger.Manual);
 
         // A second installation starts empty and synchronizes from the same cloud account.
-        await using var deviceB = await TestEnvironment.CreateAsync(connectAccount: true, provider: ProviderType.Microsoft);
-        await deviceB.ConnectAccountAsync(ProviderType.Microsoft, "user@example.com");
+        await using var deviceB = await TestEnvironment.CreateAsync(connectAccount: true, provider: ProviderType.Google);
+        await deviceB.ConnectAccountAsync(ProviderType.Google, "user@example.com");
         ShareCloud(deviceA, deviceB);
 
         var restore = await deviceB.Sync.RestoreAsync();
@@ -280,28 +280,6 @@ public sealed class SynchronizationTests
         var stored = await environment.Entries.GetAsync(lunch.Id);
         Assert.NotNull(stored);
         Assert.Equal("Kept after sign out", stored!.Title);
-    }
-
-    [Fact]
-    public async Task Switching_provider_requires_an_explicit_strategy_and_never_merges_implicitly()
-    {
-        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true, provider: ProviderType.Microsoft);
-        await SeedLunchAsync(environment, new DateOnly(2026, 3, 19), "Before the switch");
-
-        var coordinator = environment.Services.GetRequiredService<IAccountSwitchCoordinator>();
-        var preview = await coordinator.PreviewAsync(ProviderType.Google);
-
-        // The preview always states which account currently holds the data and demands confirmation.
-        Assert.True(preview.RequiresConfirmation);
-        Assert.Equal(ProviderType.Microsoft, preview.CurrentProvider);
-        Assert.Equal(ProviderType.Google, preview.TargetProvider);
-
-        var cancelled = await coordinator.ExecuteAsync(ProviderType.Google, AccountSwitchStrategy.Cancel);
-        Assert.False(cancelled.Succeeded);
-        Assert.Equal("switch.cancelled", cancelled.ReasonCode);
-
-        // Nothing was uploaded to the other provider by cancelling.
-        Assert.Equal(0, environment.Cloud.ObjectCount);
     }
 
     [Fact]

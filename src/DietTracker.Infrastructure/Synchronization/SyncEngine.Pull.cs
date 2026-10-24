@@ -127,8 +127,6 @@ public sealed partial class SyncEngine
 
                 entry.Title = string.Empty;
                 entry.Ingredients = string.Empty;
-                entry.Quantities = [];
-                entry.Notes = string.Empty;
                 entry.PlannedTime = null;
                 entry.Status = MealStatus.Pending;
                 entry.CompletedAt = null;
