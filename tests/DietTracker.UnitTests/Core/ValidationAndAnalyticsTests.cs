@@ -16,8 +16,18 @@ public sealed class ProgressCalculatorTests
         CompletedAt = status == MealStatus.Done ? DateTimeOffset.UtcNow : null,
     };
 
+    /// <summary>A slot the user actually filled in (title plus planned time) but did not confirm.</summary>
+    private static MealEntry Recorded(DateOnly date, MealCategoryKey key, TimeOnly plannedTime) => new()
+    {
+        Date = date,
+        MealCategoryKey = key,
+        Status = MealStatus.Pending,
+        Title = "Porridge with berries",
+        PlannedTime = plannedTime,
+    };
+
     [Fact]
-    public void Three_completed_meals_out_of_five_is_sixty_percent()
+    public void Confirmed_and_missed_meals_count_untouched_slots_do_not()
     {
         var date = new DateOnly(2026, 3, 10);
         var entries = new[]
@@ -25,16 +35,48 @@ public sealed class ProgressCalculatorTests
             Entry(date, MealCategoryKey.Breakfast, MealStatus.Done),
             Entry(date, MealCategoryKey.MorningSnack, MealStatus.Done),
             Entry(date, MealCategoryKey.Lunch, MealStatus.Done),
-            Entry(date, MealCategoryKey.AfternoonSnack, MealStatus.Pending),
-            Entry(date, MealCategoryKey.Dinner, MealStatus.Pending),
+            Entry(date, MealCategoryKey.AfternoonSnack, MealStatus.Missed),
+
+            // Dinner is a pure placeholder: never counted, never missed.
         };
 
         var progress = ProgressCalculator.ForDay(date, entries);
 
         Assert.Equal(5, progress.TotalSlots);
         Assert.Equal(3, progress.Completed);
-        Assert.Equal(60d, progress.Percentage);
-        Assert.Equal(2, progress.Pending);
+        Assert.Equal(1, progress.Missed);
+        Assert.Equal(1, progress.Pending);
+        Assert.Equal(4, progress.Decided);
+        Assert.Equal(75d, progress.Percentage);
+    }
+
+    [Fact]
+    public void A_recorded_meal_that_is_not_confirmed_stays_pending_and_out_of_the_ratio()
+    {
+        var date = new DateOnly(2026, 3, 10);
+        var entries = new[] { Recorded(date, MealCategoryKey.Dinner, new TimeOnly(20, 0)) };
+
+        var progress = ProgressCalculator.ForDay(date, entries);
+
+        // Recording content alone never changes the state: only the user's own decision does.
+        Assert.Equal(0, progress.Missed);
+        Assert.Equal(5, progress.Pending);
+        Assert.Equal(0, progress.Decided);
+        Assert.Equal(0d, progress.Percentage);
+    }
+
+    [Fact]
+    public void An_untouched_slot_is_never_missed_even_on_a_past_date()
+    {
+        var date = new DateOnly(2026, 3, 10);
+
+        // No entries at all: the database rows are placeholders with the PENDING default state.
+        // A skipped day stays pending - only an explicit press of the cross marks it missed.
+        var progress = ProgressCalculator.ForDay(date, []);
+
+        Assert.Equal(0, progress.Missed);
+        Assert.Equal(5, progress.Pending);
+        Assert.False(progress.HasDecided);
     }
 
     [Fact]
@@ -43,6 +85,7 @@ public sealed class ProgressCalculatorTests
         var progress = ProgressCalculator.ForDay(new DateOnly(2026, 3, 10), []);
 
         Assert.Equal(0d, progress.Percentage);
+        Assert.Equal(0, progress.Missed);
         Assert.Equal(5, progress.Pending);
         Assert.Equal(5, progress.Slots.Count);
     }
@@ -72,8 +115,24 @@ public sealed class ProgressCalculatorTests
 
         Assert.Equal(35, week.TotalSlots);
         Assert.Equal(5, week.Completed);
+        Assert.Equal(0, week.Missed);
+        Assert.Equal(5, week.Decided);
         Assert.Equal(1, week.FullyCompletedDays);
-        Assert.Equal(Math.Round(5 * 100d / 35, 2), week.Percentage);
+
+        // The empty days of the week contribute nothing to the ratio: only decided meals count.
+        Assert.Equal(100d, week.Percentage);
+    }
+
+    [Fact]
+    public void An_untouched_week_reports_no_ratio_instead_of_zero_percent()
+    {
+        var monday = new DateOnly(2026, 3, 9);
+        var week = PeriodAnalytics.ForWeek(monday, new Dictionary<DateOnly, IReadOnlyList<MealEntry>>());
+
+        Assert.Equal(7, week.Days.Count);
+        Assert.Equal(35, week.TotalSlots);
+        Assert.False(week.HasDecided);
+        Assert.Equal(0d, week.Percentage);
     }
 
     [Fact]
@@ -142,15 +201,6 @@ public sealed class MealEntryValidatorTests
         var pending = Valid();
         pending.CompletedAt = DateTimeOffset.UtcNow;
         Assert.False(MealEntryValidator.Validate(pending).IsValid);
-    }
-
-    [Fact]
-    public void A_negative_ingredient_amount_is_rejected()
-    {
-        var entry = Valid();
-        entry.Quantities = [IngredientLine.Create("Sugar", -5, MeasurementUnit.Gram)];
-
-        Assert.False(MealEntryValidator.Validate(entry).IsValid);
     }
 }
 

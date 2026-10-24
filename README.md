@@ -2,7 +2,7 @@
 
 A native Windows 11 desktop application (WinUI 3, .NET 10, C#) for planning five daily meals,
 tracking what was actually eaten, attaching photographs, receiving native Windows reminders and
-synchronizing the data with the user's own Microsoft OneDrive or Google Drive account.
+synchronizing the data with the user's own Google Drive account.
 
 The application is **offline first**: SQLite is the authoritative working database and every feature
 works without an account. Signing in is optional and only adds secure cloud synchronization and
@@ -15,16 +15,23 @@ data recovery.
   responsive grid that keeps the meal order at any window size, and all cards share the same height -
   nothing scrolls inside a card.
 * **Inline editing** inside each card, with save/cancel and immediate local persistence.
-* **DONE / PENDING / MISSED** tracking with completion timestamps, idempotent completion and undo.
+* **DONE / missed / pending** tracking with completion timestamps and idempotent completion.
+  Pending is the initial state of the database and of the business logic: a day the user has not
+  touched stays pending (gray), the green check confirms a meal (done, green) and the red cross
+  marks it as missed (red). The three states are always set by the user, never inferred from the
+  clock - a skipped day keeps its pending meals - and the date decides what is allowed: today and
+  past days can be edited in both directions (so a forgotten day can still be corrected), while
+  future days are locked in pending no matter how often the buttons are pressed. The dashboard
+  shows the three counts as coloured squares, the calendar colours each day accordingly, and the
+  statistics split every period into done, missed and pending shares.
 * **Photographs** (JPEG/PNG/WEBP, max 3 per meal, max 10 MB each) with automatic thumbnails stored as
   files in the private application data folder - never as database BLOBs.
 * **Native Windows notifications** with snooze, "mark as DONE" and deep links back into the app.
-* **Microsoft account** sign-in (MSAL.NET + Windows Account Manager, OneDrive app folder) and
-  **Google account** sign-in (OAuth 2.0 with PKCE, Google Drive `appDataFolder`), both with silent
-  session restoration.
-* **Guarded provider switching**: nothing is merged, overwritten or transferred without explicit
-  confirmation, and accounts are never matched by e-mail address.
+* **Google account** sign-in (OAuth 2.0 with PKCE in the system browser, Google Drive
+  `appDataFolder`) with silent session restoration.
 * **Three interface languages**: Romanian (default), English and Spanish.
+* **Light and dark appearance that follows Windows**: the whole interface and the window title bar
+  switch together with the system setting for apps, including while the application is running.
 * **MSIX packaging** ready for Microsoft Store submission.
 
 ## Repository layout
@@ -168,7 +175,7 @@ Add-AppxPackage -Path artifacts/msix/DietTracker.App_1.0.0.0_Test/DietTracker.Ap
 
 The package (`.msix` plus `.msixbundle`, unsigned, ~99 MB) is written to
 `artifacts\msix\DietTracker.App_1.0.0.0_Test\`. Installing and running the packaged application
-(notifications, the `startupTask` extension, the MSAL broker) was **not** verified in this environment -
+(notifications, the `startupTask` extension) was **not** verified in this environment -
 see [docs/known-limitations.md](docs/known-limitations.md) item 4.
 
 ### Where the data lives
@@ -244,11 +251,11 @@ integration assembly is named `DietTracker.Sync.Tests` and is written to
 `%LOCALAPPDATA%\DietTracker\database\diettracker.db` before starting the application, so do not run them
 while you are using the unpackaged build yourself.
 
-## Configuration of the identity providers
+## Configuration of the identity provider
 
-DietTracker contains no client secret. The Microsoft and Google client identifiers are read from an
-optional `%LOCALAPPDATA%\DietTracker\appsettings.json`; the built-in defaults are placeholders that
-must be replaced with your own registrations before a real sign-in can succeed. See
+DietTracker contains no secret in its source. The Google client identifier and client secret are read
+from an optional `%LOCALAPPDATA%\DietTracker\appsettings.json`; the built-in default is a placeholder
+that must be replaced with your own registration before a real sign-in can succeed. See
 [docs/authentication/setup.md](docs/authentication/setup.md).
 
 ## Status and honesty statement
@@ -256,10 +263,10 @@ must be replaced with your own registrations before a real sign-in can succeed. 
 * Core, infrastructure, the WinUI application, the tests and the packaging build cleanly in this
   environment, and the application launches and creates its database (measured: 0.39 s to database
   ready, ~138 MB working set in a Debug build).
-* The cloud providers are implemented against the documented Microsoft Graph and Google Drive v3 REST
-  APIs but could **not** be exercised against a real account here: no Microsoft/Google client
-  registrations exist in this environment, and interactive consent requires a human. The provider code
-  paths are covered by tests with an in-memory provider that mimics revisions and change tracking.
+* The cloud provider is implemented against the documented Google Drive v3 REST API but could **not**
+  be exercised against a real account here: no Google client registration existed in this
+  environment, and interactive consent requires a human. The provider code paths are covered by tests
+  with an in-memory provider that mimics revisions and change tracking.
 * Microsoft Store publication has **not** happened: it requires a Partner Center account, a reserved
   name and Microsoft certification. All artifacts and instructions are prepared in
   [docs/microsoft-store/submission.md](docs/microsoft-store/submission.md).

@@ -20,18 +20,24 @@ public static partial class RowMappers
         MealCategoryKey = SqliteValue.GetEnum<MealCategoryKey>(reader.GetValue(4)),
         Title = SqliteValue.GetString(reader.GetValue(5)),
         Ingredients = SqliteValue.GetString(reader.GetValue(6)),
-        Quantities = SqliteValue.FromJsonList<IngredientLine>(reader.GetValue(7)).ToList(),
-        Notes = SqliteValue.GetString(reader.GetValue(8)),
-        PlannedTime = SqliteValue.GetTimeOnlyOrNull(reader.GetValue(9)),
-        Status = SqliteValue.GetEnum<MealStatus>(reader.GetValue(10)),
-        CompletedAt = SqliteValue.GetDateTimeOffsetOrNull(reader.GetValue(11)),
-        CreatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(12)),
-        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(13)),
-        Revision = SqliteValue.GetLong(reader.GetValue(14)),
-        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(15)),
-        CloudRevision = SqliteValue.GetStringOrNull(reader.GetValue(16)),
-        ContentHash = SqliteValue.GetStringOrNull(reader.GetValue(17)),
+        PlannedTime = SqliteValue.GetTimeOnlyOrNull(reader.GetValue(7)),
+        Status = NormalizeMealStatus(SqliteValue.GetEnum<MealStatus>(reader.GetValue(8))),
+        CompletedAt = SqliteValue.GetDateTimeOffsetOrNull(reader.GetValue(9)),
+        CreatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(10)),
+        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(11)),
+        Revision = SqliteValue.GetLong(reader.GetValue(12)),
+        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(13)),
+        CloudRevision = SqliteValue.GetStringOrNull(reader.GetValue(14)),
+        ContentHash = SqliteValue.GetStringOrNull(reader.GetValue(15)),
     };
+
+    /// <summary>
+    /// A meal has exactly two states (PENDING and DONE). A value written by an older build - the
+    /// removed MISSED state - is mapped back to PENDING, so rows restored from an old backup or
+    /// pulled from the cloud can never reintroduce a third state.
+    /// </summary>
+    private static MealStatus NormalizeMealStatus(MealStatus status)
+        => Enum.IsDefined(status) ? status : MealStatus.Pending;
 
     /// <summary>Maps a <c>MealPhoto</c> row.</summary>
     public static MealPhoto MapMealPhoto(SqliteDataReader reader) => new()

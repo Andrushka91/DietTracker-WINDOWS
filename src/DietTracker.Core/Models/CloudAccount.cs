@@ -5,7 +5,7 @@ namespace DietTracker.Core.Models;
 /// <summary>
 /// A cloud account the user authorized. Several accounts may be remembered (for example one
 /// Microsoft and one Google account) but only one is active at a time; switching requires
-/// explicit user confirmation (see <c>IAccountSwitchCoordinator</c>).
+/// explicit user confirmation.
 /// </summary>
 public sealed class CloudAccount
 {

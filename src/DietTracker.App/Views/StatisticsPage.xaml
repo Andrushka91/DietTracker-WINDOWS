@@ -6,7 +6,92 @@
     xmlns:controls="using:DietTracker.App.Controls"
     xmlns:vm="using:DietTracker.App.ViewModels">
 
-    <ScrollViewer Padding="24,16,24,24">
+    <!-- One vertical percentage indicator of a statistics period: the count and percentage at the
+         top, a bar that rises from the bottom up to the share of the state, and the name of the
+         state underneath. Defined once and reused by the day, week and month cards. -->
+    <Page.Resources>
+        <DataTemplate x:Key="StateSliceTemplate" x:DataType="vm:StateSliceViewModel">
+            <Grid RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Count and share of the state, at the head of the column -->
+                <TextBlock
+                    Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind DetailText}" />
+
+                <!-- The vertical bar: the track fills the column and the colour rises from the
+                     bottom up to the share of the state. Star heights keep the fill proportional at
+                     any height, and the lane itself comes from the page so the whole card grows
+                     with the panel (together with the trend charts below). -->
+                <Border
+                    Grid.Row="1"
+                    MinHeight="{x:Bind LaneHeight, Mode=OneWay}"
+                    Background="{StaticResource BarTrackBrush}"
+                    CornerRadius="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="{x:Bind BarRest}" />
+                            <RowDefinition Height="{x:Bind BarFill}" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="1" Background="{x:Bind Fill}" CornerRadius="4" />
+                    </Grid>
+                </Border>
+
+                <!-- Name of the state with its colour, centred under the bar -->
+                <StackPanel
+                    Grid.Row="2"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    HorizontalAlignment="Center">
+                    <Border
+                        Width="10"
+                        Height="10"
+                        CornerRadius="3"
+                        VerticalAlignment="Center"
+                        Background="{x:Bind Fill}" />
+                    <TextBlock
+                        Style="{StaticResource CaptionStyle}"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    <!-- One bar of a trend chart: the bar fills its lane from the bottom up to its share and
+         the label of the bar (a day, a day range or a month) is printed underneath. The lane
+         height comes from the page so the charts grow with the panel; the texts never wrap, so
+         they stay on one line even when a window narrows the column. -->
+        <DataTemplate x:Key="TrendBarTemplate" x:DataType="vm:TrendBarViewModel">
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- The lane: the empty distance above the bar, then the bar itself. Star heights
+                     keep the bar proportional at any lane height the page gives it. -->
+                <Grid Grid.Row="0" Height="{x:Bind LaneHeight, Mode=OneWay}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{x:Bind BarRest}" />
+                        <RowDefinition Height="{x:Bind BarFill}" MinHeight="2" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="1" Background="{StaticResource AccentStatusBrush}" CornerRadius="4" />
+                </Grid>
+
+                <StackPanel Grid.Row="1" Spacing="2" HorizontalAlignment="Center">
+                    <TextBlock Style="{StaticResource CaptionStyle}" HorizontalAlignment="Center" TextWrapping="NoWrap" Text="{x:Bind Label}" />
+                    <TextBlock Style="{StaticResource CaptionStyle}" HorizontalAlignment="Center" TextWrapping="NoWrap" Text="{x:Bind PercentageText}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer x:Name="ScrollHost" Padding="24,16,24,24">
         <StackPanel Spacing="16" MaxWidth="{StaticResource PageMaxContentWidth}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -26,79 +111,146 @@
                 </StackPanel>
             </Grid>
 
-            <!-- The three progress cards reflow into fewer columns on narrow windows -->
-            <controls:UniformWrapPanel MinItemWidth="240" HorizontalSpacing="16" VerticalSpacing="16" UniformHeight="True">
+            <!-- The three progress cards reflow into fewer columns on narrow windows. Each shows the
+                 day counts (done days, missed days) and the three states as vertical percentage
+                 indicators that fill the width of the card and rise from the bottom, so the shares
+                 of the period can be compared at a glance and the panel space is fully used. -->
+            <controls:UniformWrapPanel MinItemWidth="300" HorizontalSpacing="16" VerticalSpacing="16" UniformHeight="True">
                 <Border Style="{StaticResource ProgressCardStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Daily" Text="Today" />
-                        <ProgressBar Maximum="100" Value="{x:Bind ViewModel.DailyPercentage, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.DailyText, Mode=OneWay}" />
-                    </StackPanel>
+                    <Grid RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Daily" Text="Today" />
+                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.Daily.Summary, Mode=OneWay}" />
+                        <ItemsControl Grid.Row="2" ItemsSource="{x:Bind ViewModel.Daily.Slices, Mode=OneWay}" ItemTemplate="{StaticResource StateSliceTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformWrapPanel MinItemWidth="84" HorizontalSpacing="12" VerticalSpacing="8" UniformHeight="True" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource ProgressCardStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Weekly" Text="This week" />
-                        <ProgressBar Maximum="100" Value="{x:Bind ViewModel.WeeklyPercentage, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.WeeklyText, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.FullyCompletedText, Mode=OneWay}" />
-                    </StackPanel>
+                    <Grid RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Weekly" Text="This week" />
+                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.Weekly.Summary, Mode=OneWay}" />
+                        <ItemsControl Grid.Row="2" ItemsSource="{x:Bind ViewModel.Weekly.Slices, Mode=OneWay}" ItemTemplate="{StaticResource StateSliceTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformWrapPanel MinItemWidth="84" HorizontalSpacing="12" VerticalSpacing="8" UniformHeight="True" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource ProgressCardStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Monthly" Text="This month" />
-                        <ProgressBar Maximum="100" Value="{x:Bind ViewModel.MonthlyPercentage, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.MonthlyText, Mode=OneWay}" />
-                    </StackPanel>
+                    <Grid RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" x:Uid="Statistics_Monthly" Text="This month" />
+                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.Monthly.Summary, Mode=OneWay}" />
+                        <ItemsControl Grid.Row="2" ItemsSource="{x:Bind ViewModel.Monthly.Slices, Mode=OneWay}" ItemTemplate="{StaticResource StateSliceTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformWrapPanel MinItemWidth="84" HorizontalSpacing="12" VerticalSpacing="8" UniformHeight="True" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
                 </Border>
             </controls:UniformWrapPanel>
 
-            <!-- Weekly trend: one bar per day on a common baseline. The percentage is shown as text
-                 (never as a tooltip: attaching tooltips from x:Bind during template instantiation makes
-                 the native layout fail and used to crash the application). -->
-            <Border Style="{StaticResource ProgressCardStyle}">
-                <StackPanel Spacing="8">
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind ViewModel.TrendTitle, Mode=OneWay}" />
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.Trend}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <controls:UniformWrapPanel
-                                    UniformHeight="False"
-                                    MinItemWidth="44"
-                                    HorizontalSpacing="4"
-                                    VerticalSpacing="8" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:TrendBarViewModel">
-                                <Grid RowSpacing="4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="140" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+            <!-- Three trend charts in one row, in the same shape as the three period cards above: each
+                 card takes an equal share of the row and every chart spreads its bars over the whole
+                 width of its card (one equal column per bar), so no space is left unused. The
+                 percentage is shown as text (never as a tooltip: attaching tooltips from x:Bind
+                 during template instantiation makes the native layout fail and used to crash the
+                 application). -->
+            <controls:UniformWrapPanel MinItemWidth="300" HorizontalSpacing="16" VerticalSpacing="16" UniformHeight="True">
+                <!-- Weekly: one bar per day of the visible week. -->
+                <Border Style="{StaticResource ProgressCardStyle}">
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                                    <Border
-                                        Grid.Row="0"
-                                        Width="28"
-                                        MinHeight="2"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Bottom"
-                                        Height="{x:Bind Percentage, Converter={StaticResource PercentageToWidth}, ConverterParameter=140}"
-                                        Background="{StaticResource AccentStatusBrush}"
-                                        CornerRadius="4" />
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind ViewModel.TrendTitle, Mode=OneWay}" />
+                        <ItemsControl
+                            Grid.Row="1"
+                            ItemsSource="{x:Bind ViewModel.Trend}"
+                            ItemTemplate="{StaticResource TrendBarTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:ColumnGridPanel Columns="0" HorizontalSpacing="4" VerticalSpacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
 
-                                    <StackPanel Grid.Row="1" Spacing="2" HorizontalAlignment="Center">
-                                        <TextBlock Style="{StaticResource CaptionStyle}" HorizontalAlignment="Center" Text="{x:Bind Label}" />
-                                        <TextBlock Style="{StaticResource CaptionStyle}" HorizontalAlignment="Center" Text="{x:Bind PercentageText}" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.Disclaimer, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
+                <!-- Monthly: one bar per week of the month, labelled with the day range it spans. -->
+                <Border Style="{StaticResource ProgressCardStyle}">
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind ViewModel.MonthlyTrendTitle, Mode=OneWay}" />
+                        <ItemsControl
+                            Grid.Row="1"
+                            ItemsSource="{x:Bind ViewModel.MonthlyTrend}"
+                            ItemTemplate="{StaticResource TrendBarTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:ColumnGridPanel Columns="0" HorizontalSpacing="4" VerticalSpacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            <!-- Yearly: one bar per month of the visible year. -->
+                <Border Style="{StaticResource ProgressCardStyle}">
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind ViewModel.YearlyTrendTitle, Mode=OneWay}" />
+                        <ItemsControl
+                            Grid.Row="1"
+                            ItemsSource="{x:Bind ViewModel.YearlyTrend}"
+                            ItemTemplate="{StaticResource TrendBarTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:ColumnGridPanel Columns="0" HorizontalSpacing="4" VerticalSpacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </controls:UniformWrapPanel>
+
+            <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.Disclaimer, Mode=OneWay}" />
         </StackPanel>
     </ScrollViewer>
 </Page>

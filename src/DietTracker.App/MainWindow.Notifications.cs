@@ -16,7 +16,18 @@ public sealed partial class MainWindow
             var (severity, message) = DescribeState(e.State);
             StatusBar.Severity = severity;
             StatusBar.Message = message;
-            StatusBar.IsOpen = e.State is not SyncState.Synced and not SyncState.NotConfigured;
+            StatusBar.IsOpen = e.State is not SyncState.NotConfigured;
+
+            // A cycle that actually moved data is also reported in the notification area, so the
+            // outcome is visible even while the window is hidden in the tray.
+            if (e.State is SyncState.Synced
+                && e.LastResult is { } completed
+                && completed.Uploaded + completed.Downloaded > 0)
+            {
+                _ = _trayIcon.ShowBalloonAsync(
+                    _localization.Get("Sync_BalloonTitle"),
+                    _localization.Format("Sync_BalloonDetail", completed.Uploaded, completed.Downloaded));
+            }
         });
     }
 

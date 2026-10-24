@@ -1,4 +1,5 @@
 using DietTracker.Core.Analytics;
+using DietTracker.Core.Enums;
 using DietTracker.Core.Models;
 
 namespace DietTracker.Core.Services;
@@ -10,12 +11,7 @@ public sealed partial class MealTrackingService
     public async Task<DayProgress> GetDayProgressAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         var meals = await GetDayAsync(date, cancellationToken).ConfigureAwait(false);
-        return ProgressCalculator.ForDay(
-            date,
-            meals,
-            _clock.TimeOfDay,
-            TimeSpan.FromHours(12),
-            applyHistoricalRule: date < _clock.Today);
+        return ProgressCalculator.ForDay(date, meals);
     }
 
     /// <inheritdoc />
@@ -43,6 +39,7 @@ public sealed partial class MealTrackingService
         var profile = await _profiles.GetOrCreateActiveProfileAsync(cancellationToken).ConfigureAwait(false);
         var to = from.AddDays(dayCount);
         var range = await _entries.GetForRangeAsync(profile.Id, from, to, cancellationToken).ConfigureAwait(false);
-        return PeriodAnalytics.ForRange(from, to, range, _clock.TimeOfDay);
+
+        return PeriodAnalytics.ForRange(from, to, range);
     }
 }

@@ -87,9 +87,11 @@ public sealed class DataIntegrityChecker : IDataIntegrityChecker
             "integrity.completion.inconsistent",
             """
             SELECT Id, Status, 0, 1 FROM MealEntry
-            WHERE (Status = 1 AND CompletedAt IS NULL) OR (Status <> 1 AND CompletedAt IS NOT NULL);
+            WHERE Status NOT IN (0, 1, 2)
+               OR (Status = 1 AND CompletedAt IS NULL)
+               OR (Status <> 1 AND CompletedAt IS NOT NULL);
             """,
-            "A meal entry has a completion state that contradicts its completion timestamp.",
+            "A meal entry has an unknown completion state or a completion state that contradicts its completion timestamp.",
             cancellationToken).ConfigureAwait(false);
 
         return issues;

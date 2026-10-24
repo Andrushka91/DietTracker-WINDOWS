@@ -16,7 +16,7 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
     private readonly List<string> _uploadedPaths = [];
     private int _revision;
 
-    public InMemoryCloudStorageProvider(ProviderType providerType = ProviderType.Microsoft)
+    public InMemoryCloudStorageProvider(ProviderType providerType = ProviderType.Google)
         => ProviderType = providerType;
 
     public ProviderType ProviderType { get; }

@@ -1,9 +1,11 @@
+using DietTracker.App.Services;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Runtime.InteropServices;
 
 namespace DietTracker.App;
 
@@ -36,6 +38,12 @@ public sealed partial class MainWindow : Window
         // Opens sized so all five meal cards fit, and limits resizing to the space the content uses.
         InitializeWindowSize();
 
+        // The caption bar is drawn by the shell, not by XAML: paint it with the colour of the
+        // system app theme (dark on a dark Windows, light on a light Windows) and repaint it
+        // whenever the XAML theme switches, so it always matches the interface below it.
+        ApplyTitleBarTheme();
+        RootGrid.ActualThemeChanged += (_, _) => ApplyTitleBarTheme();
+
         _syncEngine.StateChanged += OnSyncStateChanged;
         _services.GetRequiredService<INotificationService>().Activated += OnNotificationActivated;
 
@@ -45,6 +53,45 @@ public sealed partial class MainWindow : Window
         AppWindow.Closing += OnWindowClosing;
 
         Navigate("dashboard");
+    }
+
+    /// <summary>DWM attribute that lets a window paint its own caption in dark mode (Windows 10 2004+).</summary>
+    private const int DwmwaUseImmersiveDarkMode = 20;
+
+    /// <summary>The same attribute under its original number, for the older Windows 10 builds.</summary>
+    private const int DwmwaUseImmersiveDarkModeLegacy = 9;
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int valueSize);
+
+    /// <summary>
+    /// Paints the window title bar in the colour of the Windows app theme: dark when Windows runs in
+    /// dark mode, light when it runs in light mode. The bar is drawn by the shell (the XAML content
+    /// does not extend into it), so without this call it would stay light even while the whole
+    /// application renders dark. The colours come from the system itself, so the bar and the
+    /// interface always follow the same setting - including live switches made while the app runs
+    /// (the change event re-applies the attribute).
+    /// </summary>
+    private void ApplyTitleBarTheme()
+    {
+        try
+        {
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+            // The same system setting the XAML theme follows: dark Windows gets a dark title bar,
+            // light Windows a light one.
+            var useDarkMode = ThemeHelper.IsDarkAppMode() ? 1 : 0;
+
+            // Attribute 20 is unknown on the older Windows 10 builds, which only know 9.
+            if (DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, ref useDarkMode, sizeof(int)) != 0)
+            {
+                DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeLegacy, ref useDarkMode, sizeof(int));
+            }
+        }
+        catch (Exception)
+        {
+            // The caption keeps the shell default colour - never fail the window for the title bar.
+        }
     }
 
     /// <summary>Navigates to a page by tag, keeping the navigation item selection in sync.</summary>

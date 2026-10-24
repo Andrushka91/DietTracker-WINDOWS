@@ -11,10 +11,6 @@ public static class MealEntryValidator
 
     public const int MaxIngredientsLength = 2000;
 
-    public const int MaxNotesLength = 2000;
-
-    public const int MaxIngredientLines = 40;
-
     public static ValidationResult Validate(MealEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -44,35 +40,6 @@ public static class MealEntryValidator
         if (entry.Ingredients.Length > MaxIngredientsLength)
         {
             failures.Add(new ValidationFailure("meal.ingredients.tooLong", nameof(entry.Ingredients), $"Ingredients must not exceed {MaxIngredientsLength} characters."));
-        }
-
-        if (entry.Notes.Length > MaxNotesLength)
-        {
-            failures.Add(new ValidationFailure("meal.notes.tooLong", nameof(entry.Notes), $"Notes must not exceed {MaxNotesLength} characters."));
-        }
-
-        if (entry.Quantities.Count > MaxIngredientLines)
-        {
-            failures.Add(new ValidationFailure("meal.quantities.tooMany", nameof(entry.Quantities), $"At most {MaxIngredientLines} ingredient lines are allowed."));
-        }
-
-        for (var i = 0; i < entry.Quantities.Count; i++)
-        {
-            var line = entry.Quantities[i];
-            if (line.Name.Length > MaxTitleLength)
-            {
-                failures.Add(new ValidationFailure("meal.ingredient.nameTooLong", $"Quantities[{i}].Name", $"Ingredient name must not exceed {MaxTitleLength} characters."));
-            }
-
-            if (line.Amount is < 0)
-            {
-                failures.Add(new ValidationFailure("meal.ingredient.negativeAmount", $"Quantities[{i}].Amount", "Ingredient amount cannot be negative."));
-            }
-
-            if (line.Amount is > 100_000)
-            {
-                failures.Add(new ValidationFailure("meal.ingredient.amountTooLarge", $"Quantities[{i}].Amount", "Ingredient amount is unrealistically large."));
-            }
         }
 
         if (entry.Status == Enums.MealStatus.Done && entry.CompletedAt is null)

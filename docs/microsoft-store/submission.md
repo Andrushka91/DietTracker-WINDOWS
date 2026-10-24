@@ -58,8 +58,7 @@ Store metadata to prepare in Partner Center:
   a rating category).
 * **Supported languages:** Romanian (default), English, Spanish.
 * **Description (short and long):** plan five daily meals, mark what you ate, attach photographs, get
-  native reminders, keep everything offline and optionally synchronize with your own Microsoft or
-  Google account.
+  native reminders, keep everything offline and optionally synchronize with your own Google account.
 * **Privacy policy URL:** the published version of `docs/privacy/privacy-policy.md`.
 * **Support contact:** the publisher's support e-mail address.
 * **Release notes:** see the changelog at the bottom of this file.
@@ -69,12 +68,11 @@ Store metadata to prepare in Partner Center:
 Provide this text in the "Notes for certification" field:
 
 > DietTracker works fully offline and **no account is required**. To test the cloud features, use the
-> Account and sync page: sign in with a Microsoft or Google account, then use "Synchronize now".
-> Authentication uses the official SDKs/flows (MSAL.NET with the Windows Account Manager, and OAuth 2.0
-> with PKCE in the system browser) and never asks for a password inside the application. OneDrive
-> storage is limited to the application folder (`Files.ReadWrite.AppFolder`); Google Drive storage is
-> limited to the hidden `appDataFolder`. All privacy controls (export, local backup, sign out, disable
-> synchronization, delete local data, delete cloud data) are on the Settings page.
+> Account and sync page: sign in with a Google account, then use "Synchronize now".
+> Authentication uses the official OAuth 2.0 flow with PKCE in the system browser and never asks for a
+> password inside the application. Google Drive storage is limited to the hidden `appDataFolder`. All
+> privacy controls (export, local backup, sign out, disable synchronization, delete local data, delete
+> cloud data) are on the Settings page.
 
 ## 4. Partner Center steps (what remains)
 
@@ -83,8 +81,8 @@ Provide this text in the "Notes for certification" field:
 2. Reserve the application name **DietTracker**.
 3. Copy the **publisher identity** (Publisher CN, package identity name, package family name) from
    Partner Center into `Package.appxmanifest`.
-4. Register the Microsoft Entra application and configure the redirect URI so that sign-in works in the
-   packaged application (see `docs/authentication/setup.md`). Verify with the packaged build.
+4. Configure the Google Cloud project (OAuth consent screen, Desktop app client) so that sign-in works
+   (see `docs/authentication/setup.md`). Verify with the packaged build.
 5. Configure the package: version, architecture, languages, capabilities.
 6. Generate the MSIX upload artifact with the Release configuration.
 7. Run the Windows App Certification Kit locally and fix anything it reports.
@@ -108,9 +106,9 @@ Provide this text in the "Notes for certification" field:
 
 ```text
 1.0.0
-- Five permanent daily meal cards with inline editing, DONE/PENDING/MISSED tracking and progress.
+- Five permanent daily meal cards with inline editing, DONE/missed tracking and progress.
 - Photographs (JPEG/PNG/WEBP) with thumbnails and offline viewing.
 - Native Windows reminders with snooze and notification actions.
-- Optional Microsoft or Google sign-in with OneDrive / Google Drive synchronization.
+- Optional Google sign-in with Google Drive synchronization.
 - Local export and backup, privacy controls, three interface languages.
 ```

@@ -1,14 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DietTracker.App.Services;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 
 namespace DietTracker.App.ViewModels;
 
 /// <summary>
-/// First-launch experience: sign in with Microsoft, sign in with Google, or continue without an
-/// account. Every essential feature works in Guest Mode; signing in only adds secure cloud
-/// synchronization and recovery.
+/// First-launch experience: sign in with Google, or continue without an account. Every essential
+/// feature works in Guest Mode; signing in only adds secure cloud synchronization and recovery.
 /// </summary>
 public sealed partial class OnboardingViewModel : ObservableObject
 {
@@ -53,9 +53,6 @@ public sealed partial class OnboardingViewModel : ObservableObject
     private async Task ContinueAsGuestAsync() => await CompleteAsync(null);
 
     [RelayCommand]
-    private async Task SignInMicrosoftAsync() => await CompleteAsync(ProviderType.Microsoft);
-
-    [RelayCommand]
     private async Task SignInGoogleAsync() => await CompleteAsync(ProviderType.Google);
 
     private async Task CompleteAsync(ProviderType? providerType)
@@ -88,7 +85,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
             {
                 StatusMessage = result.IsCancelled
                     ? _localization.Get("Auth_Cancelled")
-                    : _localization.Get(result.ReasonCode ?? "Auth_Unknown");
+                    : _localization.Get(LocalizationKeys.ForReason(result.ReasonCode));
 
                 // The user can always continue offline; nothing is blocked by a failed sign-in.
                 Completed?.Invoke(this, EventArgs.Empty);

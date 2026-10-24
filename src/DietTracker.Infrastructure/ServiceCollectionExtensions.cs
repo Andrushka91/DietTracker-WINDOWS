@@ -1,7 +1,6 @@
 using DietTracker.Core.Interfaces;
 using DietTracker.Infrastructure.Authentication;
 using DietTracker.Infrastructure.Authentication.Google;
-using DietTracker.Infrastructure.Authentication.Microsoft;
 using DietTracker.Infrastructure.Cloud;
 using DietTracker.Infrastructure.Diagnostics;
 using DietTracker.Infrastructure.FileStorage;
@@ -25,19 +24,12 @@ public static class ServiceCollectionExtensions
     /// <summary>Adds the DietTracker infrastructure (persistence, cloud, authentication, reminders).</summary>
     public static IServiceCollection AddDietTrackerInfrastructure(
         this IServiceCollection services,
-        Action<MicrosoftAuthenticationOptions>? configureMicrosoft = null,
         Action<GoogleAuthenticationOptions>? configureGoogle = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Configuration of the identity providers (client ids come from the application, never secrets).
-        services.AddOptions<MicrosoftAuthenticationOptions>();
+        // Configuration of the identity provider (client identifiers come from the application).
         services.AddOptions<GoogleAuthenticationOptions>();
-
-        if (configureMicrosoft is not null)
-        {
-            services.Configure(configureMicrosoft);
-        }
 
         if (configureGoogle is not null)
         {
@@ -77,7 +69,6 @@ public static class ServiceCollectionExtensions
 
         // Authentication
         services.AddSingleton<IUserInterfaceContext, HeadlessUserInterfaceContext>();
-        services.AddSingleton<MsalAuthenticationProvider>();
         services.AddSingleton<GoogleAuthenticationProvider>();
         services.AddSingleton<IAuthenticationProviderFactory, AuthenticationProviderFactory>();
         services.AddSingleton<IAuthenticationCoordinator, AuthenticationCoordinator>();
@@ -94,7 +85,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConflictResolver, ConflictResolver>();
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncJournal, SyncJournal>();
-        services.AddSingleton<IAccountSwitchCoordinator, AccountSwitchCoordinator>();
         services.AddSingleton<IPrivacyService, PrivacyService>();
 
         // Notifications and Windows integration

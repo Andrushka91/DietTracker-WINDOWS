@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DietTracker.App.Controls;
 
-/// <summary>Action bar shown under a meal card (DONE, undo, missed, edit, photo, copy, template).</summary>
+/// <summary>Action bar shown under a meal card (DONE, undo, edit, photo, copy, template).</summary>
 public sealed partial class MealCardActionsControl : UserControl
 {
     /// <summary>Identifies the <see cref="Card"/> dependency property.</summary>

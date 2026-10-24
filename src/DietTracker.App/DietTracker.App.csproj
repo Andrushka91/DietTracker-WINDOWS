@@ -76,4 +76,18 @@
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!--
+    A running DietTracker instance locks the DLLs in dist/, so the copy step of the build fails with
+    MSB3027/MSB3021 ("being used by another process"). Stop the running instances before the build;
+    the same protection that tools/Run-App.ps1 applies, but for every build command. The target is
+    hooked to PrepareForBuild (which always runs early in the App project's pipeline, before the
+    referenced assemblies are copied to dist) because WinUI overrides the Build target itself, so a
+    BeforeTargets="Build" hook never fires. taskkill exits with 128 when no instance is running -
+    that is not an error. The copy step's own retry logic (10 x 1 s) absorbs the short window until
+    Windows releases the file handles.
+  -->
+  <Target Name="StopRunningAppInstances" BeforeTargets="PrepareForBuild;_CopyFilesMarkedCopyLocal">
+    <Exec Command="taskkill /IM DietTracker.exe /F" IgnoreExitCode="true" ContinueOnError="true" />
+  </Target>
+
 </Project>

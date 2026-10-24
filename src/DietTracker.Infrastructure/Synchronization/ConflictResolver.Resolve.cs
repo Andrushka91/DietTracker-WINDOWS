@@ -72,8 +72,6 @@ public sealed partial class ConflictResolver
         // Only content is taken over; the local identifiers stay stable so references remain valid.
         local.Title = remote.Title;
         local.Ingredients = remote.Ingredients;
-        local.Quantities = remote.Quantities;
-        local.Notes = remote.Notes;
         local.PlannedTime = remote.PlannedTime;
         local.Status = remote.Status;
         local.CompletedAt = remote.CompletedAt;

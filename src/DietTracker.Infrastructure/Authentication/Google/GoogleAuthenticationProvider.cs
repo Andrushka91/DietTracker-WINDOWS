@@ -102,6 +102,11 @@ public sealed partial class GoogleAuthenticationProvider : IAuthenticationProvid
         catch (CloudAuthorizationRequiredException ex)
         {
             _logger.LogWarning("Google authorization failed ({Reason}).", ex.ReasonCode);
+            if (!string.IsNullOrEmpty(ex.Diagnostic))
+            {
+                _logger.LogWarning("Google token endpoint detail: {Diagnostic}", ex.Diagnostic);
+            }
+
             return AuthenticationResult.Failure(ProviderType.Google, ex.ReasonCode, ex.Diagnostic);
         }
     }

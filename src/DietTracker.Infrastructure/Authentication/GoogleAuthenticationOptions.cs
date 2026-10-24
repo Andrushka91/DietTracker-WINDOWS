@@ -10,6 +10,13 @@ public sealed class GoogleAuthenticationOptions
     /// </summary>
     public string ClientId { get; set; } = "000000000000-diettracker.apps.googleusercontent.com";
 
+    /// <summary>
+    /// Client secret of the same "Desktop app" registration. Google's token endpoint expects it even
+    /// though the secret of an installed application is explicitly not treated as confidential
+    /// (RFC 8252); it is therefore read from the local settings file and never embedded in the build.
+    /// </summary>
+    public string ClientSecret { get; set; } = string.Empty;
+
     /// <summary>Authorization endpoint.</summary>
     public string AuthorizationEndpoint { get; set; } = "https://accounts.google.com/o/oauth2/v2/auth";
 

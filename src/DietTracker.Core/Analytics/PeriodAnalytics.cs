@@ -1,22 +1,28 @@
 using DietTracker.Core.BusinessRules;
+using DietTracker.Core.Enums;
 using DietTracker.Core.Models;
 
 namespace DietTracker.Core.Analytics;
 
-/// <summary>Weekly and monthly aggregation, plus trend series for the charts.</summary>
+/// <summary>
+/// Weekly and monthly aggregation, plus trend series for the charts.
+/// </summary>
+/// <remarks>
+/// Every ratio is built from the decided meals of the period (confirmed plus missed). Slots the
+/// user never filled in stay pending and are excluded, so an untouched period reports no ratio
+/// instead of being dragged to 0 % by five empty slots per day. The states themselves are read
+/// from the stored rows - nothing is inferred from the current time.
+/// </remarks>
 public static class PeriodAnalytics
 {
     /// <summary>
     /// Aggregates a date range (inclusive). Days without stored entries still count with five
-    /// pending slots so that the percentage stays honest.
+    /// pending slots, which keeps the raw slot totals honest while leaving the ratios untouched.
     /// </summary>
     public static PeriodProgress ForRange(
         DateOnly from,
         DateOnly to,
-        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate,
-        TimeOnly? nowTime = null,
-        TimeSpan? grace = null,
-        bool applyHistoricalRule = false)
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate)
     {
         ArgumentNullException.ThrowIfNull(entriesByDate);
 
@@ -34,7 +40,7 @@ public static class PeriodAnalytics
         for (var date = from; date <= to; date = date.AddDays(1))
         {
             var dayEntries = entriesByDate.TryGetValue(date, out var list) ? list : [];
-            var day = ProgressCalculator.ForDay(date, dayEntries, nowTime, grace, applyHistoricalRule);
+            var day = ProgressCalculator.ForDay(date, dayEntries);
             days.Add(day);
 
             completed += day.Completed;
@@ -63,21 +69,19 @@ public static class PeriodAnalytics
     /// <summary>Weekly aggregate starting on Monday, matching the weekly statistics screen.</summary>
     public static PeriodProgress ForWeek(
         DateOnly anyDayOfWeek,
-        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate,
-        TimeOnly? nowTime = null)
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate)
     {
         var from = StartOfWeek(anyDayOfWeek);
-        return ForRange(from, from.AddDays(6), entriesByDate, nowTime);
+        return ForRange(from, from.AddDays(6), entriesByDate);
     }
 
     /// <summary>Monthly aggregate for the month that contains <paramref name="anyDayOfMonth"/>.</summary>
     public static PeriodProgress ForMonth(
         DateOnly anyDayOfMonth,
-        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate,
-        TimeOnly? nowTime = null)
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<MealEntry>> entriesByDate)
     {
         var from = new DateOnly(anyDayOfMonth.Year, anyDayOfMonth.Month, 1);
-        return ForRange(from, from.AddMonths(1).AddDays(-1), entriesByDate, nowTime);
+        return ForRange(from, from.AddMonths(1).AddDays(-1), entriesByDate);
     }
 
     /// <summary>Monday based start of week (ISO 8601).</summary>
@@ -87,7 +91,10 @@ public static class PeriodAnalytics
         return date.AddDays(-delta);
     }
 
-    /// <summary>Produces the trend series used by the weekly and monthly charts.</summary>
+    /// <summary>
+    /// Produces the trend series used by the weekly and monthly charts: one point per day with the
+    /// confirmed share of that day's decided meals (zero while nothing was decided).
+    /// </summary>
     public static IReadOnlyList<TrendPoint> Trend(
         DateOnly from,
         DateOnly to,
@@ -100,7 +107,13 @@ public static class PeriodAnalytics
         {
             var dayEntries = entriesByDate.TryGetValue(date, out var list) ? list : [];
             var day = ProgressCalculator.ForDay(date, dayEntries);
-            result.Add(new TrendPoint { Date = date, Percentage = day.Percentage, Completed = day.Completed });
+            result.Add(new TrendPoint
+            {
+                Date = date,
+                Percentage = day.Percentage,
+                Completed = day.Completed,
+                Missed = day.Missed,
+            });
         }
 
         return result;

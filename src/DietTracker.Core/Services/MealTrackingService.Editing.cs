@@ -20,8 +20,6 @@ public sealed partial class MealTrackingService
         // that editing a meal which is already DONE never silently removes its completion state.
         persisted.Title = edited.Title.Trim();
         persisted.Ingredients = edited.Ingredients.Trim();
-        persisted.Quantities = edited.Quantities.Select(q => q with { Name = q.Name.Trim() }).ToList();
-        persisted.Notes = edited.Notes.Trim();
         persisted.PlannedTime = edited.PlannedTime;
 
         var validation = MealEntryValidator.Validate(persisted);
@@ -44,11 +42,13 @@ public sealed partial class MealTrackingService
     public async Task<MealEntry> MarkDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
     {
         var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
-        var outcome = CompletionRules.MarkDone(entry, _clock.UtcNow);
+
+        // Local wall-clock time: the date guard compares the meal's calendar date against today.
+        var outcome = CompletionRules.MarkDone(entry, _clock.LocalNow);
 
         if (!outcome.Changed)
         {
-            // Repeated DONE actions must never increment statistics a second time.
+            // Repeated DONE actions (and future-dated meals) must never change anything.
             return entry;
         }
 
@@ -64,28 +64,25 @@ public sealed partial class MealTrackingService
     }
 
     /// <inheritdoc />
-    public async Task<MealEntry> UndoDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
-    {
-        var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
-        var outcome = CompletionRules.UndoToPending(entry, _clock.UtcNow);
-
-        if (outcome.Changed)
-        {
-            await PersistAsync(entry, cancellationToken).ConfigureAwait(false);
-        }
-
-        return entry;
-    }
-
-    /// <inheritdoc />
     public async Task<MealEntry> MarkMissedAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
     {
         var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
-        var outcome = CompletionRules.MarkMissed(entry, _clock.Today, _clock.UtcNow);
 
-        if (outcome.Changed)
+        // Local wall-clock time: the date guard compares the meal's calendar date against today.
+        var outcome = CompletionRules.MarkMissed(entry, _clock.LocalNow);
+
+        if (!outcome.Changed)
         {
-            await PersistAsync(entry, cancellationToken).ConfigureAwait(false);
+            // Already missed, or a future meal that must stay pending: nothing to persist.
+            return entry;
+        }
+
+        await PersistAsync(entry, cancellationToken).ConfigureAwait(false);
+
+        // A decided meal (eaten or missed) no longer needs its reminder.
+        if (_notifications is not null)
+        {
+            await _notifications.CancelMealReminderAsync(entry.Id, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;

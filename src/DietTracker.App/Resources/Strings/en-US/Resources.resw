@@ -30,44 +30,22 @@
   <data name="Meal_AfternoonSnack_Name" xml:space="preserve"><value>Afternoon snack</value></data>
   <data name="Meal_Dinner_Name" xml:space="preserve"><value>Dinner</value></data>
   <data name="Status_Pending" xml:space="preserve"><value>Pending</value></data>
-  <data name="Status_Done" xml:space="preserve"><value>Done</value></data>
   <data name="Status_Missed" xml:space="preserve"><value>Missed</value></data>
-  <data name="Unit_None" xml:space="preserve"><value>-</value></data>
-  <data name="Unit_Gram" xml:space="preserve"><value>g</value></data>
-  <data name="Unit_Kilogram" xml:space="preserve"><value>kg</value></data>
-  <data name="Unit_Milliliter" xml:space="preserve"><value>ml</value></data>
-  <data name="Unit_Liter" xml:space="preserve"><value>l</value></data>
-  <data name="Unit_Unit" xml:space="preserve"><value>pc</value></data>
-  <data name="Unit_Tablespoon" xml:space="preserve"><value>tbsp</value></data>
-  <data name="Unit_Teaspoon" xml:space="preserve"><value>tsp</value></data>
-  <data name="Unit_Cup" xml:space="preserve"><value>cup</value></data>
-  <data name="Unit_Slice" xml:space="preserve"><value>slice</value></data>
-  <data name="Unit_Portion" xml:space="preserve"><value>portion</value></data>
-  <data name="Unit_Pinch" xml:space="preserve"><value>pinch</value></data>
+  <data name="Status_Done" xml:space="preserve"><value>Done</value></data>
   <data name="Dashboard_PreviousDay" xml:space="preserve"><value>Previous day</value></data>
   <data name="Dashboard_NextDay" xml:space="preserve"><value>Next day</value></data>
-  <data name="Dashboard_Summary" xml:space="preserve"><value>{0} of {1} meals confirmed ({2:0.#} %)</value></data>
-  <data name="Dashboard_Completed" xml:space="preserve"><value>Confirmed</value></data>
-  <data name="Dashboard_Pending" xml:space="preserve"><value>Pending</value></data>
-  <data name="Dashboard_Missed" xml:space="preserve"><value>Missed</value></data>
-  <data name="Dashboard_CopyYesterday" xml:space="preserve"><value>Copy yesterday</value></data>
-  <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Save day as template</value></data>
-  <data name="Dashboard_NothingToCopy" xml:space="preserve"><value>There is nothing to copy from the previous day.</value></data>
-  <data name="Dashboard_CopiedMeals" xml:space="preserve"><value>{0} meal(s) copied.</value></data>
+  <data name="Dashboard_CountDone" xml:space="preserve"><value>Done</value></data>
+  <data name="Dashboard_CountMissed" xml:space="preserve"><value>Missed</value></data>
+  <data name="Dashboard_CountPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Dashboard_AllDone" xml:space="preserve"><value>All meals are confirmed.</value></data>
+  <data name="Dashboard_AllMissed" xml:space="preserve"><value>All meals are marked as missed.</value></data>
+  <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Save as template</value></data>
   <data name="Meal_Title" xml:space="preserve"><value>Title</value></data>
-  <data name="Meal_Ingredients" xml:space="preserve"><value>Food description</value></data>
-  <data name="Meal_Notes" xml:space="preserve"><value>Notes</value></data>
-  <data name="Meal_PlannedTime" xml:space="preserve"><value>Planned time</value></data>
-  <data name="Meal_AddIngredient" xml:space="preserve"><value>Add ingredient</value></data>
-  <data name="Meal_IngredientName" xml:space="preserve"><value>Ingredient</value></data>
-  <data name="Meal_IngredientAmount" xml:space="preserve"><value>Quantity</value></data>
-  <data name="Meal_RemoveIngredient" xml:space="preserve"><value>Remove ingredient</value></data>
+  <data name="Meal_PlannedTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Meal_InvalidTime" xml:space="preserve"><value>Enter the time as HH:MM (24-hour) or leave it empty to use the default time.</value></data>
+
   <data name="Meal_MarkDone" xml:space="preserve"><value>Mark as DONE</value></data>
-  <data name="Meal_Undo" xml:space="preserve"><value>Undo</value></data>
-  <data name="Meal_MarkMissed" xml:space="preserve"><value>Mark as missed</value></data>
-  <data name="Meal_CopyToDate" xml:space="preserve"><value>Copy to date</value></data>
-  <data name="Meal_SaveTemplate" xml:space="preserve"><value>Save as template</value></data>
-  <data name="Meal_Copied" xml:space="preserve"><value>The meal was copied to {0}.</value></data>
+  <data name="Meal_MarkMissed" xml:space="preserve"><value>Mark as MISSED</value></data>
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmed at</value></data>
   <data name="Photo_Add" xml:space="preserve"><value>Add photo</value></data>
   <data name="Photo_LimitReached" xml:space="preserve"><value>A meal can hold at most three photographs.</value></data>
@@ -76,8 +54,11 @@
   <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>Next month</value></data>
   <data name="Calendar_OpenDay" xml:space="preserve"><value>Open day</value></data>
-  <data name="Calendar_DaySummary" xml:space="preserve"><value>{0} of {1} meals confirmed ({2:0.#} %)</value></data>
-  <data name="Calendar_PhotoHint" xml:space="preserve"><value>An image icon marks days that have photographs.</value></data>
+  <data name="Calendar_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Calendar_LegendGreen" xml:space="preserve"><value>Green: all meals eaten</value></data>
+  <data name="Calendar_LegendRed" xml:space="preserve"><value>Red: at least one meal missed</value></data>
+  <data name="Calendar_LegendPending" xml:space="preserve"><value>Gray: pending</value></data>
+  <data name="Calendar_DaySummary" xml:space="preserve"><value>{0} confirmed, {1} missed, {2} pending</value></data>
   <data name="Calendar_Weekdays" xml:space="preserve"><value>Mo Tu We Th Fr Sa Su</value></data>
   <data name="Statistics_Title" xml:space="preserve"><value>Progress and statistics</value></data>
   <data name="Statistics_PreviousWeek" xml:space="preserve"><value>Previous week</value></data>
@@ -87,10 +68,13 @@
   <data name="Statistics_Weekly" xml:space="preserve"><value>This week</value></data>
   <data name="Statistics_Monthly" xml:space="preserve"><value>This month</value></data>
   <data name="Statistics_Trend" xml:space="preserve"><value>Weekly trend</value></data>
-  <data name="Statistics_DailyText" xml:space="preserve"><value>{0} confirmed, {1} pending, {2} missed</value></data>
-  <data name="Statistics_WeeklyText" xml:space="preserve"><value>{0} of {1} meals confirmed ({2:0.#} %)</value></data>
-  <data name="Statistics_FullyCompleted" xml:space="preserve"><value>Days with all five meals confirmed: {0}</value></data>
-  <data name="Statistics_MonthlyText" xml:space="preserve"><value>{0} of {1} meals confirmed ({2:0.#} %)</value></data>
+  <data name="Statistics_MonthlyTrend" xml:space="preserve"><value>Monthly trend</value></data>
+  <data name="Statistics_YearlyTrend" xml:space="preserve"><value>Yearly trend</value></data>
+  <data name="Statistics_DayDone" xml:space="preserve"><value>Done</value></data>
+  <data name="Statistics_DayMissed" xml:space="preserve"><value>Missed</value></data>
+  <data name="Statistics_DayPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Statistics_DaysSummary" xml:space="preserve"><value>{0} days: {1} done, {2} missed</value></data>
+  <data name="Statistics_Breakdown" xml:space="preserve"><value>Done {0:0.#} % · Missed {1:0.#} % · Pending {2:0.#} %</value></data>
   <data name="Statistics_Disclaimer" xml:space="preserve"><value>These figures describe the meals you recorded; they are not a medical assessment.</value></data>
   <data name="Templates_Title" xml:space="preserve"><value>Templates</value></data>
   <data name="Template_NameTitle" xml:space="preserve"><value>Template name</value></data>
@@ -135,21 +119,16 @@
   <data name="Account_GuestInfo" xml:space="preserve"><value>You are using DietTracker without an account</value></data>
   <data name="Account_Current" xml:space="preserve"><value>Connected account</value></data>
   <data name="Account_SignIn" xml:space="preserve"><value>Sign in</value></data>
-  <data name="Account_Microsoft" xml:space="preserve"><value>Sign in with Microsoft</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Sign in with Google</value></data>
   <data name="Account_SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="Account_Sync" xml:space="preserve"><value>Synchronization</value></data>
   <data name="Account_Preview" xml:space="preserve"><value>What is in the cloud?</value></data>
   <data name="Account_Restore" xml:space="preserve"><value>Restore from the cloud</value></data>
-  <data name="Account_Switch" xml:space="preserve"><value>Switch provider</value></data>
-  <data name="Account_SwitchToMicrosoft" xml:space="preserve"><value>Switch to Microsoft</value></data>
-  <data name="Account_SwitchToGoogle" xml:space="preserve"><value>Switch to Google</value></data>
   <data name="Account_Consent" xml:space="preserve"><value>Upload my meal data and photographs</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Meals, notes, completion state, templates, preferences and photographs are uploaded. The storage limits of the selected account apply.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Explicit consent is required before the first upload.</value></data>
   <data name="Account_PrivacySummary" xml:space="preserve"><value>DietTracker keeps your data local. Synchronization writes directly into the application folder of your own account.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>No account (guest mode)</value></data>
-  <data name="Account_ProviderMicrosoft" xml:space="preserve"><value>Microsoft OneDrive</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Every essential feature works offline without an account.</value></data>
   <data name="Account_SignedIn" xml:space="preserve"><value>Signed in successfully.</value></data>
@@ -161,13 +140,6 @@
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restore from the cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Local data is not deleted. Only records that exist in the cloud are added or updated.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restore finished: {0} record(s).</value></data>
-  <data name="Account_SwitchTitle" xml:space="preserve"><value>Switch the cloud provider?</value></data>
-  <data name="Account_SwitchMessage" xml:space="preserve"><value>Choose how to continue. Cloud data is never merged or overwritten without your explicit choice.</value></data>
-  <data name="Account_SwitchKeepLocal" xml:space="preserve"><value>Keep local data and upload it to the new account</value></data>
-  <data name="Account_SwitchRestore" xml:space="preserve"><value>Restore the data from the new account</value></data>
-  <data name="Account_SwitchMerge" xml:space="preserve"><value>Merge local and cloud records, resolving conflicts</value></data>
-  <data name="Account_SwitchDone" xml:space="preserve"><value>Switch finished: {0} uploaded, {1} downloaded.</value></data>
-  <data name="Account_SwitchDetail" xml:space="preserve"><value>Current provider: {0} ({1}). Local records: {2}. Unsynchronized changes: {3}.</value></data>
   <data name="Account_Environment" xml:space="preserve"><value>Environment</value></data>
   <data name="Onboarding_Title" xml:space="preserve"><value>Welcome to DietTracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Plan five meals a day, confirm what you actually ate and keep the history. Signing in enables secure synchronization and data recovery after reinstalling or on another PC.</value></data>
@@ -182,6 +154,8 @@
   <data name="Sync_PendingChanges" xml:space="preserve"><value>Pending changes</value></data>
   <data name="Sync_Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="Sync_AuthenticationRequired" xml:space="preserve"><value>Sign in again</value></data>
+  <data name="Sync_BalloonTitle" xml:space="preserve"><value>DietTracker synchronized</value></data>
+  <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} uploaded, {1} downloaded.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronization error</value></data>
   <data name="Sync_Paused" xml:space="preserve"><value>Synchronization paused</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Last successful synchronization: {0}</value></data>
@@ -191,8 +165,6 @@
   <data name="Auth_auth_no_account" xml:space="preserve"><value>There is no connected account.</value></data>
   <data name="Auth_auth_interaction_required" xml:space="preserve"><value>The provider requires a new authorization.</value></data>
   <data name="Auth_auth_silent_failed" xml:space="preserve"><value>The session could not be restored silently.</value></data>
-  <data name="Auth_auth_microsoft_failed" xml:space="preserve"><value>Microsoft sign-in failed.</value></data>
-  <data name="Auth_graph_unauthorized" xml:space="preserve"><value>Microsoft Graph rejected the request; sign in again.</value></data>
   <data name="Auth_google_unauthorized" xml:space="preserve"><value>Google rejected the request; sign in again.</value></data>
   <data name="Auth_google_insufficient_permissions" xml:space="preserve"><value>The account does not grant permission for the application folder.</value></data>
   <data name="Auth_google_refresh_rejected" xml:space="preserve"><value>The Google authorization expired or was revoked.</value></data>
@@ -201,7 +173,12 @@
   <data name="Auth_google_code_exchange_failed" xml:space="preserve"><value>Exchanging the authorization code failed.</value></data>
   <data name="Auth_google_identity_unavailable" xml:space="preserve"><value>The Google account identity could not be read.</value></data>
   <data name="Auth_google_network_error" xml:space="preserve"><value>Network error while signing in with Google.</value></data>
-  <data name="Auth_switch_signin_failed" xml:space="preserve"><value>Signing in to the new provider failed.</value></data>
+  <data name="Auth_google_not_configured" xml:space="preserve"><value>Google sign-in is not configured. Set googleClientId in the DietTracker appsettings.json file and restart the application (see docs/authentication/setup.md).</value></data>
+  <data name="Auth_google_access_denied" xml:space="preserve"><value>Google denied the authorization request.</value></data>
+  <data name="Auth_google_authorization_cancelled" xml:space="preserve"><value>The Google authorization was cancelled.</value></data>
+  <data name="Auth_google_invalid_token_response" xml:space="preserve"><value>Google returned an unexpected token response.</value></data>
+  <data name="Auth_google_refresh_failed" xml:space="preserve"><value>The Google session could not be refreshed; sign in again.</value></data>
+  <data name="Auth_google_refresh_token_missing" xml:space="preserve"><value>No Google refresh token is stored; sign in again.</value></data>
   <data name="Auth_sync_offline" xml:space="preserve"><value>There is no internet connection.</value></data>
   <data name="Auth_sync_authentication_required" xml:space="preserve"><value>Sign in again to continue synchronizing.</value></data>
   <data name="Auth_sync_quota_exceeded" xml:space="preserve"><value>The cloud storage space is full.</value></data>
@@ -220,11 +197,6 @@
   <data name="Privacy_DisableSyncMessage" xml:space="preserve"><value>The authorization is kept, but nothing is uploaded or downloaded. Files already in the cloud are not deleted.</value></data>
   <data name="Privacy_DisableSyncDone" xml:space="preserve"><value>Synchronization was disabled.</value></data>
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>The title is too long.</value></data>
-  <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>The description is too long.</value></data>
-  <data name="Error_meal_notes_tooLong" xml:space="preserve"><value>The notes are too long.</value></data>
-  <data name="Error_meal_quantities_tooMany" xml:space="preserve"><value>Too many ingredients.</value></data>
-  <data name="Error_meal_ingredient_negativeAmount" xml:space="preserve"><value>The quantity cannot be negative.</value></data>
-  <data name="Error_meal_ingredient_amountTooLarge" xml:space="preserve"><value>The quantity is unrealistically large.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>The category is not one of the five permanent slots.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Only JPEG, PNG and WEBP images are supported.</value></data>
   <data name="Error_photo_tooLarge" xml:space="preserve"><value>The photograph exceeds 10 MB.</value></data>
@@ -232,4 +204,6 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>The content does not match the image format.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>A meal can hold at most three photographs.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>The selected file no longer exists.</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Food description</value></data>
+  <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>The description is too long.</value></data>
 </root>

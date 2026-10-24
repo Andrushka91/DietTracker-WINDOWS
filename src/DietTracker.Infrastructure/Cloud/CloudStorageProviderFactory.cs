@@ -1,13 +1,12 @@
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Infrastructure.Cloud.GoogleDrive;
-using DietTracker.Infrastructure.Cloud.OneDrive;
 
 namespace DietTracker.Infrastructure.Cloud;
 
 /// <summary>
 /// Creates the storage provider that belongs to an account. This is the single place where the
-/// engine is bound to a concrete provider, so adding a third cloud later does not touch the
+/// engine is bound to a concrete provider, so adding a second cloud later does not touch the
 /// synchronization logic.
 /// </summary>
 public sealed class CloudStorageProviderFactory : ICloudStorageProviderFactory
@@ -29,11 +28,6 @@ public sealed class CloudStorageProviderFactory : ICloudStorageProviderFactory
     /// <inheritdoc />
     public ICloudStorageProvider Create(ProviderType providerType) => providerType switch
     {
-        ProviderType.Microsoft => new OneDriveStorageProvider(
-            _authentication.Get(ProviderType.Microsoft),
-            _httpClientFactory.CreateClient("cloud"),
-            Resolve<ILogger<OneDriveStorageProvider>>()),
-
         ProviderType.Google => new GoogleDriveStorageProvider(
             _authentication.Get(ProviderType.Google),
             _httpClientFactory.CreateClient("cloud"),

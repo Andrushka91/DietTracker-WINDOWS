@@ -26,10 +26,11 @@ public interface IMealTrackingService
     /// <summary>Persists an inline edit, validates it, bumps the revision and journals the change for sync.</summary>
     Task<ValidationResult> SaveEditsAsync(MealEntry entry, CancellationToken cancellationToken = default);
 
+    /// <summary>Confirms the meal as eaten (today or a past date; future meals stay pending).</summary>
     Task<MealEntry> MarkDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
 
-    Task<MealEntry> UndoDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
-
+    /// <summary>Explicitly marks the meal as missed (today or a past date; future meals stay
+    /// pending). Idempotent: an already missed meal is returned unchanged.</summary>
     Task<MealEntry> MarkMissedAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
 
     /// <summary>Copies a meal to another date. The copy starts PENDING and carries no photographs.</summary>

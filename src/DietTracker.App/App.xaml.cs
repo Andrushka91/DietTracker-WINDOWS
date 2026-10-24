@@ -70,13 +70,11 @@ public partial class App : Application
         services.AddLogging(builder => builder.AddDietTrackerLogging(paths.LogDirectory));
 
         var providerSettings = ProviderSettings.Load();
-        services.AddDietTrackerInfrastructure(
-            microsoft =>
-            {
-                microsoft.ClientId = providerSettings.MicrosoftClientId;
-                microsoft.Authority = providerSettings.MicrosoftAuthority;
-            },
-            google => google.ClientId = providerSettings.GoogleClientId);
+        services.AddDietTrackerInfrastructure(google =>
+        {
+            google.ClientId = providerSettings.GoogleClientId;
+            google.ClientSecret = providerSettings.GoogleClientSecret;
+        });
 
         // Windows integration and UI services
         services.AddSingleton<IUserInterfaceContext, WindowHandleProvider>();
@@ -100,10 +98,6 @@ public partial class App : Application
             ValidateOnBuild = false,
             ValidateScopes = false,
         });
-
-        // The ingredient editor exposes localization through a lookup so that the view models stay free
-        // of XAML types while still using the application resources instead of hardcoded strings.
-        IngredientLineViewModel.LocalizationLookup = key => provider.GetRequiredService<ILocalizationService>().Get(key);
 
         return provider;
     }
