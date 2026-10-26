@@ -58,6 +58,7 @@
 
   <data name="Meal_Title" xml:space="preserve"><value>Titlu</value></data>
   <data name="Meal_PlannedTime" xml:space="preserve"><value>Ora</value></data>
+  <data name="Meal_TimeLabel" xml:space="preserve"><value>Ora</value></data>
   <data name="Meal_InvalidTime" xml:space="preserve"><value>Introdu ora în formatul HH:MM (24 de ore) sau lasă gol pentru ora implicită.</value></data>
 
   <data name="Meal_MarkDone" xml:space="preserve"><value>Marchează ca DONE</value></data>

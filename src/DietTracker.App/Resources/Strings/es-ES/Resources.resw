@@ -42,6 +42,7 @@
   <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Guardar como plantilla</value></data>
   <data name="Meal_Title" xml:space="preserve"><value>Título</value></data>
   <data name="Meal_PlannedTime" xml:space="preserve"><value>Hora</value></data>
+  <data name="Meal_TimeLabel" xml:space="preserve"><value>Hora</value></data>
   <data name="Meal_InvalidTime" xml:space="preserve"><value>Introduce la hora como HH:MM (24 h) o deja el campo vacío para usar la hora predeterminada.</value></data>
 
   <data name="Meal_MarkDone" xml:space="preserve"><value>Marcar como DONE</value></data>

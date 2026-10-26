@@ -58,11 +58,12 @@
                 </Border>
             </Grid>
 
-            <!-- Inline editor: shown inside the card, no navigation required -->
+            <!-- Inline editor: shown inside the card, no navigation required. Fills row 1 (the row
+                 the read content used), so editing never changes the card height. -->
             <Grid
                 x:Name="EditorPanel"
                 Grid.Row="1"
-                VerticalAlignment="Top"
+                VerticalAlignment="Stretch"
                 Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
                 <controls:MealCardEditorControl Card="{x:Bind Card}" />
             </Grid>

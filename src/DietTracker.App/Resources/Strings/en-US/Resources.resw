@@ -42,6 +42,7 @@
   <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Save as template</value></data>
   <data name="Meal_Title" xml:space="preserve"><value>Title</value></data>
   <data name="Meal_PlannedTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Meal_TimeLabel" xml:space="preserve"><value>Time</value></data>
   <data name="Meal_InvalidTime" xml:space="preserve"><value>Enter the time as HH:MM (24-hour) or leave it empty to use the default time.</value></data>
 
   <data name="Meal_MarkDone" xml:space="preserve"><value>Mark as DONE</value></data>
