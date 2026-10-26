@@ -79,6 +79,16 @@
                 Spacing="6"
                 VerticalAlignment="Top"
                 Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
+                <!-- Read-mode messages (e.g. "photo was already uploaded" from the action bar's
+                     add-photo button); closable, because nothing else clears an error here. While
+                     editing the ReadPanel is collapsed and the editor's own InfoBar takes over. -->
+                <InfoBar
+                    Severity="Warning"
+                    IsClosable="True"
+                    Closing="OnReadInfoBarClosing"
+                    Message="{x:Bind Card.ErrorMessage, Mode=OneWay}"
+                    IsOpen="{x:Bind Card.HasError, Mode=OneWay}"
+                    Visibility="{x:Bind Card.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
                 <TextBlock
                     Text="{x:Bind Card.Title, Mode=OneWay}"
                     FontSize="16"
@@ -93,12 +103,13 @@
                     TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
-            <!-- Photograph gallery: appears only when the meal actually has photos (HasPhotos) and is
-                 hidden completely while the inline editor is open - it comes back by itself when
-                 editing finishes. Each cell carries the project's grey border, so separators show
-                 between the photos, and a frame of the same grey closes the group; the extra 8 px
-                 of margin keeps the action buttons at a distance from it. Thumbnails are 256 px,
-                 so the doubled 104 px cells stay sharp. -->
+            <!-- Photograph gallery (framed grid pattern): appears only when the meal actually has photos
+                 (HasPhotos) and is hidden completely while the inline editor is open - it comes back
+                 by itself when editing finishes. Every cell and the frame carry the project's grey
+                 SubtleTextBrush border (CardStroke was too faint to see), separators show between the
+                 photos, each cell has an X to delete it, and the extra 8 px of margin keeps the
+                 action buttons at a distance from the gallery. Thumbnails are 256 px, so the
+                 doubled 104 px cells stay sharp. -->
             <Grid
                 Grid.Row="2"
                 Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
@@ -106,7 +117,7 @@
                     Margin="0,0,0,8"
                     HorizontalAlignment="Left"
                     Visibility="{x:Bind Card.HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
-                    BorderBrush="{StaticResource CardBorderBrush}"
+                    BorderBrush="{StaticResource SubtleTextBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="6">
@@ -122,14 +133,37 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:MealPhotoViewModel">
-                                <Border
-                                    BorderBrush="{StaticResource CardBorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="4">
-                                    <Button Padding="0" BorderThickness="0" Background="Transparent" Click="OnOpenPhoto" Tag="{x:Bind}">
-                                        <Image Width="104" Height="104" Stretch="UniformToFill" Source="{x:Bind ThumbnailPath}" />
-                                    </Button>
-                                </Border>
+                                <Grid>
+                                    <Border
+                                        BorderBrush="{StaticResource SubtleTextBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                        <Button Padding="0" BorderThickness="0" Background="Transparent" Click="OnOpenPhoto" Tag="{x:Bind}">
+                                            <Image Width="104" Height="104" Stretch="UniformToFill" Source="{x:Bind ThumbnailPath}" />
+                                        </Button>
+                                    </Border>
+                                    <!-- Delete: a grey X disc in the top-right corner over the photo.
+                                         The host asks for confirmation before removing it. -->
+                                    <Border
+                                        Background="{StaticResource CardBackgroundBrush}"
+                                        CornerRadius="12"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="0,4,4,0">
+                                        <Button
+                                            Width="24"
+                                            Height="24"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            Click="OnDeletePhoto"
+                                            Tag="{x:Bind}"
+                                            ToolTipService.ToolTip="Delete photo"
+                                            AutomationProperties.Name="Delete photo">
+                                            <FontIcon Glyph="&#xE711;" FontSize="12" />
+                                        </Button>
+                                    </Border>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
