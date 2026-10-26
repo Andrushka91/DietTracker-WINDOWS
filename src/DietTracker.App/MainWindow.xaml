@@ -13,13 +13,17 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Synchronization status strip: never claims "Synced" before the provider confirmed it. -->
+        <!-- Synchronization status strip: never claims "Synced" before the provider confirmed it.
+             A confirmation hides itself after a few seconds (see MainWindow.Notifications.cs), a
+             warning or an error stays until it is resolved; hovering the strip pauses the countdown. -->
         <InfoBar
             x:Name="StatusBar"
             Grid.Row="0"
             IsOpen="False"
             IsClosable="True"
-            Severity="Informational" />
+            Severity="Informational"
+            PointerEntered="OnStatusBarPointerEntered"
+            PointerExited="OnStatusBarPointerExited" />
 
         <NavigationView
             x:Name="Navigation"

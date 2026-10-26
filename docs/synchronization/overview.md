@@ -68,7 +68,9 @@ because the five cards are permanent.
 
 The engine reports `NotConfigured`, `Synced`, `Syncing`, `PendingChanges`, `Offline`,
 `AuthenticationRequired`, `Error` and `Paused`. `Synced` is only reported after the provider confirmed
-the upload, and the last successful synchronization time is shown next to it.
+the upload, and the last successful synchronization time is shown next to it. That confirmation hides
+itself after six seconds (it waits while the pointer rests on it, and it comes back for the next
+finished cycle); offline, sign-in and error states stay on screen until they are resolved.
 
 ## Restore and recovery
 
