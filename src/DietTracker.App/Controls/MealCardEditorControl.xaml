@@ -50,10 +50,12 @@
                     Text="{x:Bind Card.PlannedTimeText, Mode=TwoWay}" />
                 <!-- Photo glyph with the upload arrow layered on top: the Segoe icon glyphs share one
                      fixed origin and are designed to overlay, composing a single "upload photo" mark.
-                     No padding override, so the button keeps the standard height and lines up with the
-                     other buttons of the bar. -->
+                     Bottom-aligned so the button lines up with the time INPUT box; without it the
+                     button centres against the whole field including its "Time" header and floats
+                     above the input. No padding override, so it keeps the standard button height. -->
                 <Button
                     x:Uid="Photo_Add"
+                    VerticalAlignment="Bottom"
                     ToolTipService.ToolTip="Add photo"
                     AutomationProperties.Name="Add photo"
                     Command="{x:Bind Card.AddPhotoCommand}">
