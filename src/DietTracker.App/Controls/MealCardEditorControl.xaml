@@ -39,17 +39,18 @@
             IsOpen="{x:Bind Card.HasError, Mode=OneWay}"
             Visibility="{x:Bind Card.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
-        <!-- Bottom bar of the editor, kept compact so the description keeps the room: the "Time"
-             label sits inline beside a slim input (no tall header), with the photo button next to
-             it on the bottom-left and the Save / Cancel buttons pinned to the right edge. -->
-        <Grid Grid.Row="3" ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <!-- Bottom bar of the editor: the whole control row (Time + input + photo on the left,
+             Save / Cancel on the right) is grouped and centred in the bottom space, so the card
+             stays balanced at any width. The "Time" label is a slim inline caption (no tall
+             header), which keeps the row compact and symmetric. -->
+        <StackPanel
+            Grid.Row="3"
+            Orientation="Horizontal"
+            Spacing="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <TextBlock x:Uid="Meal_TimeLabel" Text="Time" Style="{StaticResource CaptionStyle}" VerticalAlignment="Center" />
                 <!-- The time is typed as plain digits ("HH:MM", 24 hour); the clock flyout of the WinUI
                      TimePicker is avoided on purpose (it crashes on confirm and is heavy for this input).
@@ -60,15 +61,14 @@
                     MaxLength="5"
                     InputScope="Number"
                     PlaceholderText="HH:MM"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="Center"
                     TextChanged="OnPlannedTimeTextChanged"
                     Text="{x:Bind Card.PlannedTimeText, Mode=TwoWay}" />
                 <!-- Photo glyph with the upload arrow layered on top: the Segoe icon glyphs share one
-                     fixed origin and are designed to overlay, composing a single "upload photo" mark.
-                     Bottom-aligned so the button lines up with the time input box. -->
+                     fixed origin and are designed to overlay, composing a single "upload photo" mark. -->
                 <Button
                     x:Uid="Photo_Add"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="Center"
                     ToolTipService.ToolTip="Add photo"
                     AutomationProperties.Name="Add photo"
                     Command="{x:Bind Card.AddPhotoCommand}">
@@ -79,12 +79,7 @@
                 </Button>
             </StackPanel>
 
-            <StackPanel
-                Grid.Column="2"
-                Orientation="Horizontal"
-                Spacing="6"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <Button
                     x:Uid="Common_Save"
                     Content="Save"
@@ -93,6 +88,6 @@
                 <Button x:Uid="Common_Cancel" Content="Cancel" Command="{x:Bind Card.CancelCommand}" />
                 <ProgressRing IsActive="{x:Bind Card.IsBusy, Mode=OneWay}" Width="20" Height="20" />
             </StackPanel>
-        </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>
