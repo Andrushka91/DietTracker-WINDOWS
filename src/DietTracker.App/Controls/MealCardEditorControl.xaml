@@ -15,39 +15,8 @@
             Header="Food description"
             AcceptsReturn="True"
             TextWrapping="Wrap"
-            Height="60"
+            Height="110"
             Text="{x:Bind Card.Ingredients, Mode=TwoWay}" />
-
-        <controls:UniformWrapPanel UniformHeight="False" MinItemWidth="96" HorizontalSpacing="8" VerticalSpacing="8">
-            <!-- The time is typed as plain digits ("HH:MM", 24 hour); the clock flyout of the WinUI
-                 TimePicker is avoided on purpose (it crashes on confirm and is heavy for this input).
-                 The width is exactly enough for the five typed characters. -->
-            <TextBox
-                x:Uid="Meal_PlannedTime"
-                Header="Time"
-                Width="72"
-                MaxLength="5"
-                InputScope="Number"
-                PlaceholderText="HH:MM"
-                VerticalAlignment="Bottom"
-                TextChanged="OnPlannedTimeTextChanged"
-                Text="{x:Bind Card.PlannedTimeText, Mode=TwoWay}" />
-            <!-- Photo glyph with the upload arrow layered on top: the Segoe icon glyphs share one
-                 fixed origin and are designed to overlay, composing a single "upload photo" mark.
-                 No padding override, so the button keeps the standard height and lines up with the
-                 other buttons of the card. -->
-            <Button
-                x:Uid="Photo_Add"
-                VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Add photo"
-                AutomationProperties.Name="Add photo"
-                Command="{x:Bind Card.AddPhotoCommand}">
-                <Grid Width="20" Height="20">
-                    <FontIcon Glyph="&#xE91B;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    <FontIcon Glyph="&#xE898;" FontSize="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,1" />
-                </Grid>
-            </Button>
-        </controls:UniformWrapPanel>
 
         <InfoBar
             Severity="Warning"
@@ -56,14 +25,59 @@
             IsOpen="{x:Bind Card.HasError, Mode=OneWay}"
             Visibility="{x:Bind Card.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
-        <StackPanel Orientation="Horizontal" Spacing="6">
-            <Button
-                x:Uid="Common_Save"
-                Content="Save"
-                Style="{StaticResource AccentButtonStyle}"
-                Command="{x:Bind Card.SaveCommand}" />
-            <Button x:Uid="Common_Cancel" Content="Cancel" Command="{x:Bind Card.CancelCommand}" />
-            <ProgressRing IsActive="{x:Bind Card.IsBusy, Mode=OneWay}" Width="20" Height="20" />
-        </StackPanel>
+        <!-- Bottom bar of the editor: the planned time (with its photo button, their usual corner)
+             stays in the bottom-left position while the Save / Cancel buttons are pinned to the
+             right edge; the middle column absorbs the free space between them. -->
+        <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <!-- The time is typed as plain digits ("HH:MM", 24 hour); the clock flyout of the WinUI
+                     TimePicker is avoided on purpose (it crashes on confirm and is heavy for this input).
+                     The width is exactly enough for the five typed characters. -->
+                <TextBox
+                    x:Uid="Meal_PlannedTime"
+                    Header="Time"
+                    Width="72"
+                    MaxLength="5"
+                    InputScope="Number"
+                    PlaceholderText="HH:MM"
+                    TextChanged="OnPlannedTimeTextChanged"
+                    Text="{x:Bind Card.PlannedTimeText, Mode=TwoWay}" />
+                <!-- Photo glyph with the upload arrow layered on top: the Segoe icon glyphs share one
+                     fixed origin and are designed to overlay, composing a single "upload photo" mark.
+                     No padding override, so the button keeps the standard height and lines up with the
+                     other buttons of the bar. -->
+                <Button
+                    x:Uid="Photo_Add"
+                    ToolTipService.ToolTip="Add photo"
+                    AutomationProperties.Name="Add photo"
+                    Command="{x:Bind Card.AddPhotoCommand}">
+                    <Grid Width="20" Height="20">
+                        <FontIcon Glyph="&#xE91B;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <FontIcon Glyph="&#xE898;" FontSize="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,1" />
+                    </Grid>
+                </Button>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Horizontal"
+                Spacing="6"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom">
+                <Button
+                    x:Uid="Common_Save"
+                    Content="Save"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind Card.SaveCommand}" />
+                <Button x:Uid="Common_Cancel" Content="Cancel" Command="{x:Bind Card.CancelCommand}" />
+                <ProgressRing IsActive="{x:Bind Card.IsBusy, Mode=OneWay}" Width="20" Height="20" />
+            </StackPanel>
+        </Grid>
     </StackPanel>
 </UserControl>
