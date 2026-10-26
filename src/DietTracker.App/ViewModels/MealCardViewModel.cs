@@ -173,6 +173,9 @@ public sealed partial class MealCardViewModel : ObservableObject
 
     public string PhotoLimitText => $"{Photos.Count}/{Core.BusinessRules.PhotoRules.MaxPhotosPerMeal}";
 
+    /// <summary>Caption of the photograph gallery of this card ("Photos").</summary>
+    public string GalleryHeader => _host.Localize("Photo_GalleryHeader");
+
     /// <summary>
     /// Parses the typed planned time. The text box keeps the "HH:MM" shape (24 hour, two digits per
     /// part), so anything else - including a partial input - is rejected.

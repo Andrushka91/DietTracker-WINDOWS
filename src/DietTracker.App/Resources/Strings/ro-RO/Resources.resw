@@ -66,8 +66,8 @@
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmat la</value></data>
 
   <data name="Photo_Add" xml:space="preserve"><value>Adaugă fotografie</value></data>
+  <data name="Photo_GalleryHeader" xml:space="preserve"><value>Fotografii</value></data>
   <data name="Photo_LimitReached" xml:space="preserve"><value>O masă poate avea cel mult trei fotografii.</value></data>
-  <data name="Photo_AlreadyUploaded" xml:space="preserve"><value>Fotografia a fost deja încărcată.</value></data>
   <data name="Photo_RemoveTitle" xml:space="preserve"><value>Elimini fotografia?</value></data>
   <data name="Photo_RemoveMessage" xml:space="preserve"><value>Fotografia va fi ștearsă de pe acest dispozitiv și din contul conectat la următoarea sincronizare.</value></data>
 
@@ -229,6 +229,7 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>Conținutul nu corespunde formatului imaginii.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>O masă poate avea cel mult trei fotografii.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>Fișierul selectat nu mai există.</value></data>
+  <data name="Error_photo_duplicate" xml:space="preserve"><value>Fotografia a fost deja încărcată.</value></data>
   <data name="Meal_Ingredients" xml:space="preserve"><value>Descriere</value></data>
   <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>Descrierea este prea lungă.</value></data>
 </root>

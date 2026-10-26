@@ -48,4 +48,18 @@ public static class PhotoValidator
                 "photo.limit.reached",
                 nameof(currentPhotoCount),
                 $"A meal can hold at most {PhotoRules.MaxPhotosPerMeal} photographs."));
+
+    /// <summary>
+    /// Validates that the bytes being attached are not already attached to the same meal. Identical
+    /// photographs are never stored twice: the second upload is rejected so the user can be told the
+    /// photo is already there instead of watching a thumbnail appear and disappear.
+    /// </summary>
+    /// <param name="alreadyAttached">True when a photograph with the same SHA-256 exists for this meal.</param>
+    public static ValidationResult ValidateNoDuplicate(bool alreadyAttached)
+        => alreadyAttached
+            ? ValidationResult.Failure(new ValidationFailure(
+                "photo.duplicate",
+                nameof(alreadyAttached),
+                "The same photograph is already attached to this meal."))
+            : ValidationResult.Success();
 }

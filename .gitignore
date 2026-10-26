@@ -50,3 +50,10 @@ nul
 
 ## Local scratch output (development helper logs)
 _*.log
+
+## Scratch UI screenshots must never land in the repository: the only images owned by the application
+## live in src/DietTracker.App/Assets, so any image in the root belongs to a temporary verification run.
+/*.png
+
+## Same for one-off helper scripts kept at the root while developing (tools/ holds the supported ones).
+/_*.ps1

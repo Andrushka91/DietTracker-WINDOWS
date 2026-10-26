@@ -80,6 +80,19 @@ public sealed partial class PhotoStore : IPhotoStore
     }
 
     /// <inheritdoc />
+    public async Task<string> ComputeContentHashAsync(string sourcePath, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+
+        if (!File.Exists(sourcePath))
+        {
+            return string.Empty;
+        }
+
+        return await ComputeHashAsync(sourcePath, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public string? GetFullSizePath(string localFileId)
         => string.IsNullOrEmpty(localFileId) ? null : PathSanitizer.CombineInsideDirectory(_paths.PhotoDirectory, localFileId);
 

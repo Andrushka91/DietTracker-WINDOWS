@@ -1,3 +1,4 @@
+using DietTracker.App.Services;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Core.Models;
@@ -33,7 +34,7 @@ public sealed partial class DashboardViewModel
         {
             card.ErrorMessage = string.Join(
                 Environment.NewLine,
-                validation.Failures.Select(f => _localization.Get(f.Code)));
+                validation.Failures.Select(f => _localization.Get(LocalizationKeys.ForValidation(f.Code))));
             return;
         }
 
@@ -83,22 +84,17 @@ public sealed partial class DashboardViewModel
         var files = await _filePicker.PickImagesAsync(remaining, cancellationToken);
         card.ErrorMessage = null;
 
-        // The service silently keeps a single copy when identical bytes are already attached to
-        // this meal (dedupe by content hash); track what the card knows so the user gets told.
-        var known = card.Photos.Select(photo => photo.Id).ToHashSet();
         foreach (var file in files)
         {
             try
             {
-                var imported = await _tracking.AddPhotoAsync(card.Id, file, cancellationToken);
-                if (!known.Add(imported.Id))
-                {
-                    card.ErrorMessage = _localization.Get("Photo_AlreadyUploaded");
-                }
+                await _tracking.AddPhotoAsync(card.Id, file, cancellationToken);
             }
             catch (Core.BusinessRules.ValidationException ex)
             {
-                card.ErrorMessage = _localization.Get(ex.Result.Failures[0].Code);
+                // The reason code is a dotted domain code ("photo.duplicate"); it becomes the resource
+                // key of the explanation through the single mapping used for every validation message.
+                card.ErrorMessage = _localization.Get(LocalizationKeys.ForValidation(ex.Result.Failures[0].Code));
             }
         }
 

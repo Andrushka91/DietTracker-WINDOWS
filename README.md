@@ -25,7 +25,10 @@ data recovery.
   shows the three counts as coloured squares, the calendar colours each day accordingly, and the
   statistics split every period into done, missed and pending shares.
 * **Photographs** (JPEG/PNG/WEBP, max 3 per meal, max 10 MB each) with automatic thumbnails stored as
-  files in the private application data folder - never as database BLOBs.
+  files in the private application data folder - never as database BLOBs. They are presented in a grey
+  framed gallery inside the card: the header counts them, a tap opens one full size and every tile has
+  its own X to remove it. A photograph whose bytes are already attached to that meal is refused with
+  "Photo was already uploaded" rather than stored twice.
 * **Native Windows notifications** with snooze, "mark as DONE" and deep links back into the app.
 * **Google account** sign-in (OAuth 2.0 with PKCE in the system browser, Google Drive
   `appDataFolder`) with silent session restoration.

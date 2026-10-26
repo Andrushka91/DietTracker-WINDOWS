@@ -13,12 +13,22 @@ public sealed partial class MealTrackingService
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFilePath);
 
         var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
-        var current = await _photos.CountForMealAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
+        var attached = await _photos.GetForMealAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
 
-        var slotCheck = Validation.PhotoValidator.ValidateSlotAvailability(current);
+        var slotCheck = Validation.PhotoValidator.ValidateSlotAvailability(attached.Count);
         if (!slotCheck.IsValid)
         {
             throw new ValidationException(slotCheck);
+        }
+
+        // Duplicate guard, evaluated before a single byte is copied: the source is hashed and the hash
+        // is compared with the photographs of this meal, so uploading the same picture twice is refused
+        // with an explanation instead of quietly being merged into the first one afterwards.
+        var sourceHash = await _photoStore.ComputeContentHashAsync(sourceFilePath, cancellationToken).ConfigureAwait(false);
+        var duplicateCheck = Validation.PhotoValidator.ValidateNoDuplicate(HasSameContent(attached, sourceHash, null));
+        if (!duplicateCheck.IsValid)
+        {
+            throw new ValidationException(duplicateCheck);
         }
 
         var import = await _photoStore.ImportAsync(mealEntryId, sourceFilePath, cancellationToken).ConfigureAwait(false);
@@ -30,21 +40,36 @@ public sealed partial class MealTrackingService
 
         var photo = import.Photo;
 
-        // Dedupe: if the very same bytes are already attached to this meal, keep a single copy.
-        var existing = await _photos.FindByContentHashAsync(photo.ContentHash, cancellationToken).ConfigureAwait(false);
-        if (existing is not null && existing.MealEntryId == mealEntryId)
+        // Same rule again after the copy, to close the window between the check and the write: identical
+        // bytes must still end up as a single photograph, so the fresh copy is discarded and the upload
+        // is reported as the duplicate it is.
+        var saved = await _photos.GetForMealAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
+        if (HasSameContent(saved, photo.ContentHash, photo.Id))
         {
             await _photoStore.DeleteFilesAsync(photo, cancellationToken).ConfigureAwait(false);
-            return existing;
+            throw new ValidationException(Validation.PhotoValidator.ValidateNoDuplicate(true));
         }
 
         await _photos.AddAsync(photo, cancellationToken).ConfigureAwait(false);
         await _journal.RecordUpsertAsync(EntityType.MealPhoto, photo.Id, 1, cancellationToken).ConfigureAwait(false);
 
         // Attaching evidence is optional: the entry itself is only touched to refresh its timestamp.
-        entry.Photos = (await _photos.GetForMealAsync(mealEntryId, cancellationToken).ConfigureAwait(false)).ToList();
+        // The new photograph is the most recent one, so appending it is the order the query would give.
+        entry.Photos = saved.Append(photo).ToList();
         return photo;
     }
+
+    /// <summary>
+    /// True when one of a meal's photographs already carries exactly these bytes. The comparison is
+    /// scoped to the meal on purpose: the same picture may legitimately illustrate two different meals,
+    /// and a table-wide hash lookup cannot tell the two cases apart.
+    /// </summary>
+    /// <param name="attached">The photographs currently attached to one meal.</param>
+    /// <param name="contentHash">SHA-256 of the bytes being attached; empty never matches.</param>
+    /// <param name="excludeId">Identifier of the photograph being added, when it is already persisted.</param>
+    private static bool HasSameContent(IEnumerable<MealPhoto> attached, string contentHash, Guid? excludeId)
+        => !string.IsNullOrEmpty(contentHash)
+           && attached.Any(photo => photo.Id != excludeId && photo.ContentHash == contentHash);
 
     /// <inheritdoc />
     public async Task RemovePhotoAsync(Guid photoId, CancellationToken cancellationToken = default)

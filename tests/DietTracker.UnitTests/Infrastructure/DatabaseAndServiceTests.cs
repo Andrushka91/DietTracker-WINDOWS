@@ -403,6 +403,44 @@ public sealed class MealTrackingServiceTests
     }
 
     [Fact]
+    public async Task The_same_photograph_is_refused_when_it_is_uploaded_twice()
+    {
+        await using var environment = await TestEnvironment.CreateAsync();
+        var day = await environment.Tracking.GetDayAsync(new DateOnly(2026, 3, 10));
+        var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
+        var photoPath = CreateTestJpeg(environment.RootPath);
+
+        var photo = await environment.Tracking.AddPhotoAsync(lunch.Id, photoPath);
+
+        var exception = await Assert.ThrowsAsync<global::DietTracker.Core.BusinessRules.ValidationException>(
+            () => environment.Tracking.AddPhotoAsync(lunch.Id, photoPath));
+
+        Assert.Contains(exception.Result.Failures, f => f.Code == "photo.duplicate");
+
+        // The repeat is refused before anything is copied: the meal still has exactly one photograph.
+        var attached = await environment.Tracking.GetPhotosAsync(lunch.Id);
+        Assert.Single(attached);
+        Assert.Equal(photo.Id, attached[0].Id);
+    }
+
+    [Fact]
+    public async Task The_same_photograph_may_be_attached_to_a_different_meal()
+    {
+        await using var environment = await TestEnvironment.CreateAsync();
+        var day = await environment.Tracking.GetDayAsync(new DateOnly(2026, 3, 10));
+        var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
+        var dinner = day.First(e => e.MealCategoryKey == MealCategoryKey.Dinner);
+        var photoPath = CreateTestJpeg(environment.RootPath);
+
+        var lunchPhoto = await environment.Tracking.AddPhotoAsync(lunch.Id, photoPath);
+        var dinnerPhoto = await environment.Tracking.AddPhotoAsync(dinner.Id, photoPath);
+
+        // Identical bytes are only a duplicate within one meal; two meals may show the same dish.
+        Assert.NotEqual(lunchPhoto.Id, dinnerPhoto.Id);
+        Assert.Equal(lunchPhoto.ContentHash, dinnerPhoto.ContentHash);
+    }
+
+    [Fact]
     public async Task Photographs_are_available_offline_through_the_local_photo_store()
     {
         await using var environment = await TestEnvironment.CreateAsync();

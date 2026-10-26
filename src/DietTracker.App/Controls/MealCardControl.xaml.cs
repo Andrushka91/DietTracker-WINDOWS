@@ -29,23 +29,6 @@ public sealed partial class MealCardControl : UserControl
         set => SetValue(CardProperty, value);
     }
 
-    private void OnOpenPhoto(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { Tag: MealPhotoViewModel photo })
-        {
-            _ = Card?.OpenPhotoCommand.ExecuteAsync(photo);
-        }
-    }
-
-    /// <summary>Removes the photograph whose X was tapped; the host asks for confirmation.</summary>
-    private void OnDeletePhoto(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { Tag: MealPhotoViewModel photo })
-        {
-            _ = Card?.RemovePhotoCommand.ExecuteAsync(photo);
-        }
-    }
-
     /// <summary>Clears the read-mode error when the user dismisses its InfoBar.</summary>
     private void OnReadInfoBarClosing(InfoBar sender, InfoBarClosingEventArgs args)
     {

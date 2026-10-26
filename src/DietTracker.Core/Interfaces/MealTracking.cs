@@ -47,6 +47,13 @@ public interface IMealTrackingService
 
     Task UpdateCategoryAsync(MealCategory category, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Copies a photograph into the local store and attaches it to a meal.
+    /// </summary>
+    /// <exception cref="BusinessRules.ValidationException">
+    /// The file is not a supported image, the meal already holds three photographs, or the very same
+    /// bytes are already attached to this meal (<c>photo.duplicate</c>) - duplicates are refused.
+    /// </exception>
     Task<MealPhoto> AddPhotoAsync(Guid mealEntryId, string sourceFilePath, CancellationToken cancellationToken = default);
 
     Task RemovePhotoAsync(Guid photoId, CancellationToken cancellationToken = default);

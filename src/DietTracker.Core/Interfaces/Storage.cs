@@ -45,6 +45,12 @@ public interface IPhotoStore
     /// </summary>
     Task<PhotoImportResult> ImportAsync(Guid mealEntryId, string sourcePath, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// SHA-256 (lower-case hexadecimal) of the bytes of a source file, without copying anything into
+    /// the store. Used to reject a photograph that is already attached before it is imported.
+    /// </summary>
+    Task<string> ComputeContentHashAsync(string sourcePath, CancellationToken cancellationToken = default);
+
     /// <summary>Absolute path of the full size image, or <see langword="null"/> when it is not present locally.</summary>
     string? GetFullSizePath(string localFileId);
 

@@ -49,8 +49,8 @@
   <data name="Meal_MarkMissed" xml:space="preserve"><value>Mark as MISSED</value></data>
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmed at</value></data>
   <data name="Photo_Add" xml:space="preserve"><value>Add photo</value></data>
+  <data name="Photo_GalleryHeader" xml:space="preserve"><value>Photos</value></data>
   <data name="Photo_LimitReached" xml:space="preserve"><value>A meal can hold at most three photographs.</value></data>
-  <data name="Photo_AlreadyUploaded" xml:space="preserve"><value>Photo was already uploaded.</value></data>
   <data name="Photo_RemoveTitle" xml:space="preserve"><value>Remove the photograph?</value></data>
   <data name="Photo_RemoveMessage" xml:space="preserve"><value>The photograph is deleted from this device and from the connected account at the next synchronization.</value></data>
   <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Previous month</value></data>
@@ -206,6 +206,7 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>The content does not match the image format.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>A meal can hold at most three photographs.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>The selected file no longer exists.</value></data>
+  <data name="Error_photo_duplicate" xml:space="preserve"><value>Photo was already uploaded.</value></data>
   <data name="Meal_Ingredients" xml:space="preserve"><value>Description</value></data>
   <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>The description is too long.</value></data>
 </root>

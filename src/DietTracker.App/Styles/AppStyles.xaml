@@ -24,6 +24,20 @@
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource CardStrokeColorDefault}" />
     <SolidColorBrush x:Key="SubtleTextBrush" Color="{ThemeResource TextFillColorSecondary}" />
+    <!-- Frame of the photograph gallery. CardStrokeColorDefault is a ~7 % tint that disappears on a
+         card, which is why the borders around the photos were not visible: this one is the strong
+         control stroke (a solid grey in light theme and a solid light grey in dark theme), so every
+         tile and the group around it are always outlined. -->
+    <SolidColorBrush x:Key="GalleryBorderBrush" Color="{ThemeResource ControlStrongStrokeColorDefault}" />
+    <!-- Backdrop behind a thumbnail: shown while the image is missing or still loading. -->
+    <SolidColorBrush x:Key="GalleryFillBrush" Color="{ThemeResource ControlFillColorSecondary}" />
+    <!-- Faint tint painted over a tile while the pointer is on it (the standard image-card hover). -->
+    <SolidColorBrush x:Key="GalleryHoverBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
+    <!-- The delete badge is a translucent dark disc with a white cross: readable over any photograph
+         in either theme, and it turns red on hover because it removes something. -->
+    <SolidColorBrush x:Key="PhotoDeleteBadgeBrush" Color="#B3000000" />
+    <SolidColorBrush x:Key="PhotoDeleteBadgeHoverBrush" Color="#FFC42B1C" />
+    <SolidColorBrush x:Key="PhotoDeleteBadgePressedBrush" Color="#FFA32525" />
     <!-- Track behind the statistics bars: the theme's control stroke colour, so the unfilled part
          of the bar stays visible on dark and light backgrounds alike (a plain white tint would
          disappear on a white card in light mode). -->
@@ -143,5 +157,118 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- =====================================================================
+         Photograph gallery (image-card pattern).
+         A tile is a square, rounded, grey-bordered image button: the whole tile opens the photograph
+         full size and the delete badge floats in its top-right corner. The states are driven by the
+         visual states of the template, so the gallery reads the same in light and dark theme.
+         ===================================================================== -->
+
+    <!-- One thumbnail of the gallery: grey frame, rounded corners, faint tint on hover. -->
+    <Style x:Key="PhotoTileStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource GalleryFillBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GalleryBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border
+                            x:Name="RootBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <ContentPresenter
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <!-- The only hover feedback: a faint shade over the photograph. -->
+                        <Border
+                            x:Name="HoverShade"
+                            Background="{StaticResource GalleryHoverBrush}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Opacity="0"
+                            IsHitTestVisible="False" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverShade" Storyboard.TargetProperty="Opacity" To="1" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverShade" Storyboard.TargetProperty="Opacity" To="0.6" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The X badge that removes one photograph: always visible, so it also works with a finger, and
+         it turns red on hover because what it does is destructive. -->
+    <Style x:Key="PhotoDeleteButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{StaticResource PhotoDeleteBadgeBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="13" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="RootBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Margin="{TemplateBinding Padding}" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PhotoDeleteBadgeHoverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PhotoDeleteBadgePressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 
 </ResourceDictionary>
