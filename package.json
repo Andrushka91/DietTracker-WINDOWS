@@ -5,6 +5,7 @@
   "description": "Command shortcuts for the DietTracker WinUI 3 desktop application. There is no Node.js code in this repository - npm is only used as a convenient command launcher (no npm install needed).",
   "scripts": {
     "start": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1",
+    "remove": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Remove-App.ps1",
     "build": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
     "start:debug": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1 -Configuration Debug",
     "build:debug": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Debug -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",

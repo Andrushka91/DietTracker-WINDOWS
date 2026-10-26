@@ -168,15 +168,40 @@ change and recompiles just that project before producing the executable - so "ed
 ### Packaged build (optional - the Store package)
 
 ```powershell
-# Developer Mode must be enabled (Settings > System > For developers): the test package is unsigned.
-dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 -p:GenerateAppxPackageOnBuild=true
+# Windows rejects unsigned packages (0x800B0100) and packages whose publisher certificate chain
+# cannot be verified (0x800B010A), so the package must be signed with a certificate whose subject
+# matches Publisher="CN=DietTracker" in Package.appxmanifest. Developer Mode must also be enabled
+# (Settings > System > For developers).
+$cert = Get-ChildItem Cert:\CurrentUser\My |
+        Where-Object { $_.Subject -eq 'CN=DietTracker' -and $_.NotAfter -gt (Get-Date) } |
+        Sort-Object NotAfter -Descending | Select-Object -First 1
+if (-not $cert) {
+  $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=DietTracker' `
+            -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(3)
+  Export-Certificate -Cert $cert -FilePath artifacts\msix\DietTracker.cer | Out-Null
+  # One-time, in an elevated shell: trust it for the deployment engine.
+  #   Import-Certificate -FilePath artifacts\msix\DietTracker.cer -CertStoreLocation Cert:\LocalMachine\Root
+  #   Import-Certificate -FilePath artifacts\msix\DietTracker.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+}
+
+dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 `
+  -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true `
+  -p:PackageCertificateThumbprint=$($cert.Thumbprint)
 Add-AppxPackage -Path artifacts/msix/DietTracker.App_1.0.0.0_Test/DietTracker.App_1.0.0.0_x64.msix
 ```
 
-The package (`.msix` plus `.msixbundle`, unsigned, ~99 MB) is written to
-`artifacts\msix\DietTracker.App_1.0.0.0_Test\`. Installing and running the packaged application
-(notifications, the `startupTask` extension) was **not** verified in this environment -
+The package (`.msix` plus `.msixbundle`, signed with the self-signed certificate above, ~30 MB -
+the publish profiles keep foreign-architecture and foreign-OS native assets out of the payload,
+which used to push it to 82 MB) is
+written to `artifacts\msix\DietTracker.App_1.0.0.0_Test\`; the trusted public certificate is kept at
+`artifacts\msix\DietTracker.cer`. Installing and running the packaged application (notifications, the
+`startupTask` extension) was **not** verified in this environment -
 see [docs/known-limitations.md](docs/known-limitations.md) item 4.
+
+Uninstall with `npm run remove` (add `-- -KeepData` to save the packaged data first). It closes the
+running app before calling `Remove-AppxPackage`, because otherwise the deployment engine waits for
+the graceful shutdown - that wait is what makes a Settings uninstall of a running app take ~30 s,
+while the removal of an idle app takes under a second.
 
 ### Where the data lives
 
