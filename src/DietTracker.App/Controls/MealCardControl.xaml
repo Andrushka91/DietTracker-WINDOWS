@@ -26,7 +26,9 @@
             <!-- Header: the permanent category can be customized but never deleted. The icon is
                  nudged a few pixels up so its optical centre sits in line with the meal name and the
                  planned-time stamp below it (emoji glyphs carry their own whitespace and render low
-                 when perfectly centred). -->
+                 when perfectly centred), and 10 px left so the glyph's ink starts exactly where the
+                 inputs below start - emoji shapes carry ~10 px of built-in left side bearing that
+                 would otherwise indent the icon relative to the fields. -->
             <Grid Grid.Row="0" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -34,7 +36,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <FontIcon Grid.Column="0" Glyph="{x:Bind Card.Icon}" FontFamily="{x:Bind Card.IconFontFamily}" FontSize="36" Margin="0,-6,0,6" VerticalAlignment="Center" />
+                <FontIcon Grid.Column="0" Glyph="{x:Bind Card.Icon}" FontFamily="{x:Bind Card.IconFontFamily}" FontSize="36" Margin="-10,-6,0,6" VerticalAlignment="Center" />
 
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="{x:Bind Card.CategoryName}" FontWeight="SemiBold" />

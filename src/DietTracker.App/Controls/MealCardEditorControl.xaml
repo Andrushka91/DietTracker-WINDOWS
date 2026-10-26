@@ -57,10 +57,11 @@
                 <TextBlock x:Uid="Meal_TimeLabel" Text="Time" Style="{StaticResource CaptionStyle}" VerticalAlignment="Center" />
                 <!-- The time is typed as plain digits ("HH:MM", 24 hour); the clock flyout of the WinUI
                      TimePicker is avoided on purpose (it crashes on confirm and is heavy for this input).
-                     The width is exactly enough for the five typed characters. -->
+                     100 px fits "HH:MM" plus the clear (x) button the TextBox shows once it has text -
+                     at the old 72 px the clear button sat on top of the digits. -->
                 <TextBox
                     AutomationProperties.Name="Time"
-                    Width="72"
+                    Width="100"
                     MaxLength="5"
                     InputScope="Number"
                     PlaceholderText="HH:MM"
