@@ -18,13 +18,13 @@
 
         <TextBox x:Uid="Meal_Title" Header="Title" Text="{x:Bind Card.Title, Mode=TwoWay}" />
 
-        <!-- Food description: takes all the leftover space of the card's fixed height (MinHeight is
+        <!-- Description: takes all the leftover space of the card's fixed height (MinHeight is
              sized so title, description and the bottom bar fit together) and scrolls internally when
              the text is longer than that space, so a long meal plan never grows the card. -->
         <TextBox
             Grid.Row="1"
             x:Uid="Meal_Ingredients"
-            Header="Food description"
+            Header="Description"
             AcceptsReturn="True"
             TextWrapping="Wrap"
             MinHeight="44"
@@ -89,13 +89,20 @@
                 Spacing="6"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom">
+                <!-- The ring leads the group and collapses while idle, so the right edge of Cancel
+                     lands exactly on the description input's right edge (with the ring after the
+                     buttons its fixed 20 px width pushed them 26 px inboard of the input). -->
+                <ProgressRing
+                    IsActive="{x:Bind Card.IsBusy, Mode=OneWay}"
+                    Visibility="{x:Bind Card.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                    Width="20"
+                    Height="20" />
                 <Button
                     x:Uid="Common_Save"
                     Content="Save"
                     Style="{StaticResource AccentButtonStyle}"
                     Command="{x:Bind Card.SaveCommand}" />
                 <Button x:Uid="Common_Cancel" Content="Cancel" Command="{x:Bind Card.CancelCommand}" />
-                <ProgressRing IsActive="{x:Bind Card.IsBusy, Mode=OneWay}" Width="20" Height="20" />
             </StackPanel>
         </Grid>
     </Grid>

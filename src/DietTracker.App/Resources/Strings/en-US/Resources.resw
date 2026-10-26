@@ -205,6 +205,6 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>The content does not match the image format.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>A meal can hold at most three photographs.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>The selected file no longer exists.</value></data>
-  <data name="Meal_Ingredients" xml:space="preserve"><value>Food description</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Description</value></data>
   <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>The description is too long.</value></data>
 </root>

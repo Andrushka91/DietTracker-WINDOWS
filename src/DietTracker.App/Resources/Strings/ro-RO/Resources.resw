@@ -228,6 +228,6 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>Conținutul nu corespunde formatului imaginii.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>O masă poate avea cel mult trei fotografii.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>Fișierul selectat nu mai există.</value></data>
-  <data name="Meal_Ingredients" xml:space="preserve"><value>Descrierea alimentelor</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Descriere</value></data>
   <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>Descrierea este prea lungă.</value></data>
 </root>

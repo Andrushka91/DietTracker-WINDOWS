@@ -13,7 +13,7 @@
          TwoColumnMealGridPanel in a responsive grid, so the day stays readable at any window size.
          The height is sized so the inline editor (title, description, time, photo, Save/Cancel)
          fits inside the card together with the photographs row - editing never grows the card. -->
-    <x:Double x:Key="MealCardMinHeight">340</x:Double>
+    <x:Double x:Key="MealCardMinHeight">360</x:Double>
     <x:Double x:Key="CardCornerRadiusValue">12</x:Double>
     <x:Double x:Key="PageMaxContentWidth">1440</x:Double>
     <x:Double x:Key="CardSpacing">16</x:Double>

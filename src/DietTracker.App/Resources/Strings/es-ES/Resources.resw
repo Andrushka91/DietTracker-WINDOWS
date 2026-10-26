@@ -205,6 +205,6 @@
   <data name="Error_photo_content_invalid" xml:space="preserve"><value>El contenido no coincide con el formato de imagen.</value></data>
   <data name="Error_photo_limit_reached" xml:space="preserve"><value>Una comida puede tener como máximo tres fotografías.</value></data>
   <data name="Error_photo_source_missing" xml:space="preserve"><value>El archivo seleccionado ya no existe.</value></data>
-  <data name="Meal_Ingredients" xml:space="preserve"><value>Descripción de la comida</value></data>
+  <data name="Meal_Ingredients" xml:space="preserve"><value>Descripción</value></data>
   <data name="Error_meal_ingredients_tooLong" xml:space="preserve"><value>La descripción es demasiado larga.</value></data>
 </root>
