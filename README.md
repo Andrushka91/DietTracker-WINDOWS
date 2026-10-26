@@ -46,7 +46,7 @@ tests/DietTracker.IntegrationTests  offline-first flow, multi-device sync, confl
   tests/DietTracker.UITests      launches the real application (category: UI)
 tools/Run-App.ps1                builds the unpackaged application and starts it (with diagnostics)
 tools/Smoke-Test.ps1             start-up/performance smoke test (window, memory, responsiveness)
-tools/Generate-StoreAssets.ps1   Store and tile artwork
+tools/Generate-StoreAssets.ps1   Store, tile and icon artwork
 docs/                            architecture, authentication, synchronization, privacy, Store
 ```
 

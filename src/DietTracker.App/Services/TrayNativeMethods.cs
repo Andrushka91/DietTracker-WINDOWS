@@ -34,6 +34,10 @@ internal static class TrayNativeMethods
     internal const int TPM_NONOTIFY = 0x0080;
     internal const int IDI_APPLICATION = 32512;
 
+    internal const int IMAGE_ICON = 1;
+    internal const uint LR_LOADFROMFILE = 0x0010;
+    internal const uint LR_DEFAULTSIZE = 0x0040;
+
     internal static readonly IntPtr HWND_MESSAGE = new(-3);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -113,6 +117,13 @@ internal static class TrayNativeMethods
 
     [DllImport("user32.dll")]
     internal static extern IntPtr LoadIcon(IntPtr instance, IntPtr iconName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern IntPtr LoadImage(IntPtr instance, string name, int type, int width, int height, uint load);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DestroyIcon(IntPtr icon);
 
     [DllImport("user32.dll")]
     internal static extern IntPtr CreatePopupMenu();

@@ -23,6 +23,7 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
 
     private IntPtr _windowHandle;
     private IntPtr _iconHandle;
+    private bool _iconOwnsHandle;
     private bool _iconAdded;
     private bool _disposed;
 
@@ -114,6 +115,13 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
             _iconAdded = false;
         }
 
+        if (_iconOwnsHandle && _iconHandle != IntPtr.Zero)
+        {
+            TrayNativeMethods.DestroyIcon(_iconHandle);
+            _iconHandle = IntPtr.Zero;
+            _iconOwnsHandle = false;
+        }
+
         if (_windowHandle != IntPtr.Zero)
         {
             TrayNativeMethods.DestroyWindow(_windowHandle);
@@ -148,7 +156,7 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
                 0, windowClass.lpszClassName, "DietTracker", 0, 0, 0, 0, 0,
                 TrayNativeMethods.HWND_MESSAGE, IntPtr.Zero, instance, IntPtr.Zero);
 
-            _iconHandle = TrayNativeMethods.LoadIcon(IntPtr.Zero, new IntPtr(TrayNativeMethods.IDI_APPLICATION));
+            _iconHandle = LoadTrayIcon();
             return _windowHandle != IntPtr.Zero;
         }
         catch (Exception ex)
@@ -157,6 +165,48 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
             _windowHandle = IntPtr.Zero;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Loads the application icon from <c>Assets\DietTracker.ico</c> (shipped next to the executable,
+    /// see <c>tools/Generate-StoreAssets.ps1</c>) so the notification area shows the same mark as the
+    /// Start menu entry. Falls back to the generic Windows application icon when the file is missing
+    /// or cannot be decoded, so a broken installation never loses the tray icon.
+    /// </summary>
+    private IntPtr LoadTrayIcon()
+    {
+        try
+        {
+            var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "DietTracker.ico");
+            if (File.Exists(iconPath))
+            {
+                var handle = TrayNativeMethods.LoadImage(
+                    IntPtr.Zero,
+                    iconPath,
+                    TrayNativeMethods.IMAGE_ICON,
+                    0,
+                    0,
+                    TrayNativeMethods.LR_LOADFROMFILE | TrayNativeMethods.LR_DEFAULTSIZE);
+
+                if (handle != IntPtr.Zero)
+                {
+                    // Unlike the shared LoadIcon handle, a file-loaded icon belongs to us
+                    // and has to be destroyed in Dispose.
+                    _iconOwnsHandle = true;
+                    return handle;
+                }
+
+                _logger.LogWarning(
+                    "The application icon at {IconPath} could not be loaded; using the default icon.",
+                    iconPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "The application icon could not be loaded; using the default icon.");
+        }
+
+        return TrayNativeMethods.LoadIcon(IntPtr.Zero, new IntPtr(TrayNativeMethods.IDI_APPLICATION));
     }
 
     private TrayNativeMethods.NOTIFYICONDATA CreateIconData() => new()
