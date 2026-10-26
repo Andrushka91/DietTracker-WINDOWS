@@ -93,25 +93,48 @@
                     TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
-            <!-- Photographs are optional; a meal can always be marked DONE without one -->
-            <ItemsControl x:Name="PhotosRow" Grid.Row="2" ItemsSource="{x:Bind Card.Photos}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <controls:UniformWrapPanel
-                            UniformHeight="False"
-                            MinItemWidth="52"
-                            HorizontalSpacing="6"
-                            VerticalSpacing="6" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:MealPhotoViewModel">
-                        <Button Padding="0" BorderThickness="0" Background="Transparent" Click="OnOpenPhoto" Tag="{x:Bind}">
-                            <Image Width="52" Height="52" Stretch="UniformToFill" Source="{x:Bind ThumbnailPath}" />
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <!-- Photograph gallery: appears only when the meal actually has photos (HasPhotos) and is
+                 hidden completely while the inline editor is open - it comes back by itself when
+                 editing finishes. Each cell carries the project's grey border, so separators show
+                 between the photos, and a frame of the same grey closes the group; the extra 8 px
+                 of margin keeps the action buttons at a distance from it. Thumbnails are 256 px,
+                 so the doubled 104 px cells stay sharp. -->
+            <Grid
+                Grid.Row="2"
+                Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
+                <Border
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Left"
+                    Visibility="{x:Bind Card.HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                    BorderBrush="{StaticResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="6">
+                    <ItemsControl ItemsSource="{x:Bind Card.Photos}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <controls:UniformWrapPanel
+                                    UniformHeight="False"
+                                    MinItemWidth="104"
+                                    HorizontalSpacing="4"
+                                    VerticalSpacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MealPhotoViewModel">
+                                <Border
+                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                    <Button Padding="0" BorderThickness="0" Background="Transparent" Click="OnOpenPhoto" Tag="{x:Bind}">
+                                        <Image Width="104" Height="104" Stretch="UniformToFill" Source="{x:Bind ThumbnailPath}" />
+                                    </Button>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+            </Grid>
 
             <!-- Bottom row of the card: the action buttons on the left and the confirmation stamp
                  in the bottom right corner, both in the same full-width cell so the button row keeps
