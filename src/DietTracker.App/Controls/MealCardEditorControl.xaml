@@ -42,10 +42,10 @@
         <!-- Bottom bar of the editor, kept compact so the description keeps the room: the "Time"
              label sits inline beside a slim input (no tall header), with the photo button next to
              it on the bottom-left and the Save / Cancel buttons pinned to the right edge.
-             The asymmetric margin balances the clearances around the row - the card's row spacing
-             above it and the card's 16 px bottom padding below it - so the row sits vertically
-             centred in the bottom area with equal empty space above and below. -->
-        <Grid Grid.Row="3" ColumnSpacing="8" Margin="0,8,0,4">
+             The top margin pushes the row down close to the card's bottom end: below it stays the
+             card's 16 px bottom padding (a small gap, not glued to the edge), above it the larger
+             gap to the description - so the row reads as the card's footer strip. -->
+        <Grid Grid.Row="3" ColumnSpacing="8" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
