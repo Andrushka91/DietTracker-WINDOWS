@@ -58,8 +58,10 @@
                 </Border>
             </Grid>
 
-            <!-- Inline editor: shown inside the card, no navigation required. Fills row 1 (the row
-                 the read content used), so editing never changes the card height. -->
+            <!-- Inline editor: shown inside the card, no navigation required. It fills row 1 (the
+                 flexible row): while editing the action-bar row below collapses, so the editor
+                 takes over that space as well - and the card's MinHeight guarantees room for every
+                 field (title, description, time, photo, Save/Cancel), so editing never grows it. -->
             <Grid
                 x:Name="EditorPanel"
                 Grid.Row="1"

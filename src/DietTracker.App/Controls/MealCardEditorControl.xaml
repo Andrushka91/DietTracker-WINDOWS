@@ -18,9 +18,9 @@
 
         <TextBox x:Uid="Meal_Title" Header="Title" Text="{x:Bind Card.Title, Mode=TwoWay}" />
 
-        <!-- Food description: fills the leftover space of the fixed-size editor (its height is capped
-             to the read card height by MealCardControl) and scrolls internally when the text is
-             longer than that space, so a long meal plan never grows the card. -->
+        <!-- Food description: takes all the leftover space of the card's fixed height (MinHeight is
+             sized so title, description and the bottom bar fit together) and scrolls internally when
+             the text is longer than that space, so a long meal plan never grows the card. -->
         <TextBox
             Grid.Row="1"
             x:Uid="Meal_Ingredients"
