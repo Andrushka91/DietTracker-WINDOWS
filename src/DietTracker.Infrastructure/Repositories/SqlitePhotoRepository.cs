@@ -15,6 +15,23 @@ public sealed partial class SqlitePhotoRepository : IPhotoRepository
     public SqlitePhotoRepository(ISqliteConnectionFactory factory) => _factory = factory;
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<MealPhoto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT {SelectColumns} FROM MealPhoto ORDER BY CreatedAt;";
+
+        var result = new List<MealPhoto>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            result.Add(RowMappers.MapMealPhoto(reader));
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<MealPhoto>> GetForMealAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
     {
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);

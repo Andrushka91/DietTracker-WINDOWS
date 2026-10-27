@@ -17,31 +17,37 @@
              while the inline editor is open, so the card keeps exactly the same height in both modes.
          Thumbnails are generated at 256 px, so the 104 px tiles stay sharp. -->
     <Grid Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
-        <Border
-            Margin="0,0,0,8"
-            Padding="6"
+        <!-- No bottom margin: the gallery is the last row of the card, so the card's own padding
+             (the same 16 px it keeps on the left) is the only space below the frame. -->
+        <StackPanel
+            Spacing="6"
             HorizontalAlignment="Left"
-            BorderBrush="{StaticResource GalleryBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
             Visibility="{x:Bind Card.HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
-            <StackPanel Spacing="6">
-                <!-- Group header: what this strip is and how full it still can get. -->
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon
-                        Glyph="&#xE91B;"
-                        FontSize="12"
-                        Foreground="{StaticResource SubtleTextBrush}"
-                        VerticalAlignment="Center" />
-                    <TextBlock
-                        Style="{StaticResource CaptionStyle}"
-                        Text="{x:Bind Card.GalleryHeader, Mode=OneWay}"
-                        VerticalAlignment="Center" />
-                    <TextBlock
-                        Style="{StaticResource CaptionStyle}"
-                        Text="{x:Bind Card.PhotoLimitText, Mode=OneWay}"
-                        VerticalAlignment="Center" />
-                </StackPanel>
+            <!-- Group header: what the framed strip below is and how full it still can get. The counter
+                 sits outside the frame, above the tiles. -->
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <FontIcon
+                    Glyph="&#xE91B;"
+                    FontSize="12"
+                    Foreground="{StaticResource SubtleTextBrush}"
+                    VerticalAlignment="Center" />
+                <TextBlock
+                    Style="{StaticResource CaptionStyle}"
+                    Text="{x:Bind Card.GalleryHeader, Mode=OneWay}"
+                    VerticalAlignment="Center" />
+                <TextBlock
+                    Style="{StaticResource CaptionStyle}"
+                    Text="{x:Bind Card.PhotoLimitText, Mode=OneWay}"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- The framed group of tiles: grey border, 6 px of padding, rounded corners. -->
+            <Border
+                Padding="6"
+                HorizontalAlignment="Left"
+                BorderBrush="{StaticResource GalleryBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
 
                 <ItemsControl ItemsSource="{x:Bind Card.Photos}">
                     <ItemsControl.ItemsPanel>
@@ -88,7 +94,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </StackPanel>
-        </Border>
+            </Border>
+        </StackPanel>
     </Grid>
 </UserControl>

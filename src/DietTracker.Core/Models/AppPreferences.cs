@@ -31,6 +31,13 @@ public sealed class AppPreferences
     /// <summary>Master switch for cloud synchronization.</summary>
     public bool SynchronizationEnabled { get; set; }
 
+    /// <summary>
+    /// How often the application synchronizes on its own. Edits are always saved locally and
+    /// journaled; this only decides when the journal is pushed (the "Synchronize now" button
+    /// ignores it and always runs).
+    /// </summary>
+    public SyncFrequency SyncFrequency { get; set; } = SyncFrequency.Weekly;
+
     /// <summary>Last provider selected by the user (mirrors the active cloud account).</summary>
     public ProviderType PreferredProvider { get; set; } = ProviderType.None;
 

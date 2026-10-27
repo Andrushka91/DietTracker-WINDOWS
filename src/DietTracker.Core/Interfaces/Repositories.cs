@@ -42,6 +42,9 @@ public interface IMealEntryRepository
 /// <summary>Read/write access to photograph metadata (never to the image bytes).</summary>
 public interface IPhotoRepository
 {
+    /// <summary>Every photograph of every meal (used by maintenance passes such as thumbnail repair).</summary>
+    Task<IReadOnlyList<MealPhoto>> GetAllAsync(CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<MealPhoto>> GetForMealAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
 
     Task<MealPhoto?> GetAsync(Guid id, CancellationToken cancellationToken = default);

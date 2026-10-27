@@ -7,9 +7,10 @@ namespace DietTracker.App.Controls;
 /// <summary>
 /// The permanent meal card: reads and edits a <see cref="MealCardViewModel"/> and hosts the
 /// DONE/PENDING actions, the photographs and the copying commands.
-/// All cards share the same structure and the same height; the card is sized (MealCardMinHeight)
-/// so the inline editor fits inside it with the photographs row - switching between reading and
-/// editing never changes the card height, and every editor field gets real room.
+/// All cards share the same structure and the same floor height: <c>MealCardMinHeight</c> is sized
+/// for the compact inline editor (title, short description, time, photo, Save/Cancel), so a card
+/// without photographs keeps exactly the same height in both modes. A card that carries photographs
+/// is taller while reading, because the photographs row collapses while the editor is open.
 /// </summary>
 public sealed partial class MealCardControl : UserControl
 {

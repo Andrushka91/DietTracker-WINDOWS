@@ -62,10 +62,29 @@
 
             <Border Style="{StaticResource ProgressCardStyle}">
                 <StackPanel Spacing="10">
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Settings_About" Text="About" />
-                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.AboutText, Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Settings_Sync" Text="Synchronization" />
+                    <!-- How often the cloud is contacted on its own; the journal is kept in any case,
+                         so an edit is never at risk while it waits for the schedule. -->
+                    <ComboBox
+                        x:Uid="Settings_SyncFrequency"
+                        Header="Automatic synchronization"
+                        ItemsSource="{x:Bind ViewModel.SyncFrequencyOptions}"
+                        DisplayMemberPath="DisplayName"
+                        SelectedValuePath="Tag"
+                        SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
+                    <TextBlock
+                        Style="{StaticResource CaptionStyle}"
+                        x:Uid="Settings_SyncFrequencyHint"
+                        Text="Edits are saved on this device immediately and uploaded when the schedule above is due, or when you press Synchronize now." />
                     <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" />
                     <Button x:Uid="Settings_SyncNow" Content="Synchronize now" Command="{x:Bind ViewModel.SyncNowCommand}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ProgressCardStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" x:Uid="Settings_About" Text="About" />
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.AboutText, Mode=OneWay}" />
                 </StackPanel>
             </Border>
         </StackPanel>

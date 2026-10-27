@@ -16,11 +16,49 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBox x:Uid="Meal_Title" Header="Title" Text="{x:Bind Card.Title, Mode=TwoWay}" />
+        <!-- Neither input carries a character cap of its own any more - the room the card gives it is the
+             cap. OnTitleTextChanged measures the single line and OnDescriptionTextChanged measures the
+             wrapped text after every change and both refuse whatever no longer fits in the box, while
+             ApplyTitleCapacity and ApplyDescriptionCapacity write the count they measured into each box's
+             MaxLength (the title from the room left on its line, the description from the rows the box
+             shows and the characters its complete rows hold), so the caret simply stops when the field is
+             filled: every field accepts as many characters as the card can show - more on a wide window,
+             fewer on a narrow one - and never scrolls, never flickers a character in and out, and never
+             runs past the clear (X) button while somebody is typing.
+             For the title "fits" means the line ends before that button: it is a column of its own in the
+             template (30 px wide, shown as soon as the box has any text) and takes its width away from the
+             text, so the line is measured against what is left of it.
+             The only number left as a ceiling is the validator's cap (120 / 2000), used while the box is
+             empty - there is no typed character to take an average width from yet - and as the backstop
+             that lets an imported or restored longer value be opened, shortened and saved. Read mode shows
+             three lines of the description (MaxLines="3" with an ellipsis) and two of the title: a longer
+             text is trimmed there on purpose, because the card must not grow. -->
+        <TextBox
+            x:Uid="Meal_Title"
+            Header="Title"
+            GotFocus="OnTitleGotFocus"
+            LostFocus="OnTitleLostFocus"
+            SizeChanged="OnTitleSizeChanged"
+            TextChanged="OnTitleTextChanged"
+            Text="{x:Bind Card.Title, Mode=TwoWay}" />
 
-        <!-- Description: takes all the leftover space of the card's fixed height (MinHeight is
-             sized so title, description and the bottom bar fit together) and scrolls internally when
-             the text is longer than that space, so a long meal plan never grows the card. -->
+        <!-- Description: takes whatever leftover space the compact card height gives it (about 110 px,
+             five lines) and keeps its text inside exactly that space - the TextChanged handler measures
+             the wrapped content and refuses the change that would need a scrollbar (and pins the scroll
+             the refused change started back without animation, so the refusal itself is not visible), so
+             the lines the old fixed caps (162, 242, 272) left empty are simply used up instead.
+             MaxHeight clamps the box to that space as well, but the clamp alone is not enough: a star row
+             hands its child at least what the child asks for, so a box growing with its text grows its own
+             viewport too and the content never looks like it overflows. The handler therefore also
+             compares the box height with the space measured while the text last fitted and refuses the
+             change that grows past it - which is what lands the refusal on the very character that needs
+             the extra line, with nothing extended in between. Only a stored value that already was too
+             long is shown scrolled - it must stay openable and saveable, but nothing can be added to it
+             until it fits again. MinHeight keeps it usable if an error InfoBar appears.
+             Like the title, the box also receives its measured capacity as its MaxLength after every
+             change and on every size change (ApplyDescriptionCapacity): the caret stops when the visible
+             rows are used up instead of typing one character too many and taking it back, and the exact
+             refusal above stays behind that cap as the answer to a character wider than the row average. -->
         <TextBox
             Grid.Row="1"
             x:Uid="Meal_Ingredients"
@@ -28,6 +66,12 @@
             AcceptsReturn="True"
             TextWrapping="Wrap"
             MinHeight="44"
+            MaxHeight="110"
+            GotFocus="OnDescriptionGotFocus"
+            LostFocus="OnDescriptionLostFocus"
+            SizeChanged="OnDescriptionSizeChanged"
+            TextChanged="OnDescriptionTextChanged"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
             VerticalAlignment="Stretch"
             Text="{x:Bind Card.Ingredients, Mode=TwoWay}" />
 
@@ -42,11 +86,11 @@
         <!-- Bottom bar of the editor, kept compact so the description keeps the room: the "Time"
              label sits inline beside a slim input (no tall header), with the photo button next to
              it on the bottom-left and the Save / Cancel buttons pinned to the right edge.
-             Below the editor the card keeps 16 px of row spacing (the collapsed rows) plus its
-             16 px bottom padding, so the negative bottom margin pulls the row down through both:
-             a -20 px margin leaves ~16 px of clearance to the card's bottom edge - close to the
-             end of the card, but not glued to it - with the larger gap left above it. -->
-        <Grid Grid.Row="3" ColumnSpacing="8" Margin="0,16,0,-20">
+             Below the editor the card keeps 8 px of row spacing (the collapsed action row) plus its
+             16 px bottom padding, so the -8 px bottom margin pulls the row down through that spacing
+             and the Save / Cancel buttons end exactly 16 px above the card's bottom edge - the same
+             padding the check buttons get in the read-mode panel. -->
+        <Grid Grid.Row="3" ColumnSpacing="8" Margin="0,16,0,-8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

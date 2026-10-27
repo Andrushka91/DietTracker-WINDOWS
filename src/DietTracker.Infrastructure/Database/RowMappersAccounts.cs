@@ -24,6 +24,9 @@ public static partial class RowMappers
         UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(11)),
         SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(12)),
         OnboardingCompleted = reader.FieldCount > 13 && SqliteValue.GetBool(reader.GetValue(13)),
+        SyncFrequency = reader.FieldCount > 14
+            ? SqliteValue.GetEnum<SyncFrequency>(reader.GetValue(14))
+            : SyncFrequency.Weekly,
     };
 
     /// <summary>Maps a <c>CloudAccount</c> row.</summary>

@@ -162,6 +162,12 @@
   <data name="Sync_Paused" xml:space="preserve"><value>Sincronización en pausa</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Última sincronización correcta: {0}</value></data>
   <data name="Sync_Never" xml:space="preserve"><value>Aún no se ha sincronizado</value></data>
+  <data name="Settings_Sync" xml:space="preserve"><value>Sincronización</value></data>
+  <data name="Settings_SyncFrequency" xml:space="preserve"><value>Sincronización automática</value></data>
+  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Los cambios se guardan en este dispositivo al instante y se suben cuando toque según el programado de arriba, o cuando pulse Sincronizar ahora.</value></data>
+  <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Cada semana</value></data>
+  <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Cada mes</value></data>
+  <data name="Sync_FrequencyManual" xml:space="preserve"><value>Solo con el botón de abajo</value></data>
   <data name="Auth_Cancelled" xml:space="preserve"><value>Inicio de sesión cancelado.</value></data>
   <data name="Auth_Unknown" xml:space="preserve"><value>El inicio de sesión no se completó.</value></data>
   <data name="Auth_auth_no_account" xml:space="preserve"><value>No hay ninguna cuenta conectada.</value></data>

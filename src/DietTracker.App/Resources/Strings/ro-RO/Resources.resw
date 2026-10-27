@@ -183,6 +183,12 @@
   <data name="Sync_Paused" xml:space="preserve"><value>Sincronizare oprită</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Ultima sincronizare reușită: {0}</value></data>
   <data name="Sync_Never" xml:space="preserve"><value>Nicio sincronizare efectuată</value></data>
+  <data name="Settings_Sync" xml:space="preserve"><value>Sincronizare</value></data>
+  <data name="Settings_SyncFrequency" xml:space="preserve"><value>Sincronizare automată</value></data>
+  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Modificările se salvează imediat pe acest dispozitiv și se încarcă atunci când expiră programul de mai sus sau când apăsați Sincronizare acum.</value></data>
+  <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Săptămânal</value></data>
+  <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Lunar</value></data>
+  <data name="Sync_FrequencyManual" xml:space="preserve"><value>Doar cu butonul de mai jos</value></data>
   <data name="Auth_Cancelled" xml:space="preserve"><value>Conectare anulată.</value></data>
   <data name="Auth_Unknown" xml:space="preserve"><value>Conectarea nu a reușit.</value></data>
   <data name="Auth_auth_no_account" xml:space="preserve"><value>Nu există un cont conectat.</value></data>

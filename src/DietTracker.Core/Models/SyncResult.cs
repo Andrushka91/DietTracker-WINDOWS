@@ -43,6 +43,20 @@ public sealed record SyncResult
 
     public static SyncResult Failure(string reasonCode, string? diagnostic = null, bool requiresReauth = false, SyncState state = SyncState.Error)
         => new() { Succeeded = false, State = state, ReasonCode = reasonCode, Diagnostic = diagnostic, RequiresReauthentication = requiresReauth };
+
+    /// <summary>
+    /// The cycle did not run at all because the synchronization frequency chosen in Settings has not
+    /// elapsed since the last successful cycle. Nothing failed: the journal simply keeps the changes
+    /// until the schedule (or the "Synchronize now" button) asks for a cycle. The engine raises no
+    /// state change for it, so the user sees no notification.
+    /// </summary>
+    public static SyncResult NotDue() => new() { Succeeded = true, ReasonCode = NotDueReasonCode };
+
+    /// <summary>Reason code carried by a result of <see cref="NotDue"/>.</summary>
+    public const string NotDueReasonCode = "sync.not-due";
+
+    /// <summary>True when the cycle was skipped because the configured frequency had not elapsed.</summary>
+    public bool Deferred => ReasonCode == NotDueReasonCode;
 }
 
 /// <summary>Summary returned by the export / backup services.</summary>

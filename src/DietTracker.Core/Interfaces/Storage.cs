@@ -60,6 +60,13 @@ public interface IPhotoStore
     /// <summary>Writes image bytes received from the cloud into the photo store (used during restore).</summary>
     Task<MealPhoto> StoreDownloadedAsync(Guid mealEntryId, string path, string mimeType, byte[] content, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Regenerates thumbnails that no longer match their source (damaged files, missing files) and
+    /// returns how many were rewritten. The thumbnail file name is reused, so no database record
+    /// changes. Healthy thumbnails are left untouched - only headers are decoded to compare them.
+    /// </summary>
+    Task<int> RepairThumbnailsAsync(IReadOnlyList<MealPhoto> photos, CancellationToken cancellationToken = default);
+
     /// <summary>Removes the local files of a photograph. Missing files are ignored.</summary>
     Task DeleteFilesAsync(MealPhoto photo, CancellationToken cancellationToken = default);
 

@@ -162,6 +162,12 @@
   <data name="Sync_Paused" xml:space="preserve"><value>Synchronization paused</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Last successful synchronization: {0}</value></data>
   <data name="Sync_Never" xml:space="preserve"><value>No synchronization yet</value></data>
+  <data name="Settings_Sync" xml:space="preserve"><value>Synchronization</value></data>
+  <data name="Settings_SyncFrequency" xml:space="preserve"><value>Automatic synchronization</value></data>
+  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Edits are saved on this device immediately and are uploaded when the schedule above is due, or when you press Synchronize now.</value></data>
+  <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Every week</value></data>
+  <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Every month</value></data>
+  <data name="Sync_FrequencyManual" xml:space="preserve"><value>Only with the button below</value></data>
   <data name="Auth_Cancelled" xml:space="preserve"><value>Sign-in cancelled.</value></data>
   <data name="Auth_Unknown" xml:space="preserve"><value>Sign-in did not succeed.</value></data>
   <data name="Auth_auth_no_account" xml:space="preserve"><value>There is no connected account.</value></data>

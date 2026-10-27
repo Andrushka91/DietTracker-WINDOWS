@@ -5,38 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:DietTracker.App.Controls">
 
-    <!-- Action bar of one meal card, icon-first like the Microsoft card chrome:
-         the green check marks the meal as eaten (DONE), the red cross marks it as missed
-         (today or a past date only - on a future day both state buttons are disabled so the
-         meal stays pending), the pencil opens the inline editor and the remaining actions
-         keep their labels. -->
+    <!-- Action bar of one meal card, icon-first like the Microsoft card chrome. Order: the add-photo
+         action first, then the pencil that opens the inline editor, then the two state buttons - the
+         red cross marks the meal as missed and the green check confirms it as eaten (DONE). Both state
+         buttons are available on today or a past date only, so on a future day they stay disabled and
+         the meal keeps its pending state. -->
     <controls:UniformWrapPanel UniformHeight="False" MinItemWidth="44" HorizontalSpacing="6" VerticalSpacing="6">
-        <Button
-            x:Uid="Meal_MarkDone"
-            Padding="7"
-            AutomationProperties.Name="Mark as DONE"
-            ToolTipService.ToolTip="Mark as DONE"
-            Command="{x:Bind Card.MarkDoneCommand}"
-            IsEnabled="{x:Bind Card.CanMarkDone, Mode=OneWay}">
-            <FontIcon Glyph="&#xE73E;" FontSize="18" Foreground="#FF107C10" />
-        </Button>
-        <Button
-            x:Uid="Meal_MarkMissed"
-            Padding="7"
-            AutomationProperties.Name="Mark as MISSED"
-            ToolTipService.ToolTip="Mark as MISSED"
-            Command="{x:Bind Card.MarkMissedCommand}"
-            IsEnabled="{x:Bind Card.CanMarkMissed, Mode=OneWay}">
-            <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="#FFA4262C" />
-        </Button>
-        <Button
-            x:Uid="Common_Edit"
-            Padding="7"
-            AutomationProperties.Name="Edit"
-            ToolTipService.ToolTip="Edit"
-            Command="{x:Bind Card.EditCommand}">
-            <FontIcon Glyph="&#xE70F;" FontSize="18" />
-        </Button>
         <!-- Photo glyph with the upload arrow layered on top (the Segoe glyphs share one fixed origin
              and are designed to overlay). No padding override, so the button keeps the standard
              height and lines up with the other actions of the row. -->
@@ -49,6 +23,32 @@
                 <FontIcon Glyph="&#xE91B;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <FontIcon Glyph="&#xE898;" FontSize="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,1" />
             </Grid>
+        </Button>
+        <Button
+            x:Uid="Common_Edit"
+            Padding="7"
+            AutomationProperties.Name="Edit"
+            ToolTipService.ToolTip="Edit"
+            Command="{x:Bind Card.EditCommand}">
+            <FontIcon Glyph="&#xE70F;" FontSize="18" />
+        </Button>
+        <Button
+            x:Uid="Meal_MarkMissed"
+            Padding="7"
+            AutomationProperties.Name="Mark as MISSED"
+            ToolTipService.ToolTip="Mark as MISSED"
+            Command="{x:Bind Card.MarkMissedCommand}"
+            IsEnabled="{x:Bind Card.CanMarkMissed, Mode=OneWay}">
+            <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="#FFA4262C" />
+        </Button>
+        <Button
+            x:Uid="Meal_MarkDone"
+            Padding="7"
+            AutomationProperties.Name="Mark as DONE"
+            ToolTipService.ToolTip="Mark as DONE"
+            Command="{x:Bind Card.MarkDoneCommand}"
+            IsEnabled="{x:Bind Card.CanMarkDone, Mode=OneWay}">
+            <FontIcon Glyph="&#xE73E;" FontSize="18" Foreground="#FF107C10" />
         </Button>
     </controls:UniformWrapPanel>
 </UserControl>

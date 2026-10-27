@@ -1,3 +1,4 @@
+using DietTracker.Core.Utilities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -149,31 +150,27 @@ public sealed class UniformWrapPanel : Panel
             _columns = Children.Count;
             _cellWidth = double.PositiveInfinity;
 
-            var line = 0;
-            var lineLength = 0d;
+            // Free rows: the flow calculation lives in Core (WrapLayout) so the geometry that decides
+            // where a tile lands - including the measure/arrange round trip it has to survive - is
+            // covered by unit tests instead of being reproducible only on screen.
+            var widths = new double[Children.Count];
+            var heights = new double[Children.Count];
             for (var index = 0; index < Children.Count; index++)
             {
-                var width = Children[index].DesiredSize.Width;
-                if (lineLength > 0
-                    && !double.IsInfinity(availableWidth)
-                    && lineLength + spacingH + width > availableWidth)
-                {
-                    _widestLine = Math.Max(_widestLine, lineLength - spacingH);
-                    line++;
-                    lineLength = 0d;
-                }
-
-                _lineOfChild.Add(line);
-                while (_lineHeights.Count <= line)
-                {
-                    _lineHeights.Add(0d);
-                }
-
-                _lineHeights[line] = Math.Max(_lineHeights[line], Children[index].DesiredSize.Height);
-                lineLength += width + spacingH;
+                widths[index] = Children[index].DesiredSize.Width;
+                heights[index] = Children[index].DesiredSize.Height;
             }
 
-            _widestLine = Math.Max(_widestLine, lineLength > 0 ? lineLength - spacingH : 0d);
+            var flow = WrapLayout.Calculate(
+                widths,
+                heights,
+                availableWidth,
+                spacingH,
+                Math.Max(0d, VerticalSpacing));
+
+            _lineOfChild.AddRange(flow.LineOfItem);
+            _lineHeights.AddRange(flow.LineHeights);
+            _widestLine = flow.WidestLine;
         }
     }
 

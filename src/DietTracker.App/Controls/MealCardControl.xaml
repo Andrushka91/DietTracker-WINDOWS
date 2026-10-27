@@ -19,7 +19,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- Header: the permanent category can be customized but never deleted. The icon is
@@ -102,32 +101,43 @@
                     TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
-            <!-- Photograph gallery: a grey framed grid of square thumbnails, every tile with its own
-                 X badge to remove it. The gallery collapses while the inline editor is open and it is
-                 absent for a meal without photographs - the layout itself lives in PhotoGalleryControl
-                 so the card keeps describing content, not pixels. -->
-            <controls:PhotoGalleryControl
-                Grid.Row="2"
-                Card="{x:Bind Card}" />
-
-            <!-- Bottom row of the card: the action buttons on the left and the confirmation stamp
-                 in the bottom right corner, both in the same full-width cell so the button row keeps
-                 its original width (in a sized column the photo button would wrap). Hidden while the
-                 inline editor is open, exactly like the read mode above. -->
+            <!-- Bottom row of the card, shared by the two anchors of the layout: the framed photograph strip
+                 in the left (flexible) column and the check / cross / edit / photo buttons in the right
+                 (automatic) one, both resting on the bottom edge - the frame keeps the same 16 px of
+                 card padding on the left as it has under it, the buttons keep the same 16 px on the
+                 right. The columns keep the two apart, so on a narrow card the tiles wrap instead of
+                 sliding under the buttons. The confirmation stamp rides just above the buttons, so it
+                 can never collide with the frame. Hidden while the inline editor is open, exactly like
+                 the read mode above. -->
             <Grid
-                Grid.Row="3"
+                Grid.Row="2"
                 Visibility="{x:Bind Card.IsEditing, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
-                <controls:MealCardActionsControl
-                    x:Name="ActionsRow"
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <controls:PhotoGalleryControl
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
                     Card="{x:Bind Card}" />
 
-                <TextBlock
-                    Style="{StaticResource CaptionStyle}"
+                <StackPanel
+                    Grid.Column="1"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    MaxLines="1"
-                    TextTrimming="CharacterEllipsis"
-                    Text="{x:Bind Card.CompletedAtText, Mode=OneWay}" />
+                    VerticalAlignment="Bottom"
+                    Spacing="4">
+                    <TextBlock
+                        Style="{StaticResource CaptionStyle}"
+                        HorizontalAlignment="Right"
+                        MaxLines="1"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{x:Bind Card.CompletedAtText, Mode=OneWay}" />
+                    <controls:MealCardActionsControl
+                        x:Name="ActionsRow"
+                        Card="{x:Bind Card}" />
+                </StackPanel>
             </Grid>
         </Grid>
     </Border>

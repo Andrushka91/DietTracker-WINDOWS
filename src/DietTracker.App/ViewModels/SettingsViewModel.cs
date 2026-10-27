@@ -64,8 +64,23 @@ public sealed partial class SettingsViewModel : ObservableObject
         new("es-ES", "Español"),
     ];
 
+    /// <summary>
+    /// Automatic synchronization schedules offered in Settings, with localized labels. The tags are
+    /// the enum names of <see cref="SyncFrequency"/>, so the selection round-trips through the
+    /// preference of the same name.
+    /// </summary>
+    public IReadOnlyList<LanguageOption> SyncFrequencyOptions =>
+    [
+        new(SyncFrequency.Weekly.ToString(), _localization.Get("Sync_FrequencyWeekly")),
+        new(SyncFrequency.Monthly.ToString(), _localization.Get("Sync_FrequencyMonthly")),
+        new(SyncFrequency.Manual.ToString(), _localization.Get("Sync_FrequencyManual")),
+    ];
+
     [ObservableProperty]
     private string _selectedLanguage = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedSyncFrequency = SyncFrequency.Weekly.ToString();
 
     [ObservableProperty]
     private bool _remindersEnabled = true;
@@ -103,6 +118,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _preferences = await _profiles.GetPreferencesAsync();
 
         SelectedLanguage = string.IsNullOrEmpty(_preferences.Language) ? "ro-RO" : _preferences.Language;
+        SelectedSyncFrequency = _preferences.SyncFrequency.ToString();
         RemindersEnabled = _preferences.RemindersEnabled;
         MinimizeToTray = _preferences.MinimizeToTray;
         Use12HourClock = _preferences.Use12HourClock;
@@ -127,6 +143,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
 
         _preferences.Language = SelectedLanguage;
+        _preferences.SyncFrequency = Enum.TryParse<SyncFrequency>(SelectedSyncFrequency, out var syncFrequency)
+            ? syncFrequency
+            : SyncFrequency.Weekly;
         _preferences.RemindersEnabled = RemindersEnabled;
         _preferences.MinimizeToTray = MinimizeToTray;
         _preferences.Use12HourClock = Use12HourClock;

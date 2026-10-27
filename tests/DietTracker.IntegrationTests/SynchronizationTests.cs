@@ -233,6 +233,77 @@ public sealed class SynchronizationTests
     }
 
     [Fact]
+    public async Task Edits_wait_for_the_weekly_schedule_instead_of_synchronizing_continuously()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+
+        // The cycle after sign-in runs (nothing has ever been synchronized) and stamps the account.
+        var first = await environment.Sync.SynchronizeAsync(SyncTrigger.PostSignIn);
+        Assert.True(first.Succeeded);
+
+        // Everything edited during the week stays in the journal: the cycle is deferred, so there is
+        // no cloud traffic and no state change - which is exactly why the status strip used to flash
+        // on every save.
+        await SeedLunchAsync(environment, new DateOnly(2026, 3, 20), "Scheduled lunch");
+        var deferred = await environment.Sync.SynchronizeAsync(SyncTrigger.LocalChange);
+
+        Assert.True(deferred.Deferred);
+        Assert.True(deferred.Succeeded);
+        Assert.Equal(0, environment.Cloud.ObjectCount);
+
+        // The explicit button always runs and uploads the queued change.
+        var manual = await environment.Sync.SynchronizeAsync(SyncTrigger.Manual);
+        Assert.True(manual.Succeeded);
+        Assert.True(manual.Uploaded >= 1);
+        Assert.True(environment.Cloud.ObjectCount >= 1);
+    }
+
+    [Fact]
+    public async Task The_manual_frequency_only_synchronizes_when_the_button_is_pressed()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+
+        var profiles = environment.Services.GetRequiredService<IProfileService>();
+        await profiles.GetOrCreateActiveProfileAsync(); // a fresh installation starts as Guest
+        var preferences = await profiles.GetPreferencesAsync();
+        preferences.SyncFrequency = SyncFrequency.Manual;
+        await profiles.SavePreferencesAsync(preferences);
+
+        var automatic = await environment.Sync.SynchronizeAsync(SyncTrigger.PostSignIn);
+        Assert.True(automatic.Deferred, $"state={automatic.State}, reason={automatic.ReasonCode}, diagnostic={automatic.Diagnostic}");
+        Assert.Equal(0, environment.Cloud.ObjectCount);
+
+        await SeedLunchAsync(environment, new DateOnly(2026, 3, 22), "Only on demand");
+        var edit = await environment.Sync.SynchronizeAsync(SyncTrigger.LocalChange);
+        Assert.True(edit.Deferred);
+        Assert.Equal(0, environment.Cloud.ObjectCount);
+
+        var manual = await environment.Sync.SynchronizeAsync(SyncTrigger.Manual);
+        Assert.True(manual.Succeeded);
+        Assert.True(manual.Uploaded >= 1);
+    }
+
+    [Fact]
+    public async Task The_weekly_schedule_elapses_and_the_next_automatic_cycle_runs()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        await environment.Sync.SynchronizeAsync(SyncTrigger.PostSignIn);
+        await SeedLunchAsync(environment, new DateOnly(2026, 3, 23), "Eight days later");
+
+        // The last successful cycle is moved eight days into the past: the week is up.
+        var clock = environment.Services.GetRequiredService<IClock>();
+        var account = await environment.Accounts.GetActiveAsync();
+        account!.LastSynchronizedAt = clock.UtcNow.AddDays(-8);
+        await environment.Accounts.UpdateAsync(account);
+
+        var due = await environment.Sync.SynchronizeAsync(SyncTrigger.LocalChange);
+
+        Assert.False(due.Deferred);
+        Assert.True(due.Succeeded);
+        Assert.True(due.Uploaded >= 1);
+    }
+
+    [Fact]
     public async Task Photographs_are_uploaded_once_and_restored_on_another_device()
     {
         await using var deviceA = await TestEnvironment.CreateAsync(connectAccount: true);

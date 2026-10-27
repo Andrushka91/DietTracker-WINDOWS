@@ -1,3 +1,4 @@
+using DietTracker.Core.BusinessRules;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Core.Models;
@@ -14,6 +15,19 @@ public sealed partial class SyncEngine
         {
             SetState(SyncState.NotConfigured);
             return SyncResult.Failure("sync.not-configured", state: SyncState.NotConfigured);
+        }
+
+        // Cadence gate: the user decided how often the cloud is contacted. Manual actions (the
+        // "Synchronize now" button), a restore, a full upload and the retry of a dropped connection
+        // always run; every other trigger - start-up, sign-in, a local edit, the hourly check - waits
+        // until the chosen frequency has elapsed since the last successful cycle. The timestamp lives
+        // on the account, so a weekly schedule survives restarts. A deferred cycle raises no state
+        // change at all - it must be evaluated before the offline check too, so that a scheduled
+        // knock while the machine is offline does not paint a warning strip either.
+        if (!await IsDueAsync(trigger, account, cancellationToken).ConfigureAwait(false))
+        {
+            _logger.LogDebug("Cycle triggered by {Trigger} deferred: the configured frequency has not elapsed.", trigger);
+            return SyncResult.NotDue();
         }
 
         if (!_connectivity.IsOnline)
@@ -100,6 +114,41 @@ public sealed partial class SyncEngine
             LastResult = result,
             LastSuccessfulSyncAt = _lastSuccessfulSyncAt,
         });
+    }
+
+    /// <summary>
+    /// Decides whether an automatic cycle may run right now, according to the synchronization
+    /// frequency the user chose in Settings (weekly by default, monthly, or "only with the button").
+    /// </summary>
+    private async Task<bool> IsDueAsync(SyncTrigger trigger, CloudAccount account, CancellationToken cancellationToken)
+    {
+        // Explicit actions and consistency repairs always run: the user asked for them.
+        if (trigger is SyncTrigger.Manual or SyncTrigger.PostRestore or SyncTrigger.ConnectivityRestored)
+        {
+            return true;
+        }
+
+        var frequency = await ReadSyncFrequencyAsync(cancellationToken).ConfigureAwait(false);
+        var age = account.LastSynchronizedAt is { } last ? _clock.UtcNow - last : (TimeSpan?)null;
+        return SyncFrequencyRules.IsDue(frequency, age);
+    }
+
+    /// <summary>
+    /// Reads the schedule from the preferences. A read problem must never break a cycle, so it falls
+    /// back to the default frequency.
+    /// </summary>
+    private async Task<SyncFrequency> ReadSyncFrequencyAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var preferences = await _profiles.GetPreferencesAsync(cancellationToken).ConfigureAwait(false);
+            return preferences.SyncFrequency;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Could not read the synchronization frequency; assuming weekly.");
+            return SyncFrequency.Weekly;
+        }
     }
 
     /// <summary>Backoff for a failed operation: 5s, 15s, 45s, ... capped at 30 minutes.</summary>
