@@ -13,7 +13,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
 
-  <data name="App_DisplayName" xml:space="preserve"><value>DietTracker</value></data>
+  <data name="App_DisplayName" xml:space="preserve"><value>Diet Tracker</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>Cinci mese pe zi, planificate și urmărite local</value></data>
 
   <data name="Common_Yes" xml:space="preserve"><value>Da</value></data>
@@ -34,7 +34,7 @@
   <data name="Nav_Settings" xml:space="preserve"><value>Setări</value></data>
   <data name="Nav_AccountSync" xml:space="preserve"><value>Cont și sincronizare</value></data>
 
-  <data name="Tray_Open" xml:space="preserve"><value>Deschide DietTracker</value></data>
+  <data name="Tray_Open" xml:space="preserve"><value>Deschide Diet Tracker</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Ieșire</value></data>
 
   <data name="Meal_Breakfast_Name" xml:space="preserve"><value>Desayuno / Mic dejun</value></data>
@@ -138,7 +138,7 @@
   <data name="Settings_IntegrityOk" xml:space="preserve"><value>Verificarea integrității nu a găsit probleme.</value></data>
   <data name="Settings_IntegrityIssues" xml:space="preserve"><value>{0} probleme de integritate: {1}</value></data>
   <data name="Account_Title" xml:space="preserve"><value>Cont și sincronizare</value></data>
-  <data name="Account_GuestInfo" xml:space="preserve"><value>Folosești DietTracker fără cont</value></data>
+  <data name="Account_GuestInfo" xml:space="preserve"><value>Folosești Diet Tracker fără cont</value></data>
   <data name="Account_Current" xml:space="preserve"><value>Cont conectat</value></data>
   <data name="Account_SignIn" xml:space="preserve"><value>Conectare</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Conectare cu Google</value></data>
@@ -149,7 +149,7 @@
   <data name="Account_Consent" xml:space="preserve"><value>Încarc mesele și fotografiile mele</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Sunt încărcate mesele, notele, starea de confirmare, șabloanele, preferințele și fotografiile. Se aplică limitele de spațiu ale contului ales.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Este necesar acordul explicit înainte de prima încărcare.</value></data>
-  <data name="Account_PrivacySummary" xml:space="preserve"><value>DietTracker păstrează datele local. Sincronizarea se face direct în folderul aplicației din contul tău.</value></data>
+  <data name="Account_PrivacySummary" xml:space="preserve"><value>Diet Tracker păstrează datele local. Sincronizarea se face direct în folderul aplicației din contul tău.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>Fără cont (mod invitat)</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Toate funcțiile esențiale funcționează offline, fără cont.</value></data>
@@ -157,13 +157,13 @@
   <data name="Account_SignedOut" xml:space="preserve"><value>Deconectat. Mesele și fotografiile locale au fost păstrate.</value></data>
   <data name="Account_Quota" xml:space="preserve"><value>Spațiu liber în cloud: {0:0.#} GB</value></data>
   <data name="Account_SyncResult" xml:space="preserve"><value>Sincronizare încheiată: {0} încărcate, {1} descărcate.</value></data>
-  <data name="Account_NoCloudData" xml:space="preserve"><value>Nu s-au găsit date DietTracker în contul conectat.</value></data>
+  <data name="Account_NoCloudData" xml:space="preserve"><value>Nu s-au găsit date Diet Tracker în contul conectat.</value></data>
   <data name="Account_RestorePreview" xml:space="preserve"><value>În cloud: {0} mese și {1} fotografii.</value></data>
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restaurezi din cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Datele locale nu sunt șterse. Se adaugă sau se actualizează doar înregistrările existente în cloud.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restaurare încheiată: {0} înregistrări.</value></data>
   <data name="Account_Environment" xml:space="preserve"><value>Mediu</value></data>
-  <data name="Onboarding_Title" xml:space="preserve"><value>Bine ai venit la DietTracker</value></data>
+  <data name="Onboarding_Title" xml:space="preserve"><value>Bine ai venit la Diet Tracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Planifică cinci mese pe zi, bifează ce ai consumat și păstrează istoricul. Conectarea la un cont permite sincronizarea securizată și recuperarea datelor după reinstalare sau pe alt calculator.</value></data>
   <data name="Onboarding_ChooseProvider" xml:space="preserve"><value>Alege cum păstrezi datele</value></data>
   <data name="Onboarding_ContinueWithoutAccount" xml:space="preserve"><value>Continuă fără cont</value></data>
@@ -177,7 +177,7 @@
   <data name="Sync_PendingChanges" xml:space="preserve"><value>Modificări în așteptare</value></data>
   <data name="Sync_Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="Sync_AuthenticationRequired" xml:space="preserve"><value>Este necesară reconectarea</value></data>
-  <data name="Sync_BalloonTitle" xml:space="preserve"><value>DietTracker sincronizat</value></data>
+  <data name="Sync_BalloonTitle" xml:space="preserve"><value>Diet Tracker sincronizat</value></data>
   <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} încărcate, {1} descărcate.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Eroare de sincronizare</value></data>
   <data name="Sync_Paused" xml:space="preserve"><value>Sincronizare oprită</value></data>
@@ -202,7 +202,7 @@
   <data name="Auth_google_code_exchange_failed" xml:space="preserve"><value>Schimbul codului de autorizare a eșuat.</value></data>
   <data name="Auth_google_identity_unavailable" xml:space="preserve"><value>Identitatea contului Google nu a putut fi citită.</value></data>
   <data name="Auth_google_network_error" xml:space="preserve"><value>Eroare de rețea la conectarea Google.</value></data>
-  <data name="Auth_google_not_configured" xml:space="preserve"><value>Conectarea Google nu este configurată. Setați googleClientId în fișierul appsettings.json din DietTracker și reporniți aplicația (vezi docs/authentication/setup.md).</value></data>
+  <data name="Auth_google_not_configured" xml:space="preserve"><value>Conectarea Google nu este configurată. Setați googleClientId în fișierul appsettings.json din Diet Tracker și reporniți aplicația (vezi docs/authentication/setup.md).</value></data>
   <data name="Auth_google_access_denied" xml:space="preserve"><value>Google a refuzat cererea de autorizare.</value></data>
   <data name="Auth_google_authorization_cancelled" xml:space="preserve"><value>Autorizarea Google a fost anulată.</value></data>
   <data name="Auth_google_invalid_token_response" xml:space="preserve"><value>Google a returnat un răspuns de token neașteptat.</value></data>
@@ -218,7 +218,7 @@
   <data name="Privacy_DeleteLocalMessage" xml:space="preserve"><value>Se șterg mesele, șabloanele, memento-urile și fotografiile de pe acest dispozitiv. Datele din cloud rămân neatinse. Se creează automat o copie de siguranță.</value></data>
   <data name="Privacy_DeleteLocalDone" xml:space="preserve"><value>Datele locale au fost șterse.</value></data>
   <data name="Privacy_DeleteCloudTitle" xml:space="preserve"><value>Ștergi datele din cloud?</value></data>
-  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>Se șterg fișierele DietTracker din contul conectat. Datele locale rămân pe acest dispozitiv.</value></data>
+  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>Se șterg fișierele Diet Tracker din contul conectat. Datele locale rămân pe acest dispozitiv.</value></data>
   <data name="Privacy_DeleteCloudDone" xml:space="preserve"><value>{0} obiecte au fost șterse din cloud.</value></data>
   <data name="Privacy_DeletePhotosTitle" xml:space="preserve"><value>Ștergi fotografiile?</value></data>
   <data name="Privacy_DeletePhotosMessage" xml:space="preserve"><value>Se șterg fișierele imagine locale; înregistrările meselor rămân.</value></data>

@@ -10,12 +10,12 @@
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1416;CA1848;CA2007;CS1591;MVVMTK0045</NoWarn>
-    <Company>DietTracker</Company>
-    <Product>DietTracker</Product>
+    <Company>Diet Tracker</Company>
+    <Product>Diet Tracker</Product>
     <Version>1.0.0</Version>
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <Copyright>Copyright (c) DietTracker</Copyright>
+    <Copyright>Copyright (c) Diet Tracker</Copyright>
     <NeutralLanguage>ro-RO</NeutralLanguage>
     <InvariantGlobalization>false</InvariantGlobalization>
     <Deterministic>true</Deterministic>

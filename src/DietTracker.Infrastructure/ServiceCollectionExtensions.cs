@@ -21,7 +21,7 @@ namespace DietTracker.Infrastructure;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Adds the DietTracker infrastructure (persistence, cloud, authentication, reminders).</summary>
+    /// <summary>Adds the Diet Tracker infrastructure (persistence, cloud, authentication, reminders).</summary>
     public static IServiceCollection AddDietTrackerInfrastructure(
         this IServiceCollection services,
         Action<GoogleAuthenticationOptions>? configureGoogle = null)

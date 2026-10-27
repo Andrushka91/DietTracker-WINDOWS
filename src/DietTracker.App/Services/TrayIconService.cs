@@ -4,7 +4,7 @@ using DietTracker.Core.Interfaces;
 namespace DietTracker.App.Services;
 
 /// <summary>
-/// Keeps DietTracker available in the notification area so reminders keep working while the window is
+/// Keeps Diet Tracker available in the notification area so reminders keep working while the window is
 /// closed, and offers Restore / Exit actions from the tray menu.
 /// </summary>
 /// <remarks>
@@ -153,7 +153,7 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
             }
 
             _windowHandle = TrayNativeMethods.CreateWindowEx(
-                0, windowClass.lpszClassName, "DietTracker", 0, 0, 0, 0, 0,
+                0, windowClass.lpszClassName, "Diet Tracker", 0, 0, 0, 0, 0,
                 TrayNativeMethods.HWND_MESSAGE, IntPtr.Zero, instance, IntPtr.Zero);
 
             _iconHandle = LoadTrayIcon();
@@ -216,7 +216,7 @@ public sealed partial class TrayIconService : ITrayIconService, IDisposable
         uID = IconId,
         uCallbackMessage = CallbackMessage,
         hIcon = _iconHandle,
-        szTip = "DietTracker",
+        szTip = "Diet Tracker",
         szInfo = string.Empty,
         szInfoTitle = string.Empty,
     };

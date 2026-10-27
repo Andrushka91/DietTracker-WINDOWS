@@ -1,4 +1,4 @@
-# DietTracker
+# Diet Tracker
 
 A native Windows 11 desktop application (WinUI 3, .NET 10, C#) for planning five daily meals,
 tracking what was actually eaten, attaching photographs, receiving native Windows reminders and
@@ -233,7 +233,7 @@ PrivateMemoryMB : 117.2
 Threads         : 100
 Handles         : 1348
 Responding      : True
-MainWindowTitle : DietTracker
+MainWindowTitle : Diet Tracker
 ```
 
 A window title and `Responding : True` mean the application really came up (0.6-1.7 s here). The script
@@ -281,7 +281,7 @@ while you are using the unpackaged build yourself.
 
 ## Configuration of the identity provider
 
-DietTracker contains no secret in its source. The Google client identifier and client secret are read
+Diet Tracker contains no secret in its source. The Google client identifier and client secret are read
 from an optional `%LOCALAPPDATA%\DietTracker\appsettings.json`; the built-in default is a placeholder
 that must be replaced with your own registration before a real sign-in can succeed. See
 [docs/authentication/setup.md](docs/authentication/setup.md).

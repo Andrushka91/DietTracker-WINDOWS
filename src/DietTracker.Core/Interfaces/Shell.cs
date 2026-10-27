@@ -1,6 +1,6 @@
 namespace DietTracker.Core.Interfaces;
 
-/// <summary>Registers / unregisters DietTracker as a Windows startup task.</summary>
+/// <summary>Registers / unregisters Diet Tracker as a Windows startup task.</summary>
 public interface IStartupTaskService
 {
     Task<bool> IsEnabledAsync(CancellationToken cancellationToken = default);

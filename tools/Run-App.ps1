@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds DietTracker as an unpackaged application and starts it.
+    Builds Diet Tracker as an unpackaged application and starts it.
 
 .DESCRIPTION
     Convenience wrapper around the two steps of the README section "Run the app": it builds the WinUI
@@ -52,7 +52,7 @@ if (-not $NoBuild) {
     # A running instance locks DietTracker.exe, so the build would fail to copy it. Stop it first.
     $running = Get-Process -Name 'DietTracker' -ErrorAction SilentlyContinue
     if ($running) {
-        Write-Host "Stopping the running DietTracker instance(s) so the build can replace the executable..."
+        Write-Host "Stopping the running Diet Tracker instance(s) so the build can replace the executable..."
         $running | Stop-Process -Force
         Start-Sleep -Seconds 1
     }
@@ -83,12 +83,12 @@ while ([DateTime]::UtcNow -lt $deadline) {
 }
 
 if (-not $process.HasExited) {
-    Write-Host "DietTracker is running (process $($process.Id)) - the window should be visible."
+    Write-Host "Diet Tracker is running (process $($process.Id)) - the window should be visible."
     Write-Host "Log file: $logFile"
     return
 }
 
-Write-Warning "DietTracker exited during start-up with code $($process.ExitCode) (0x$('{0:X8}' -f $process.ExitCode))."
+Write-Warning "Diet Tracker exited during start-up with code $($process.ExitCode) (0x$('{0:X8}' -f $process.ExitCode))."
 
 if (Test-Path (Join-Path $outputDirectory 'AppxManifest.xml')) {
     Write-Warning @"

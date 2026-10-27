@@ -25,7 +25,7 @@ public sealed partial class BackupService
 
         using var archive = ZipFile.OpenRead(sourceFilePath);
         var manifestEntry = archive.GetEntry(ManifestEntry)
-            ?? throw new InvalidDataException("The selected file is not a DietTracker backup (backup.json is missing).");
+            ?? throw new InvalidDataException("The selected file is not a Diet Tracker backup (backup.json is missing).");
 
         BackupManifest manifest;
         await using (var stream = manifestEntry.Open())
@@ -39,7 +39,7 @@ public sealed partial class BackupService
         if (manifest.SchemaVersion > CloudSchema.CurrentVersion)
         {
             throw new InvalidOperationException(
-                $"The backup was created by a newer version of DietTracker (schema {manifest.SchemaVersion}).");
+                $"The backup was created by a newer version of Diet Tracker (schema {manifest.SchemaVersion}).");
         }
 
         var photos = await RestorePhotosAsync(archive, manifest, cancellationToken).ConfigureAwait(false);

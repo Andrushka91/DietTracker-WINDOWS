@@ -1,6 +1,6 @@
 # Identity provider setup
 
-DietTracker synchronizes with **Google Drive** and is a **public client**: no secret is embedded in
+Diet Tracker synchronizes with **Google Drive** and is a **public client**: no secret is embedded in
 the application or the repository. The Google client identifier and client secret are read at
 runtime from an optional settings file, so a developer or an organization can point a build at its
 own registration without recompiling:
@@ -15,7 +15,7 @@ own registration without recompiling:
 
 Without this file the built-in placeholders are used and interactive sign-in cannot succeed - Guest
 Mode remains fully functional. Keys are matched case-insensitively and `//` comments are allowed;
-restart DietTracker after changing the file.
+restart Diet Tracker after changing the file.
 
 ## Google account (OAuth 2.0 + PKCE)
 
@@ -30,7 +30,7 @@ restart DietTracker after changing the file.
 5. Copy the client identifier into `googleClientId` and the client secret into `googleClientSecret`.
    The secret of a Desktop app client is not treated as confidential (Google's token endpoint expects
    it although the application cannot keep it), but it stays out of the repository: it lives in the
-   per-user settings file only. Restart DietTracker after changing the file.
+   per-user settings file only. Restart Diet Tracker after changing the file.
 
 Scopes requested (minimal):
 
@@ -41,7 +41,7 @@ profile
 https://www.googleapis.com/auth/drive.appdata
 ```
 
-`drive.appdata` grants access only to the hidden *application data folder* of Google Drive. DietTracker
+`drive.appdata` grants access only to the hidden *application data folder* of Google Drive. Diet Tracker
 never sees the user's other files.
 
 **Flow details:** the authorization page is opened in the **system browser** (never in an embedded

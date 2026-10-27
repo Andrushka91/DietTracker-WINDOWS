@@ -4,7 +4,7 @@ using Microsoft.Win32;
 namespace DietTracker.Infrastructure.Shell;
 
 /// <summary>
-/// Registers DietTracker as a Windows startup task.
+/// Registers Diet Tracker as a Windows startup task.
 /// </summary>
 /// <remarks>
 /// A packaged application uses the officially supported <c>StartupTask</c> API, which the user can

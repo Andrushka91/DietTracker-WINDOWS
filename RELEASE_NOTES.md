@@ -1,8 +1,8 @@
-# Release notes — DietTracker
+# Release notes — Diet Tracker
 
 ## 1.0.0
 
-_First release of DietTracker for Windows: an offline-first meal planner for Windows 11 with
+_First release of Diet Tracker for Windows: an offline-first meal planner for Windows 11 with
 optional, private cloud synchronization through the user's own Google Drive account._
 
 ### Highlights
@@ -23,7 +23,7 @@ optional, private cloud synchronization through the user's own Google Drive acco
 * **Sign-in with Google** through the official OAuth 2.0 authorization code flow with PKCE in the
   system browser; tokens are stored DPAPI-protected and sessions are restored silently on the next
   start.
-* **Google Drive `appDataFolder` storage** — a hidden, application-private folder; DietTracker never
+* **Google Drive `appDataFolder` storage** — a hidden, application-private folder; Diet Tracker never
   sees other files in the user's Drive.
 * **Change tracking and conflict handling** with content hashes, provider revisions and an explicit
   conflict resolution; uploads are idempotent.
@@ -40,7 +40,7 @@ optional, private cloud synchronization through the user's own Google Drive acco
   carries the Google client identifier and client secret of the installation. A missing or
   misconfigured registration fails fast with a clear, localized message instead of opening the
   browser into a Google error page.
-* The page the browser lands on after the authorization redirect is now a branded DietTracker card
+* The page the browser lands on after the authorization redirect is now a branded Diet Tracker card
   that follows the system light/dark preference and closes itself when the browser allows it.
 * Sign-in failures surface localized, user-readable messages in English, Romanian and Spanish.
 * Database schema updated to **v9** (migrations 0004–0009); a safety copy is written before every
@@ -49,7 +49,7 @@ optional, private cloud synchronization through the user's own Google Drive acco
 ### Removed
 
 * **Microsoft account sign-in and OneDrive synchronization** were removed together with the guarded
-  provider switching; DietTracker synchronizes with Google Drive only in this version. The MSAL
+  provider switching; Diet Tracker synchronizes with Google Drive only in this version. The MSAL
   packages are no longer referenced, and the provider value layout keeps existing databases
   migration-free.
 

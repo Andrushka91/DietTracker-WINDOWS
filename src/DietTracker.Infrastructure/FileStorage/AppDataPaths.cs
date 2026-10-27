@@ -3,7 +3,7 @@ using DietTracker.Core.Interfaces;
 namespace DietTracker.Infrastructure.FileStorage;
 
 /// <summary>
-/// Resolves every location DietTracker is allowed to write to.
+/// Resolves every location Diet Tracker is allowed to write to.
 /// </summary>
 /// <remarks>
 /// In a packaged (MSIX) build the root is the application's private <c>LocalState</c> folder, which

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Uninstalls the DietTracker MSIX package as fast as Windows allows.
+    Uninstalls the Diet Tracker MSIX package as fast as Windows allows.
 
 .DESCRIPTION
     Remove-AppxPackage spends most of its time in two places:
@@ -63,7 +63,7 @@ if ($KeepData -and $localState) {
 #    saving - the removal of a running app waits for that timeout, an idle removal does not.
 $running = Get-Process -Name 'DietTracker' -ErrorAction SilentlyContinue
 if ($running) {
-    Write-Host "Stopping $($running.Count) running DietTracker instance(s)..."
+    Write-Host "Stopping $($running.Count) running Diet Tracker instance(s)..."
     $running | Stop-Process -Force
     $deadline = (Get-Date).AddSeconds(5)
     while ((Get-Process -Name 'DietTracker' -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {

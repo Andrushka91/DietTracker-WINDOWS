@@ -16,7 +16,7 @@ public sealed class AppPreferences
     /// <summary>Show the two snack slots (the underlying data is never removed).</summary>
     public bool ShowSnackCards { get; set; } = true;
 
-    /// <summary>Start DietTracker when the user signs in to Windows.</summary>
+    /// <summary>Start Diet Tracker when the user signs in to Windows.</summary>
     public bool StartWithWindows { get; set; }
 
     /// <summary>Keep running in the notification area when the window is closed.</summary>

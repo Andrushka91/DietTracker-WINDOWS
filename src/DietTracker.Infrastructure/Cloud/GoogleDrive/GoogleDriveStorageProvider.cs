@@ -8,7 +8,7 @@ using DietTracker.Core.Models;
 namespace DietTracker.Infrastructure.Cloud.GoogleDrive;
 
 /// <summary>
-/// Google Drive storage provider that keeps every DietTracker object inside the hidden
+/// Google Drive storage provider that keeps every Diet Tracker object inside the hidden
 /// <c>appDataFolder</c> of the signed-in Google account.
 /// </summary>
 /// <remarks>

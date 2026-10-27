@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Smoke tests the DietTracker desktop application and measures cold start time and idle memory.
+    Smoke tests the Diet Tracker desktop application and measures cold start time and idle memory.
 
 .DESCRIPTION
     Starts the built (unpackaged) executable, waits for its main window, records how long that took,
@@ -78,7 +78,7 @@ while ($stopwatch.Elapsed.TotalSeconds -lt $StartupTimeoutSeconds) {
     $process.Refresh()
 
     if ($process.HasExited) {
-        throw "DietTracker exited during startup with code $($process.ExitCode)."
+        throw "Diet Tracker exited during startup with code $($process.ExitCode)."
     }
 
     # WinUI 3 hosts its window on a framework thread, so the window is located through the Win32 API.

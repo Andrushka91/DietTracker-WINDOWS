@@ -10,7 +10,7 @@
 |---|---|
 | Package identity name | `DietTracker.Desktop` (in `src/DietTracker.App/Package.appxmanifest`) |
 | Publisher | `CN=DietTracker` - **must be replaced** with the Partner Center publisher identity |
-| Display name | DietTracker |
+| Display name | Diet Tracker |
 | Minimum Windows | 10.0.22621.0 (Windows 11 22H2) |
 | Architectures | x64, ARM64 |
 | Capabilities | `runFullTrust` only (no restricted capabilities beyond the desktop hosting model) |
@@ -52,7 +52,7 @@ Local validation before submitting:
 
 Store metadata to prepare in Partner Center:
 
-* **Name:** DietTracker
+* **Name:** Diet Tracker
 * **Category:** Health & fitness (secondary: Productivity)
 * **Age rating:** IARC questionnaire - no objectionable content expected (health/wellness data is not
   a rating category).
@@ -67,7 +67,7 @@ Store metadata to prepare in Partner Center:
 
 Provide this text in the "Notes for certification" field:
 
-> DietTracker works fully offline and **no account is required**. To test the cloud features, use the
+> Diet Tracker works fully offline and **no account is required**. To test the cloud features, use the
 > Account and sync page: sign in with a Google account, then use "Synchronize now".
 > Authentication uses the official OAuth 2.0 flow with PKCE in the system browser and never asks for a
 > password inside the application. Google Drive storage is limited to the hidden `appDataFolder`. All
@@ -78,7 +78,7 @@ Provide this text in the "Notes for certification" field:
 
 1. Create or configure a **Microsoft Partner Center** developer account (individual or company) and pay
    the one-time registration fee if applicable.
-2. Reserve the application name **DietTracker**.
+2. Reserve the application name **Diet Tracker**.
 3. Copy the **publisher identity** (Publisher CN, package identity name, package family name) from
    Partner Center into `Package.appxmanifest`.
 4. Configure the Google Cloud project (OAuth consent screen, Desktop app client) so that sign-in works

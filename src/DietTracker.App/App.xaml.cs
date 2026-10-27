@@ -40,7 +40,7 @@ public partial class App : Application
 
         _services = BuildServices();
 
-        // Local persistence first: DietTracker must be fully usable without an account.
+        // Local persistence first: Diet Tracker must be fully usable without an account.
         var initializer = _services.GetRequiredService<IDatabaseInitializer>();
         try
         {
@@ -208,10 +208,10 @@ public partial class App : Application
     {
         var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
         {
-            Title = "DietTracker",
+            Title = "Diet Tracker",
             Content = exception is Infrastructure.Database.DatabaseSchemaTooNewException
                 ? exception.Message
-                : "The local database could not be opened. Install the latest version of DietTracker or restore a backup.",
+                : "The local database could not be opened. Install the latest version of Diet Tracker or restore a backup.",
             CloseButtonText = "Close",
             XamlRoot = MainAppWindow?.Content.XamlRoot,
         };

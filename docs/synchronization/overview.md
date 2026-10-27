@@ -28,7 +28,7 @@ Triggers: after sign-in, at startup, after local changes (debounced), when conne
   that; change tracking uses the Graph **delta** feed rooted at the app folder.
 * Google Drive: the hidden `appDataFolder`; files are stored with flat names
   (`entities__MealEntry__<guid>.json`) and mapped back to logical paths. Google's change feed cannot be
-  scoped to `appDataFolder`, so DietTracker uses a **modified-time watermark** (one minute in the past
+  scoped to `appDataFolder`, so Diet Tracker uses a **modified-time watermark** (one minute in the past
 to absorb clock skew); every apply operation is idempotent, so examining an object twice is harmless.
 
 ## Payload

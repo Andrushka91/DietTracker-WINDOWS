@@ -41,7 +41,7 @@ public sealed partial class GoogleDriveStorageProvider
 
     /// <inheritdoc />
     /// <remarks>
-    /// The Google Drive changes feed cannot be scoped to <c>appDataFolder</c>, so DietTracker uses a
+    /// The Google Drive changes feed cannot be scoped to <c>appDataFolder</c>, so Diet Tracker uses a
     /// modified-time watermark instead of the global change feed. The watermark is intentionally one
     /// minute in the past to absorb clock skew between the PC and Google; an object may therefore be
     /// examined twice, which is harmless because every apply operation is idempotent.

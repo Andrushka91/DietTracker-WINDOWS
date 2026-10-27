@@ -3,7 +3,7 @@ using DietTracker.Core.Models;
 namespace DietTracker.Core.Interfaces;
 
 /// <summary>
-/// Resolves the per-user, per-application data locations DietTracker is allowed to write to.
+/// Resolves the per-user, per-application data locations Diet Tracker is allowed to write to.
 /// User data never lives inside the installation directory so that MSIX updates cannot erase it.
 /// </summary>
 public interface IAppDataPaths

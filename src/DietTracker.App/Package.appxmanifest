@@ -18,8 +18,8 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>DietTracker</DisplayName>
-    <PublisherDisplayName>DietTracker</PublisherDisplayName>
+    <DisplayName>Diet Tracker</DisplayName>
+    <PublisherDisplayName>Diet Tracker</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -34,7 +34,7 @@
   <Applications>
     <Application Id="DietTracker" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="DietTracker"
+        DisplayName="Diet Tracker"
         Description="Plan five daily meals, track what you actually ate and keep your progress in sync with OneDrive or Google Drive."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -42,14 +42,14 @@
         <uap:DefaultTile
           Wide310x150Logo="Assets\Wide310x150Logo.png"
           Square310x310Logo="Assets\LargeTile.png"
-          ShortName="DietTracker" />
+          ShortName="Diet Tracker" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
 
       <!-- Optional "start with Windows": the user can also manage it from Task Manager. -->
       <Extensions>
         <desktop:Extension Category="windows.startupTask" Executable="DietTracker.exe" EntryPoint="Windows.FullTrustApplication">
-          <desktop:StartupTask TaskId="DietTrackerStartup" Enabled="false" DisplayName="DietTracker" />
+          <desktop:StartupTask TaskId="DietTrackerStartup" Enabled="false" DisplayName="Diet Tracker" />
         </desktop:Extension>
       </Extensions>
     </Application>

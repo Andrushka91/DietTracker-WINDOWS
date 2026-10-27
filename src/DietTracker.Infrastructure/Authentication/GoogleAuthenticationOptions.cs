@@ -28,7 +28,7 @@ public sealed class GoogleAuthenticationOptions
 
     /// <summary>
     /// Minimal scopes: identity plus the hidden application data folder of Google Drive.
-    /// DietTracker never requests access to the user's other Drive files.
+    /// Diet Tracker never requests access to the user's other Drive files.
     /// </summary>
     public string[] Scopes { get; set; } =
     [

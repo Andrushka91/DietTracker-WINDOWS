@@ -51,7 +51,7 @@ internal static partial class GooglePkceFlow
 
         var authorizeUrl = BuildAuthorizeUrl(options, redirectUri, challenge, state);
 
-        // The system browser opens the Google page; DietTracker never renders the login form itself.
+        // The system browser opens the Google page; Diet Tracker never renders the login form itself.
         Process.Start(new ProcessStartInfo(authorizeUrl) { UseShellExecute = true });
 
         HttpListenerContext context;
@@ -143,8 +143,8 @@ internal static partial class GooglePkceFlow
     {
         var title = success ? "You're connected" : "Sign-in was not completed";
         var message = success
-            ? "DietTracker is now connected to your Google account. You can return to the application."
-            : "The authorization did not finish. You can close this tab and try again in DietTracker.";
+            ? "Diet Tracker is now connected to your Google account. You can return to the application."
+            : "The authorization did not finish. You can close this tab and try again in Diet Tracker.";
 
         // A filled circle with a check (success) or a cross (failure), drawn inline - the page must
         // not depend on any external resource.
@@ -158,7 +158,7 @@ internal static partial class GooglePkceFlow
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DietTracker</title>
+<title>Diet Tracker</title>
 <style>
   :root { color-scheme: light dark; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -191,11 +191,11 @@ internal static partial class GooglePkceFlow
 </head>
 <body>
   <main class="card">
-    <div class="brand"><span class="dot"></span>DietTracker</div>
+    <div class="brand"><span class="dot"></span>Diet Tracker</div>
     BADGE_PLACEHOLDER
     <h1>TITLE_PLACEHOLDER</h1>
     <p>MESSAGE_PLACEHOLDER</p>
-    <p class="hint">This tab closes by itself in a moment. If it stays open, close it and return to DietTracker.</p>
+    <p class="hint">This tab closes by itself in a moment. If it stays open, close it and return to Diet Tracker.</p>
   </main>
   <script>setTimeout(function () { window.close(); }, 2500);</script>
 </body>

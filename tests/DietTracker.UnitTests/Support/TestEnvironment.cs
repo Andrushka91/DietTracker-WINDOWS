@@ -17,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DietTracker.UnitTests.Support;
 
 /// <summary>
-/// Builds a complete DietTracker object graph against a temporary application data directory, so the
+/// Builds a complete Diet Tracker object graph against a temporary application data directory, so the
 /// tests exercise the real SQLite database, the real repositories and the real synchronization engine
 /// while the cloud is replaced by an in-memory provider.
 /// </summary>

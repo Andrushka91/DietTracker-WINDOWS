@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="App_DisplayName" xml:space="preserve"><value>DietTracker</value></data>
+  <data name="App_DisplayName" xml:space="preserve"><value>Diet Tracker</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>Five meals a day, planned and tracked locally</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
@@ -22,7 +22,7 @@
   <data name="Nav_Templates" xml:space="preserve"><value>Templates</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Nav_AccountSync" xml:space="preserve"><value>Account and sync</value></data>
-  <data name="Tray_Open" xml:space="preserve"><value>Open DietTracker</value></data>
+  <data name="Tray_Open" xml:space="preserve"><value>Open Diet Tracker</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Meal_Breakfast_Name" xml:space="preserve"><value>Breakfast</value></data>
   <data name="Meal_MorningSnack_Name" xml:space="preserve"><value>Morning snack</value></data>
@@ -118,7 +118,7 @@
   <data name="Settings_IntegrityOk" xml:space="preserve"><value>The integrity check found no problems.</value></data>
   <data name="Settings_IntegrityIssues" xml:space="preserve"><value>{0} integrity issue(s): {1}</value></data>
   <data name="Account_Title" xml:space="preserve"><value>Account and synchronization</value></data>
-  <data name="Account_GuestInfo" xml:space="preserve"><value>You are using DietTracker without an account</value></data>
+  <data name="Account_GuestInfo" xml:space="preserve"><value>You are using Diet Tracker without an account</value></data>
   <data name="Account_Current" xml:space="preserve"><value>Connected account</value></data>
   <data name="Account_SignIn" xml:space="preserve"><value>Sign in</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Sign in with Google</value></data>
@@ -129,7 +129,7 @@
   <data name="Account_Consent" xml:space="preserve"><value>Upload my meal data and photographs</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Meals, notes, completion state, templates, preferences and photographs are uploaded. The storage limits of the selected account apply.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Explicit consent is required before the first upload.</value></data>
-  <data name="Account_PrivacySummary" xml:space="preserve"><value>DietTracker keeps your data local. Synchronization writes directly into the application folder of your own account.</value></data>
+  <data name="Account_PrivacySummary" xml:space="preserve"><value>Diet Tracker keeps your data local. Synchronization writes directly into the application folder of your own account.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>No account (guest mode)</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Every essential feature works offline without an account.</value></data>
@@ -137,13 +137,13 @@
   <data name="Account_SignedOut" xml:space="preserve"><value>Signed out. Your local meals and photographs were kept.</value></data>
   <data name="Account_Quota" xml:space="preserve"><value>Cloud space left: {0:0.#} GB</value></data>
   <data name="Account_SyncResult" xml:space="preserve"><value>Synchronization finished: {0} uploaded, {1} downloaded.</value></data>
-  <data name="Account_NoCloudData" xml:space="preserve"><value>No DietTracker data was found in the connected account.</value></data>
+  <data name="Account_NoCloudData" xml:space="preserve"><value>No Diet Tracker data was found in the connected account.</value></data>
   <data name="Account_RestorePreview" xml:space="preserve"><value>In the cloud: {0} meals and {1} photographs.</value></data>
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restore from the cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Local data is not deleted. Only records that exist in the cloud are added or updated.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restore finished: {0} record(s).</value></data>
   <data name="Account_Environment" xml:space="preserve"><value>Environment</value></data>
-  <data name="Onboarding_Title" xml:space="preserve"><value>Welcome to DietTracker</value></data>
+  <data name="Onboarding_Title" xml:space="preserve"><value>Welcome to Diet Tracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Plan five meals a day, confirm what you actually ate and keep the history. Signing in enables secure synchronization and data recovery after reinstalling or on another PC.</value></data>
   <data name="Onboarding_ChooseProvider" xml:space="preserve"><value>Choose how to keep your data</value></data>
   <data name="Onboarding_ContinueWithoutAccount" xml:space="preserve"><value>Continue without an account</value></data>
@@ -156,7 +156,7 @@
   <data name="Sync_PendingChanges" xml:space="preserve"><value>Pending changes</value></data>
   <data name="Sync_Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="Sync_AuthenticationRequired" xml:space="preserve"><value>Sign in again</value></data>
-  <data name="Sync_BalloonTitle" xml:space="preserve"><value>DietTracker synchronized</value></data>
+  <data name="Sync_BalloonTitle" xml:space="preserve"><value>Diet Tracker synchronized</value></data>
   <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} uploaded, {1} downloaded.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronization error</value></data>
   <data name="Sync_Paused" xml:space="preserve"><value>Synchronization paused</value></data>
@@ -181,7 +181,7 @@
   <data name="Auth_google_code_exchange_failed" xml:space="preserve"><value>Exchanging the authorization code failed.</value></data>
   <data name="Auth_google_identity_unavailable" xml:space="preserve"><value>The Google account identity could not be read.</value></data>
   <data name="Auth_google_network_error" xml:space="preserve"><value>Network error while signing in with Google.</value></data>
-  <data name="Auth_google_not_configured" xml:space="preserve"><value>Google sign-in is not configured. Set googleClientId in the DietTracker appsettings.json file and restart the application (see docs/authentication/setup.md).</value></data>
+  <data name="Auth_google_not_configured" xml:space="preserve"><value>Google sign-in is not configured. Set googleClientId in the Diet Tracker appsettings.json file and restart the application (see docs/authentication/setup.md).</value></data>
   <data name="Auth_google_access_denied" xml:space="preserve"><value>Google denied the authorization request.</value></data>
   <data name="Auth_google_authorization_cancelled" xml:space="preserve"><value>The Google authorization was cancelled.</value></data>
   <data name="Auth_google_invalid_token_response" xml:space="preserve"><value>Google returned an unexpected token response.</value></data>
@@ -196,7 +196,7 @@
   <data name="Privacy_DeleteLocalMessage" xml:space="preserve"><value>Meals, templates, reminders and photographs are deleted from this device. Cloud data is untouched and a safety copy is created first.</value></data>
   <data name="Privacy_DeleteLocalDone" xml:space="preserve"><value>The local data was deleted.</value></data>
   <data name="Privacy_DeleteCloudTitle" xml:space="preserve"><value>Delete the cloud data?</value></data>
-  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>The DietTracker files are deleted from the connected account. Local data stays on this device.</value></data>
+  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>The Diet Tracker files are deleted from the connected account. Local data stays on this device.</value></data>
   <data name="Privacy_DeleteCloudDone" xml:space="preserve"><value>{0} object(s) were deleted from the cloud.</value></data>
   <data name="Privacy_DeletePhotosTitle" xml:space="preserve"><value>Delete the photographs?</value></data>
   <data name="Privacy_DeletePhotosMessage" xml:space="preserve"><value>The local image files are deleted; the meal records remain.</value></data>

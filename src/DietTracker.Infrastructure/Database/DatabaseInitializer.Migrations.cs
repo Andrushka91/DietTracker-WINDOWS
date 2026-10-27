@@ -68,13 +68,13 @@ public sealed partial class DatabaseInitializer
 }
 
 /// <summary>
-/// Thrown when the database file was created by a newer build of DietTracker. The application
+/// Thrown when the database file was created by a newer build of Diet Tracker. The application
 /// refuses to open it instead of risking data loss.
 /// </summary>
 public sealed class DatabaseSchemaTooNewException : Exception
 {
     public DatabaseSchemaTooNewException(int databaseVersion, int supportedVersion, string path)
-        : base($"The database at '{path}' uses schema v{databaseVersion} but this build supports v{supportedVersion}. Update DietTracker to continue.")
+        : base($"The database at '{path}' uses schema v{databaseVersion} but this build supports v{supportedVersion}. Update Diet Tracker to continue.")
     {
         DatabaseVersion = databaseVersion;
         SupportedVersion = supportedVersion;

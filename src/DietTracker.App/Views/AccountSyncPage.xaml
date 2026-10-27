@@ -10,7 +10,7 @@
             <TextBlock Style="{StaticResource PageTitleStyle}" x:Uid="Account_Title" Text="Account and synchronization" />
 
             <InfoBar x:Uid="Account_GuestInfo" IsOpen="{x:Bind ViewModel.IsGuest, Mode=OneWay}" Severity="Informational" IsClosable="False"
-                     Title="You are using DietTracker without an account"
+                     Title="You are using Diet Tracker without an account"
                      Message="{x:Bind ViewModel.PrivacySummary}" />
 
             <Border Style="{StaticResource ProgressCardStyle}">

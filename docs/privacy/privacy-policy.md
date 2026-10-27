@@ -1,17 +1,17 @@
-# DietTracker privacy policy (draft)
+# Diet Tracker privacy policy (draft)
 
-*Version 1.0 - applies to DietTracker for Windows (Microsoft Store edition and developer builds).*
+*Version 1.0 - applies to Diet Tracker for Windows (Microsoft Store edition and developer builds).*
 
 ## Summary
 
-DietTracker stores your meal plan, your completion history and your photographs **on your own device**.
+Diet Tracker stores your meal plan, your completion history and your photographs **on your own device**.
 If you choose to sign in with a Google account, the same data is copied to a private
-application folder inside **your own** cloud storage. There is no DietTracker server: the application
+application folder inside **your own** cloud storage. There is no Diet Tracker server: the application
 never sends your data to the vendor.
 
 ## 1. Who processes your data
 
-DietTracker is a local Windows application. The developer of DietTracker does not operate any backend
+Diet Tracker is a local Windows application. The developer of Diet Tracker does not operate any backend
 service, does not receive your meal data and cannot read your cloud files.
 
 Contact for privacy questions and data deletion requests: `privacy@diettracker.example`
@@ -36,7 +36,7 @@ Contact for privacy questions and data deletion requests: `privacy@diettracker.e
   account is connected and to keep accounts apart.
 
 **Never collected:** advertising identifiers, location, contacts, health records, biometric data,
-other files on your device, or the content of your Google Drive outside the DietTracker
+other files on your device, or the content of your Google Drive outside the Diet Tracker
 application folder.
 
 ## 3. What stays local and what is uploaded
@@ -73,7 +73,7 @@ cross-device synchronization works in Guest Mode.
 * All network traffic uses HTTPS/TLS to the provider endpoints.
 * Credentials (the Google refresh token) are encrypted with **Windows DPAPI in the
   current-user scope** and stored in the private application data folder.
-* Cloud backup contents are **not additionally encrypted by DietTracker**: they are protected by the
+* Cloud backup contents are **not additionally encrypted by Diet Tracker**: they are protected by the
   provider's storage encryption and by the permissions of your account. This is not end-to-end
   encryption, and the policy deliberately does not claim it.
 
@@ -88,7 +88,7 @@ In **Settings -> Privacy** and **Account and sync** you can, independently of ea
 * **Delete local data** - removes meals, templates, reminders and photographs from this device; a safety
   copy is created first and the cloud data is untouched.
 * **Delete photographs** - removes only the local image files.
-* **Delete cloud data** - deletes the DietTracker files in the connected account (requires a separate
+* **Delete cloud data** - deletes the Diet Tracker files in the connected account (requires a separate
   confirmation).
 * **Export data / create local backup** - writes a `.dtbackup` archive (JSON plus photographs) that you
   can keep anywhere.
@@ -97,11 +97,11 @@ In **Settings -> Privacy** and **Account and sync** you can, independently of ea
 
 Data is retained until you delete it. Local data lives until you delete it, uninstall the application
 (packaged installs remove the application's local data folder) or restore a backup over it. Cloud data
-lives until you delete it in DietTracker or in the provider's own interface.
+lives until you delete it in Diet Tracker or in the provider's own interface.
 
 ## 9. Children
 
-DietTracker is a personal planning tool and is not directed at children. It does not contain
+Diet Tracker is a personal planning tool and is not directed at children. It does not contain
 advertising, tracking or user generated content sharing.
 
 ## 10. Changes

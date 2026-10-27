@@ -37,7 +37,7 @@ public interface IPrivacyService
     /// <summary>Deletes every local meal, photo, template and reminder. Cloud data is untouched.</summary>
     Task DeleteLocalDataAsync(bool includePhotographs, CancellationToken cancellationToken = default);
 
-    /// <summary>Deletes the DietTracker objects in the connected cloud account. Returns the number of deleted objects.</summary>
+    /// <summary>Deletes the Diet Tracker objects in the connected cloud account. Returns the number of deleted objects.</summary>
     Task<int> DeleteCloudDataAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Deletes only the local photograph files, keeping the metadata rows.</summary>

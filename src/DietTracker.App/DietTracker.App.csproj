@@ -12,7 +12,10 @@
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
     <DefaultLanguage>ro-RO</DefaultLanguage>
-    <ApplicationTitle>DietTracker</ApplicationTitle>
+    <ApplicationTitle>Diet Tracker</ApplicationTitle>
+    <!-- FileDescription in the executable's version info (Task Manager, file properties) comes from
+         AssemblyTitle; without it Windows shows the technical assembly name "DietTracker". -->
+    <AssemblyTitle>Diet Tracker</AssemblyTitle>
     <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>

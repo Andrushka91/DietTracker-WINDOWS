@@ -17,7 +17,7 @@ public static class CloudObjectPaths
     /// <summary>Path of the dataset manifest.</summary>
     public const string ManifestPath = "manifest.json";
 
-    /// <summary>True when the logical path belongs to the DietTracker dataset.</summary>
+    /// <summary>True when the logical path belongs to the Diet Tracker dataset.</summary>
     public static bool IsManaged(string path)
         => path.StartsWith(EntityPrefix, StringComparison.OrdinalIgnoreCase)
            || path.StartsWith(PhotoPrefix, StringComparison.OrdinalIgnoreCase)

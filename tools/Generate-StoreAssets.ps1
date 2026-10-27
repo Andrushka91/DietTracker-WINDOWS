@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Generates the DietTracker application icon, Store listing artwork (PNG) and the Windows .ico.
+    Generates the Diet Tracker application icon, Store listing artwork (PNG) and the Windows .ico.
 
 .DESCRIPTION
-    Draws the DietTracker mark - the white meal plate with the green fork and knife on the
+    Draws the Diet Tracker mark - the white meal plate with the green fork and knife on the
     brand-blue tile - at every size Windows needs and writes it into src\DietTracker.App\Assets:
 
     * the PNG logos referenced by Package.appxmanifest (Start menu entry, taskbar, tiles, splash)
@@ -37,7 +37,7 @@ if (-not $OutputDirectory) {
 $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 
-# DietTracker brand colours (blue = planning, green = meals).
+# Diet Tracker brand colours (blue = planning, green = meals).
 $script:tileTop = [System.Drawing.Color]::FromArgb(255, 27, 123, 199)    # brand blue, lit from above
 $script:tileBottom = [System.Drawing.Color]::FromArgb(255, 11, 84, 150)  # brand blue, in shadow
 $script:plateWhite = [System.Drawing.Color]::White
@@ -380,4 +380,4 @@ New-DietTrackerImage -Width 620 -Height 300 -FileName 'SplashScreen.png'
 New-DietTrackerImage -Width 1280 -Height 720 -FileName 'StoreScreenshot-1280x720.png' -WithMark $false
 New-DietTrackerIcon -FileName 'DietTracker.ico'
 
-Write-Host "DietTracker assets written to $OutputDirectory"
+Write-Host "Diet Tracker assets written to $OutputDirectory"

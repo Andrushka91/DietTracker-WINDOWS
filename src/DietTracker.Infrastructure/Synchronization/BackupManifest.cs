@@ -3,7 +3,7 @@ using DietTracker.Core.Models;
 namespace DietTracker.Infrastructure.Synchronization;
 
 /// <summary>
-/// Content of the <c>backup.json</c> entry inside a DietTracker backup archive.
+/// Content of the <c>backup.json</c> entry inside a Diet Tracker backup archive.
 /// </summary>
 /// <remarks>
 /// The manifest uses the same versioned record format as the cloud payload, so a backup can be
