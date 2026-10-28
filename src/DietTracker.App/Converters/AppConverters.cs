@@ -55,6 +55,20 @@ public sealed class CountToVisibilityConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
+/// <summary>
+/// Shows an element only when the bound text has content. The confirmation lines of the settings
+/// cards use it so an empty message reserves no height: the last visible row of every card then
+/// ends on the same bottom padding, no matter whether it is a button or a text.
+/// </summary>
+public sealed class StringToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => value is string text && !string.IsNullOrEmpty(text) ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => throw new NotSupportedException();
+}
+
 /// <summary>Formats a <see cref="TimeOnly"/> using the current culture and the 12/24 hour preference.</summary>
 public sealed class TimeOnlyConverter : IValueConverter
 {

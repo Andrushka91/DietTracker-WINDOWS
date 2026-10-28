@@ -145,134 +145,161 @@
                 </Border>
 
                 <!-- Row 0 right: the local switches. There is no Save button - every switch (and the
-                     automatic synchronization interval) is written the moment it changes, and the
-                     caption under them confirms the write. The four switches sit in starred rows, so
-                     they spread evenly over the whole height of the panel - they span all the space
-                     vertically instead of stacking at the top - and the confirmation stays pinned to
-                     the bottom edge. -->
+                     automatic synchronization interval) is written the moment it changes. The
+                     switches live in auto rows separated by starred gaps, so they spread evenly over
+                     the whole height of the panel - and the confirmation, the last row, ends on the
+                     same bottom padding as the account card (it collapses while empty, so the last
+                     visible row is always flush with that padding). -->
                 <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_General" Text="General" />
                         <TextBlock Grid.Row="1" Style="{StaticResource SettingsCaptionStyle}" x:Uid="Settings_AutoSaveHint" Text="Every change is saved immediately; the page has no Save button." />
 
-                        <ToggleSwitch Grid.Row="2" VerticalAlignment="Center" FontSize="16" x:Uid="Settings_Reminders" Header="Reminders" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.RemindersEnabled, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="3" VerticalAlignment="Center" FontSize="16" x:Uid="Settings_StartWithWindows" Header="Start with Windows" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="4" VerticalAlignment="Center" FontSize="16" x:Uid="Settings_MinimizeToTray" Header="Minimize to the notification area" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="5" VerticalAlignment="Center" FontSize="16" x:Uid="Settings_12Hour" Header="Use the 12 hour clock" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.Use12HourClock, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="3" FontSize="16" x:Uid="Settings_Reminders" Header="Reminders" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.RemindersEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="5" FontSize="16" x:Uid="Settings_StartWithWindows" Header="Start with Windows" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="7" FontSize="16" x:Uid="Settings_MinimizeToTray" Header="Minimize to the notification area" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="9" FontSize="16" x:Uid="Settings_12Hour" Header="Use the 12 hour clock" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.Use12HourClock, Mode=TwoWay}" />
 
-                        <TextBlock Grid.Row="6" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+                        <!-- The margin is the usual 14 px gap and only exists while the message is
+                             shown: a collapsed element takes its margin with it, so the last visible
+                             row always ends on the card padding. -->
+                        <TextBlock
+                            Grid.Row="10"
+                            Margin="0,14,0,0"
+                            Style="{StaticResource SettingsCaptionStyle}"
+                            Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.StatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
                     </Grid>
                 </Border>
 
                 <!-- Row 1 left: what the engine really reports, the schedule, a manual cycle and the
-                     two restore actions. The facts stay at the top and the star row pushes the
-                     actions plus their confirmation against the bottom edge of the panel. Buttons
-                     wrap through UniformWrapPanel, so a narrow window moves "Restore from the
-                     cloud" to a second line instead of clipping it. -->
+                     two restore actions. Starred gaps separate every block, so the card spreads
+                     vertically instead of packing its content, and the action row (with the
+                     confirmation right below it) ends on the same bottom padding as the account
+                     card. Buttons wrap through UniformWrapPanel, so a narrow window moves "Restore
+                     from the cloud" to a second line instead of clipping it. -->
                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Spacing="14">
-                            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Sync" Text="Synchronization" />
+                        <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Sync" Text="Synchronization" />
 
-                            <Grid ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SyncStateText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="1" Style="{StaticResource SettingsCaptionStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" />
-                            </Grid>
+                        <Grid Grid.Row="2" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SyncStateText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Style="{StaticResource SettingsCaptionStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" />
+                        </Grid>
 
-                            <!-- How often the cloud is contacted on its own; the journal is kept in any
-                                 case, so an edit is never at risk while it waits for the schedule. -->
-                            <ComboBox
-                                x:Uid="Settings_SyncFrequency"
-                                Header="Automatic synchronization"
-                                HeaderTemplate="{StaticResource SettingsHeaderTemplate}"
-                                FontSize="16"
-                                ItemsSource="{x:Bind ViewModel.SyncFrequencyOptions}"
-                                DisplayMemberPath="DisplayName"
-                                SelectedValuePath="Tag"
-                                SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
-                            <TextBlock
-                                Style="{StaticResource SettingsCaptionStyle}"
-                                x:Uid="Settings_SyncFrequencyHint"
-                                Text="Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices." />
-                        </StackPanel>
+                        <!-- How often the cloud is contacted on its own; the journal is kept in any
+                             case, so an edit is never at risk while it waits for the schedule. -->
+                        <ComboBox
+                            Grid.Row="4"
+                            x:Uid="Settings_SyncFrequency"
+                            Header="Automatic synchronization"
+                            HeaderTemplate="{StaticResource SettingsHeaderTemplate}"
+                            FontSize="16"
+                            ItemsSource="{x:Bind ViewModel.SyncFrequencyOptions}"
+                            DisplayMemberPath="DisplayName"
+                            SelectedValuePath="Tag"
+                            SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
+                        <TextBlock
+                            Grid.Row="6"
+                            Style="{StaticResource SettingsCaptionStyle}"
+                            x:Uid="Settings_SyncFrequencyHint"
+                            Text="Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices." />
 
-                        <StackPanel Grid.Row="2" Spacing="14">
-                            <!-- A Grid (not a horizontal StackPanel) gives the wrap panel the real width it
-                                 may fill; the ring keeps its own column. -->
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <controls:UniformWrapPanel
-                                    Grid.Column="0"
-                                    UniformHeight="False"
-                                    MinItemWidth="150"
-                                    HorizontalSpacing="8"
-                                    VerticalSpacing="8">
-                                    <Button
-                                        x:Uid="Settings_SyncNow"
-                                        Content="Synchronize now"
-                                        FontSize="15"
-                                        Command="{x:Bind ViewModel.SyncNowCommand}"
-                                        IsEnabled="{x:Bind ViewModel.IsSignedIn, Mode=OneWay}" />
-                                    <Button
-                                        x:Uid="Account_Preview"
-                                        Content="What is in the cloud?"
-                                        FontSize="15"
-                                        Command="{x:Bind ViewModel.PreviewRestoreCommand}"
-                                        Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
-                                    <Button
-                                        x:Uid="Account_Restore"
-                                        Content="Restore from the cloud"
-                                        FontSize="15"
-                                        Command="{x:Bind ViewModel.RestoreCommand}"
-                                        Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
-                                </controls:UniformWrapPanel>
-                                <ProgressRing
-                                    Grid.Column="1"
-                                    IsActive="{x:Bind ViewModel.IsSyncBusy, Mode=OneWay}"
-                                    Width="20"
-                                    Height="20"
-                                    VerticalAlignment="Center" />
-                            </Grid>
+                        <!-- A Grid (not a horizontal StackPanel) gives the wrap panel the real width it
+                             may fill; the ring keeps its own column. -->
+                        <Grid Grid.Row="8" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <controls:UniformWrapPanel
+                                Grid.Column="0"
+                                UniformHeight="False"
+                                MinItemWidth="150"
+                                HorizontalSpacing="8"
+                                VerticalSpacing="8">
+                                <Button
+                                    x:Uid="Settings_SyncNow"
+                                    Content="Synchronize now"
+                                    FontSize="15"
+                                    Command="{x:Bind ViewModel.SyncNowCommand}"
+                                    IsEnabled="{x:Bind ViewModel.IsSignedIn, Mode=OneWay}" />
+                                <Button
+                                    x:Uid="Account_Preview"
+                                    Content="What is in the cloud?"
+                                    FontSize="15"
+                                    Command="{x:Bind ViewModel.PreviewRestoreCommand}"
+                                    Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
+                                <Button
+                                    x:Uid="Account_Restore"
+                                    Content="Restore from the cloud"
+                                    FontSize="15"
+                                    Command="{x:Bind ViewModel.RestoreCommand}"
+                                    Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
+                            </controls:UniformWrapPanel>
+                            <ProgressRing
+                                Grid.Column="1"
+                                IsActive="{x:Bind ViewModel.IsSyncBusy, Mode=OneWay}"
+                                Width="20"
+                                Height="20"
+                                VerticalAlignment="Center" />
+                        </Grid>
 
-                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.SyncStatusMessage, Mode=OneWay}" />
-                        </StackPanel>
+                        <!-- Collapsed while empty: the buttons are then the last visible row and sit
+                             exactly on the card padding; a shown message takes that place instead. -->
+                        <TextBlock
+                            Grid.Row="9"
+                            Margin="0,14,0,0"
+                            Style="{StaticResource SettingsCaptionStyle}"
+                            Text="{x:Bind ViewModel.SyncStatusMessage, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.SyncStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
                     </Grid>
                 </Border>
 
                 <!-- Row 1 right: privacy and backup in one card. The storage facts belong to the
-                     export, so they share the card; the explanatory texts stay at the top and the
-                     star row pushes the three buttons (with their confirmation) to the bottom edge.
-                     The three actions are the three that never remove anything: export (backup
-                     archive or PDF report), restore a backup and verify the database. The
-                     destructive buttons are gone on purpose. -->
+                     export, so they share the card; the explanatory texts stay at the top and one
+                     star row pushes the three buttons to the bottom, so their last row ends on the
+                     same padding as the account card (the confirmation collapses while empty and
+                     takes that place when it is shown). The three actions are the three that never
+                     remove anything: export (backup archive or PDF report), restore a backup and
+                     verify the database. The destructive buttons are gone on purpose. -->
                 <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -284,25 +311,38 @@
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.DatabasePath}" IsTextSelectionEnabled="True" />
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Spacing="14">
-                            <controls:UniformWrapPanel UniformHeight="False" MinItemWidth="120" HorizontalSpacing="8" VerticalSpacing="8">
-                                <Button x:Uid="Settings_Export" Content="Export data" FontSize="15" Command="{x:Bind ViewModel.ExportDataCommand}" />
-                                <Button x:Uid="Settings_Import" Content="Restore backup" FontSize="15" Command="{x:Bind ViewModel.ImportBackupCommand}" />
-                                <Button x:Uid="Settings_Integrity" Content="Check integrity" FontSize="15" Command="{x:Bind ViewModel.CheckIntegrityCommand}" />
-                            </controls:UniformWrapPanel>
+                        <controls:UniformWrapPanel Grid.Row="2" UniformHeight="False" MinItemWidth="120" HorizontalSpacing="8" VerticalSpacing="8">
+                            <Button x:Uid="Settings_Export" Content="Export data" FontSize="15" Command="{x:Bind ViewModel.ExportDataCommand}" />
+                            <Button x:Uid="Settings_Import" Content="Restore backup" FontSize="15" Command="{x:Bind ViewModel.ImportBackupCommand}" />
+                            <Button x:Uid="Settings_Integrity" Content="Check integrity" FontSize="15" Command="{x:Bind ViewModel.CheckIntegrityCommand}" />
+                        </controls:UniformWrapPanel>
 
-                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.BackupStatusMessage, Mode=OneWay}" />
-                        </StackPanel>
+                        <!-- Collapsed while empty, so the buttons are the last visible row on the
+                             card padding; a shown message takes that place instead. -->
+                        <TextBlock
+                            Grid.Row="3"
+                            Margin="0,14,0,0"
+                            Style="{StaticResource SettingsCaptionStyle}"
+                            Text="{x:Bind ViewModel.BackupStatusMessage, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.BackupStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
                     </Grid>
                 </Border>
 
                 <!-- Row 2: About spans both columns, so the page ends on one full width card instead
-                     of a card that is left hanging next to the empty cell of the shorter column. -->
+                     of a card that is left hanging next to the empty cell of the shorter column.
+                     The star row drops the text to the bottom, so it ends on the same padding as
+                     the last row of every other card. -->
                 <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource SettingsCardStyle}">
-                    <StackPanel Spacing="14">
-                        <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_About" Text="About" />
-                        <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.AboutText, Mode=OneWay}" />
-                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="14" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_About" Text="About" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.AboutText, Mode=OneWay}" />
+                    </Grid>
                 </Border>
             </Grid>
         </Grid>

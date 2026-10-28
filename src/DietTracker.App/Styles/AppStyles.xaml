@@ -7,6 +7,7 @@
     <converters:WidthMinusConverter x:Key="WidthMinus" />
     <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
     <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
+    <converters:StringToVisibilityConverter x:Key="StringToVisibility" />
     <converters:TimeOnlyConverter x:Key="TimeOnly" />
 
     <!-- Dimensions of the permanent cards: every meal card has the same height and is laid out by
