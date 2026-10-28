@@ -85,6 +85,12 @@ public sealed class UniformWrapPanel : Panel
     private double _cellWidth;
     private double _widestLine;
 
+    /// <summary>
+    /// Slack the arrange pass adds to a free (wrapping) row so that layout rounding can never split
+    /// a line the measure pass approved as one line; see the comment in <see cref="ArrangeOverride"/>.
+    /// </summary>
+    private const double FreeRowSlack = 1d;
+
     private int ComputeColumns(double availableWidth)
     {
         var minimum = double.IsNaN(MinItemWidth) || MinItemWidth <= 0 ? 1d : MinItemWidth;
@@ -229,7 +235,14 @@ public sealed class UniformWrapPanel : Panel
         var spacingH = Math.Max(0d, HorizontalSpacing);
         var spacingV = Math.Max(0d, VerticalSpacing);
 
-        BuildLayout(finalSize.Width);
+        // Measure approves the line plan at the width the parent offers, but layout rounding can
+        // hand this pass a size a fraction of a pixel smaller than that (364.79999... approved,
+        // 364.79998... arranged at 125 % scale). The wrap test is exact, so without slack that
+        // microscopic loss splits a row measure approved as one line, and the extra line - a button
+        // that was never part of the measured plan - is painted below the control. One whole DIP is
+        // far above the rounding noise of any scale factor and far below anything the eye sees;
+        // uniform cells keep the exact width, their column count must never shift.
+        BuildLayout(UniformHeight ? finalSize.Width : finalSize.Width + FreeRowSlack);
 
         var y = 0d;
         var x = 0d;
