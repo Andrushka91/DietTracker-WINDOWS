@@ -225,13 +225,12 @@
                 <!-- Row 1 left: everything the engine really reports, pushed to the bottom of the
                      panel. A framed sync glyph sits on the left under the title; below it the state
                      line, the schedule, the hint and the confirmation follow in one contiguous
-                     block (14 px apart) and the actions close the card on the right padding,
-                     right-aligned so "Synchronize now" ends exactly where the card's bottom row
-                     ends, measured from the right edge. The ring appears only while a cycle runs,
-                     so it never pushes the buttons off that edge. Buttons wrap through
-                     UniformWrapPanel, so a narrow window moves "Restore from the cloud" to a
-                     second line. -->
-                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
+                     block (14 px apart) and the actions close the card right-aligned on the tight
+                     footer padding this card overrides (12 on the right and 12 on the bottom
+                     instead of the shared 24), so "Synchronize now" sits close to the bottom-right
+                     corner. Buttons wrap through UniformWrapPanel, so a narrow window moves
+                     "Restore from the cloud" to a second line. -->
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}" Padding="24,24,12,12">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -340,11 +339,13 @@
                 <!-- Row 1 right: privacy and backup in one card with everything pushed to the bottom:
                      a framed lock glyph sits on the left under the title, the explanatory texts
                      and the confirmation form the bottom block (directly above the actions) and
-                     the three buttons close the card on the right padding, right-aligned. The three
-                     actions are the three that never remove anything: export (backup archive or
-                     PDF report), restore a backup and verify the database. The destructive
-                     buttons are gone on purpose. -->
-                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
+                     the three buttons close the card right-aligned on the tight footer padding
+                     this card overrides (12 on the right and 12 on the bottom instead of the
+                     shared 24), so they sit close to the bottom-right corner. The three actions
+                     are the three that never remove anything: export (backup archive or PDF
+                     report), restore a backup and verify the database. The destructive buttons
+                     are gone on purpose. -->
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsCardStyle}" Padding="24,24,12,12">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />

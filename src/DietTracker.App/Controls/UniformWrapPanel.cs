@@ -86,6 +86,13 @@ public sealed class UniformWrapPanel : Panel
     private double _widestLine;
 
     /// <summary>
+    /// Per child: the measure pass gave it no width (collapsed row, empty label). Hidden children
+    /// take part in neither the line flow nor the gaps - see the free-row branch of
+    /// <see cref="BuildLayout"/>.
+    /// </summary>
+    private bool[] _childHidden = [];
+
+    /// <summary>
     /// Slack the arrange pass adds to a free (wrapping) row so that layout rounding can never split
     /// a line the measure pass approved as one line; see the comment in <see cref="ArrangeOverride"/>.
     /// </summary>
@@ -115,6 +122,7 @@ public sealed class UniformWrapPanel : Panel
         var spacingH = Math.Max(0d, HorizontalSpacing);
         _lineHeights.Clear();
         _lineOfChild.Clear();
+        _childHidden = new bool[Children.Count];
         _widestLine = 0d;
 
         if (UniformHeight)
@@ -159,12 +167,31 @@ public sealed class UniformWrapPanel : Panel
             // Free rows: the flow calculation lives in Core (WrapLayout) so the geometry that decides
             // where a tile lands - including the measure/arrange round trip it has to survive - is
             // covered by unit tests instead of being reproducible only on screen.
-            var widths = new double[Children.Count];
-            var heights = new double[Children.Count];
+            //
+            // Children the measure pass gave no width (a collapsed button, an empty label) are kept
+            // out of the flow entirely: left packing would paint nothing of them anyway, and letting
+            // them keep their spacing would inflate the widest line - a right-aligned button row was
+            // pushed 16 px inwards by two collapsed buttons costing 8 px of gap each. They ride the
+            // line of their predecessor and are arranged with a zero width in <see cref="ArrangeOverride"/>.
+            var visible = new List<int>(Children.Count);
             for (var index = 0; index < Children.Count; index++)
             {
-                widths[index] = Children[index].DesiredSize.Width;
-                heights[index] = Children[index].DesiredSize.Height;
+                if (Children[index].DesiredSize.Width > 0d)
+                {
+                    visible.Add(index);
+                }
+                else
+                {
+                    _childHidden[index] = true;
+                }
+            }
+
+            var widths = new double[visible.Count];
+            var heights = new double[visible.Count];
+            for (var item = 0; item < visible.Count; item++)
+            {
+                widths[item] = Children[visible[item]].DesiredSize.Width;
+                heights[item] = Children[visible[item]].DesiredSize.Height;
             }
 
             var flow = WrapLayout.Calculate(
@@ -174,7 +201,21 @@ public sealed class UniformWrapPanel : Panel
                 spacingH,
                 Math.Max(0d, VerticalSpacing));
 
-            _lineOfChild.AddRange(flow.LineOfItem);
+            // Map the flow back onto the full child list: visible children take the line of their
+            // flow item, hidden children follow the last visible one so they never trigger a wrap.
+            var lastLine = 0;
+            var flowItem = 0;
+            for (var index = 0; index < Children.Count; index++)
+            {
+                if (flowItem < visible.Count && visible[flowItem] == index)
+                {
+                    lastLine = flow.LineOfItem[flowItem];
+                    flowItem++;
+                }
+
+                _lineOfChild.Add(lastLine);
+            }
+
             _lineHeights.AddRange(flow.LineHeights);
             _widestLine = flow.WidestLine;
         }
@@ -266,6 +307,15 @@ public sealed class UniformWrapPanel : Panel
             }
             else
             {
+                // A hidden child is arranged with a zero width where it stands: no gap, no advance,
+                // no line of its own - so a right-aligned row ends with its last VISIBLE button.
+                if (index < _childHidden.Length && _childHidden[index])
+                {
+                    var hiddenHeight = line < _lineHeights.Count ? _lineHeights[line] : 0d;
+                    child.Arrange(new Rect(x, y, 0d, hiddenHeight));
+                    continue;
+                }
+
                 var desired = child.DesiredSize;
                 child.Arrange(new Rect(x, y, desired.Width, _lineHeights[line]));
                 x += desired.Width + spacingH;
