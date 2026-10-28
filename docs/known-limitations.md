@@ -45,8 +45,11 @@ than presented as finished.
 10. **No application-level encryption of cloud backups.** Data is protected by the provider's storage
     encryption and account permissions; the privacy policy states this explicitly and does not claim
     end-to-end encryption.
-11. **Guest data is per device until an account is connected.** Local data is never deleted when signing
-    in or out, but it is not automatically uploaded unless the user confirms the switch/upload.
+11. **Signing out requires an upload.** The local database is a cache of one account and is deleted when
+    you sign out, so the pending changes are uploaded first. Offline (or with uploads switched off) the
+    sign-out is refused until the user explicitly discards those changes - the alternative would be to
+    delete the only copy. Records created before the very first sign-in are adopted by that account and
+    uploaded instead of being deleted.
 12. **The `MinimizeToTray` close behaviour is synchronous.** The window close handler reads preferences
     synchronously; this is a very short database read, but it is not ideal and could be made async.
 

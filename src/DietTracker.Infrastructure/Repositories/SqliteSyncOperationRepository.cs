@@ -52,6 +52,23 @@ public sealed partial class SqliteSyncOperationRepository : ISyncOperationReposi
         return SqliteValue.GetInt(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
     }
 
+    public async Task<bool> HasOutstandingAsync(Guid cloudAccountId, EntityType entityType, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT COUNT(*) FROM SyncOperation
+            WHERE CloudAccountId = $account AND EntityType = $type AND EntityId = $entity
+              AND Status IN (0, 1, 3);
+            """;
+        command.Parameters.AddWithValue("$account", SqliteValue.ToDb(cloudAccountId));
+        command.Parameters.AddWithValue("$type", (int)entityType);
+        command.Parameters.AddWithValue("$entity", SqliteValue.ToDb(entityId));
+
+        return SqliteValue.GetInt(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false)) > 0;
+    }
+
     public async Task<int> CompactAsync(DateTimeOffset olderThan, CancellationToken cancellationToken = default)
     {
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);

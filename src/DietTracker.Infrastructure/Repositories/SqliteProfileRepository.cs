@@ -77,7 +77,7 @@ public sealed class SqliteProfileRepository : IProfileRepository
         command.Parameters.AddWithValue("$providerUserId", profile.ProviderUserId ?? string.Empty);
         command.Parameters.AddWithValue("$displayName", profile.DisplayName ?? string.Empty);
         command.Parameters.AddWithValue("$email", profile.Email ?? string.Empty);
-        command.Parameters.AddWithValue("$language", profile.Language ?? "ro-RO");
+        command.Parameters.AddWithValue("$language", profile.Language ?? "en-US");
         command.Parameters.AddWithValue("$timeZone", profile.TimeZone ?? "Europe/Bucharest");
         command.Parameters.AddWithValue("$createdAt", SqliteValue.ToDb(profile.CreatedAt));
         command.Parameters.AddWithValue("$updatedAt", SqliteValue.ToDb(profile.UpdatedAt));

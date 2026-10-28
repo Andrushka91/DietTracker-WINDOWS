@@ -36,6 +36,13 @@ public interface ISyncOperationRepository
 
     Task<int> CountPendingAsync(Guid cloudAccountId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// True when the journal still holds an operation for the record - pending, running or waiting for a
+    /// retry. Used to decide whether a local record that has never been uploaded needs a new journal
+    /// entry, without re-queueing a record that is already (or still) on its way.
+    /// </summary>
+    Task<bool> HasOutstandingAsync(Guid cloudAccountId, Enums.EntityType entityType, Guid entityId, CancellationToken cancellationToken = default);
+
     /// <summary>Removes completed operations older than the supplied instant (journal compaction).</summary>
     Task<int> CompactAsync(DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 

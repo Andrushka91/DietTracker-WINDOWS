@@ -1,45 +1,51 @@
 using CommunityToolkit.Mvvm.Input;
-using DietTracker.App.Services;
-using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 
 namespace DietTracker.App.ViewModels;
 
-/// <summary>Synchronization and restore of the account screen.</summary>
-public sealed partial class AccountSyncViewModel
+/// <summary>
+/// Manual synchronization and restore of the settings screen: the actions that used to live on the
+/// separate account page. Both report what they did in the synchronization card.
+/// </summary>
+public sealed partial class SettingsViewModel
 {
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        IsBusy = true;
+        IsSyncBusy = true;
+
+        // The overlay keeps the window in place while the provider is contacted: the user sees that
+        // the application is working and cannot start a second cycle by accident.
+        _busy.Show(_localization.Get("Busy_Synchronizing"), blocksClosing: true);
         try
         {
             var result = await _syncEngine.SynchronizeAsync(SyncTrigger.Manual);
-            StatusMessage = result.Succeeded
+            SyncStatusMessage = result.Succeeded
                 ? _localization.Format("Account_SyncResult", result.Uploaded, result.Downloaded)
                 : _localization.Get($"Sync_{result.State}");
         }
         finally
         {
-            IsBusy = false;
-            await RefreshStateAsync();
+            _busy.Hide();
+            IsSyncBusy = false;
+            await RefreshSyncTextAsync();
         }
     }
 
     [RelayCommand]
     private async Task PreviewRestoreAsync()
     {
-        IsBusy = true;
+        IsSyncBusy = true;
         try
         {
             var preview = await _syncEngine.PreviewRestoreAsync();
-            StatusMessage = preview is null
+            SyncStatusMessage = preview is null
                 ? _localization.Get("Account_NoCloudData")
                 : _localization.Format("Account_RestorePreview", preview.MealEntries, preview.Photos);
         }
         finally
         {
-            IsBusy = false;
+            IsSyncBusy = false;
         }
     }
 
@@ -52,18 +58,20 @@ public sealed partial class AccountSyncViewModel
             return;
         }
 
-        IsBusy = true;
+        IsSyncBusy = true;
+        _busy.Show(_localization.Get("Busy_Restoring"), blocksClosing: true);
         try
         {
             var result = await _syncEngine.RestoreAsync();
-            StatusMessage = result.Succeeded
+            SyncStatusMessage = result.Succeeded
                 ? _localization.Format("Account_RestoreDone", result.Downloaded)
                 : _localization.Get($"Sync_{result.State}");
         }
         finally
         {
-            IsBusy = false;
-            await RefreshStateAsync();
+            _busy.Hide();
+            IsSyncBusy = false;
+            await RefreshSyncTextAsync();
         }
     }
 }

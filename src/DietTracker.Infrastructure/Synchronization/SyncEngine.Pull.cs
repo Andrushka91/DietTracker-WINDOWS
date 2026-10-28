@@ -2,17 +2,24 @@ using System.Text;
 using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Core.Models;
+using DietTracker.Infrastructure.Cloud;
 
 namespace DietTracker.Infrastructure.Synchronization;
 
 /// <summary>Pull side of a synchronization cycle: apply provider changes to the local database.</summary>
 public sealed partial class SyncEngine
 {
+    /// <param name="ignoreDeviceEcho">
+    /// When <see langword="true"/> a document uploaded by this very installation is applied like any
+    /// other one. The regular cycle skips those documents because the local record already holds the
+    /// change, but a cache that was emptied on purpose (an account change) would otherwise stay empty.
+    /// </param>
     private async Task<PullOutcome> PullChangesAsync(
         ICloudStorageProvider provider,
         CloudAccount account,
         SyncMetadata metadata,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool ignoreDeviceEcho = false)
     {
         var cursor = new SyncCursor
         {
@@ -27,13 +34,16 @@ public sealed partial class SyncEngine
         var deleted = 0;
         var skipped = 0;
 
-        foreach (var item in changeSet.Items)
-        {
-            if (!item.Path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
+        // Photograph documents are applied last: a photograph is only accepted when its meal slot is
+        // already local, and the change feed never returns the same document twice, so a skipped
+        // photograph would otherwise stay missing on this device for good.
+        var documents = changeSet.Items
+            .Where(item => item.Path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(item => CloudObjectPaths.GetEntityType(item.Path) == EntityType.MealPhoto ? 1 : 0)
+            .ToArray();
 
+        foreach (var item in documents)
+        {
             var json = item.Content is { Length: > 0 }
                 ? Encoding.UTF8.GetString(item.Content)
                 : await DownloadTextAsync(provider, item.ObjectId, cancellationToken).ConfigureAwait(false);
@@ -53,8 +63,11 @@ public sealed partial class SyncEngine
 
             var info = header.Value;
 
-            // Echo of our own upload, or a payload written by a newer application version.
-            if (string.Equals(info.DeviceId, _environment.DeviceId, StringComparison.Ordinal)
+            // Echo of our own upload (while the local record still exists and the cache was not
+            // rebuilt), or a payload written by a newer application version.
+            if ((!ignoreDeviceEcho
+                 && string.Equals(info.DeviceId, _environment.DeviceId, StringComparison.Ordinal)
+                 && await HasLocalCopyAsync(info.EntityType, info.EntityId, cancellationToken).ConfigureAwait(false))
                 || info.SchemaVersion > CloudSchema.CurrentVersion)
             {
                 skipped++;
@@ -137,6 +150,29 @@ public sealed partial class SyncEngine
             default:
                 return false;
         }
+    }
+
+    /// <summary>
+    /// True when the cache still holds the record a document refers to. An echo of our own upload may
+    /// only be skipped while the local record exists: after the cache was emptied (an account change)
+    /// the same document is missing data here and has to be applied again.
+    /// </summary>
+    private async Task<bool> HasLocalCopyAsync(EntityType entityType, Guid entityId, CancellationToken cancellationToken)
+        => entityType switch
+        {
+            EntityType.MealEntry => await _entries.GetAsync(entityId, cancellationToken).ConfigureAwait(false) is not null,
+            EntityType.MealPhoto => await _photos.GetAsync(entityId, cancellationToken).ConfigureAwait(false) is not null,
+            EntityType.MealTemplate => await _templates.GetAsync(entityId, cancellationToken).ConfigureAwait(false) is not null,
+            EntityType.ReminderSettings => await HasReminderAsync(entityId, cancellationToken).ConfigureAwait(false),
+            _ => true,
+        };
+
+    /// <summary>True when the reminder of the supplied document exists in the cache.</summary>
+    private async Task<bool> HasReminderAsync(Guid reminderId, CancellationToken cancellationToken)
+    {
+        var profile = await _profiles.GetOrCreateActiveProfileAsync(cancellationToken).ConfigureAwait(false);
+        var reminders = await _reminders.GetAllAsync(profile.Id, cancellationToken).ConfigureAwait(false);
+        return reminders.Any(reminder => reminder.Id == reminderId);
     }
 
     /// <summary>Outcome counters of the pull phase.</summary>

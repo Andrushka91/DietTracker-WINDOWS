@@ -228,7 +228,9 @@ public sealed class ResourceParityTests
     [InlineData("Nav_Dashboard")]
     [InlineData("Sync_Offline")]
     [InlineData("Account_ConsentText")]
-    [InlineData("Privacy_DeleteLocalMessage")]
+    [InlineData("Account_CloudSaveHint")]
+    [InlineData("Settings_PrivacyHint")]
+    [InlineData("Report_Title")]
     public void Required_keys_exist_in_every_language(string key)
     {
         foreach (var language in Languages)

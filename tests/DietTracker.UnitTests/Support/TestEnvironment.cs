@@ -7,6 +7,8 @@ using DietTracker.Infrastructure.Authentication;
 using DietTracker.Infrastructure.Cloud;
 using DietTracker.Infrastructure.Database;
 using DietTracker.Infrastructure.FileStorage;
+using DietTracker.Infrastructure.Notifications;
+using DietTracker.Infrastructure.Reporting;
 using DietTracker.Infrastructure.Repositories;
 using DietTracker.Infrastructure.Security;
 using DietTracker.Infrastructure.Services;
@@ -94,7 +96,10 @@ public sealed class TestEnvironment : IAsyncDisposable
         services.AddSingleton<IMealTrackingService, MealTrackingService>();
         services.AddSingleton<IAppEnvironment, AppEnvironment>();
         services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IMealReportService, MealReportService>();
         services.AddSingleton<IPrivacyService, PrivacyService>();
+        services.AddSingleton<ICloudDataSession, CloudDataSession>();
+        services.AddSingleton<IReminderScheduler, ReminderScheduler>();
 
         services.AddSingleton<IConnectivityMonitor>(connectivity);
         services.AddSingleton(connectivity);
@@ -105,7 +110,10 @@ public sealed class TestEnvironment : IAsyncDisposable
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncJournal, SyncJournal>();
         services.AddSingleton<IUserInterfaceContext>(new TestUserInterfaceContext());
-        services.AddSingleton<IAuthenticationCoordinator>(new TestAuthenticationCoordinator());
+        // The double signs out against the real account table, so the cloud-only lifecycle observes the
+        // same "no account connected" state the application would have.
+        services.AddSingleton<IAuthenticationCoordinator>(
+            provider => new TestAuthenticationCoordinator(provider.GetRequiredService<ICloudAccountRepository>()));
 
         var providerInstance = services.BuildServiceProvider();
         var environment = new TestEnvironment(root, providerInstance, cloud);
@@ -209,10 +217,16 @@ public sealed class RecordingNotificationService : INotificationService
 /// <summary>Authentication coordinator that never touches a real identity provider.</summary>
 public sealed class TestAuthenticationCoordinator : IAuthenticationCoordinator
 {
+    private readonly ICloudAccountRepository? _accounts;
+
+    public TestAuthenticationCoordinator(ICloudAccountRepository? accounts = null) => _accounts = accounts;
+
     public event EventHandler<ProviderType>? ActiveAccountChanged;
 
     public Task<CloudAccount?> GetActiveAccountAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult<CloudAccount?>(null);
+        => _accounts is null
+            ? Task.FromResult<CloudAccount?>(null)
+            : _accounts.GetActiveAsync(cancellationToken);
 
     public Task<AuthenticationResult> SignInAsync(ProviderType providerType, bool grantUploadConsent, CancellationToken cancellationToken = default)
         => Task.FromResult(AuthenticationResult.Ok(providerType, "test-user", "Test User", "user@example.com", silent: false));
@@ -220,9 +234,14 @@ public sealed class TestAuthenticationCoordinator : IAuthenticationCoordinator
     public Task<AuthenticationResult?> TryRestoreSessionAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<AuthenticationResult?>(null);
 
-    public Task SignOutAsync(CancellationToken cancellationToken = default)
+    /// <summary>Removes the active marker exactly like the real coordinator, so the engine reports "not connected".</summary>
+    public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
+        if (_accounts is not null)
+        {
+            await _accounts.ClearActiveAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         ActiveAccountChanged?.Invoke(this, ProviderType.None);
-        return Task.CompletedTask;
     }
 }

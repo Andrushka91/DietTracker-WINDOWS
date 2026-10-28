@@ -39,8 +39,8 @@ Notes:
 
 | Suite | Tests | Duration |
 |---|---|---|
-| Unit tests (business rules, database, migrations, localization, log file) | 83 | ~0.8 s |
-| Integration tests (offline-first flow, multi-device sync, conflicts, backup) | 15 | ~1.0 s |
+| Unit tests (business rules, database, migrations, localization, log file, cloud-only lifecycle) | 137 | ~0.8 s |
+| Integration tests (offline-first flow, multi-device sync, conflicts, backup) | 17 | ~0.9 s |
 | UI smoke tests (launches the real application) | 2 | ~5 s |
 
 The integration suite exercises the real SQLite database and the real synchronization engine, so a

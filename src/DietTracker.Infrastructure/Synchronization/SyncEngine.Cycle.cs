@@ -11,19 +11,27 @@ public sealed partial class SyncEngine
     private async Task<SyncResult> RunCycleAsync(SyncTrigger trigger, CancellationToken cancellationToken)
     {
         var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
-        if (account is null || !account.SynchronizationEnabled)
+        if (account is null)
         {
             SetState(SyncState.NotConfigured);
             return SyncResult.Failure("sync.not-configured", state: SyncState.NotConfigured);
         }
 
-        // Cadence gate: the user decided how often the cloud is contacted. Manual actions (the
-        // "Synchronize now" button), a restore, a full upload and the retry of a dropped connection
-        // always run; every other trigger - start-up, sign-in, a local edit, the hourly check - waits
-        // until the chosen frequency has elapsed since the last successful cycle. The timestamp lives
-        // on the account, so a weekly schedule survives restarts. A deferred cycle raises no state
-        // change at all - it must be evaluated before the offline check too, so that a scheduled
-        // knock while the machine is offline does not paint a warning strip either.
+        if (!account.SynchronizationEnabled)
+        {
+            // An account is connected but uploads are not allowed. That is a pause, and reporting it as
+            // "no account connected" would be plainly wrong - the account card shows the e-mail.
+            SetState(SyncState.Paused);
+            return SyncResult.Failure("sync.paused", state: SyncState.Paused);
+        }
+
+        // Cadence gate: the user decided how often the cloud is contacted on its own. Manual actions
+        // (the "Synchronize now" button), a restore, a full upload, the retry of a dropped connection,
+        // a local edit and a sign-in always run; the remaining automatic triggers - start-up and the
+        // hourly check - wait until the chosen frequency has elapsed since the last successful cycle.
+        // The timestamp lives on the account, so a weekly schedule survives restarts. A deferred cycle
+        // raises no state change at all - it must be evaluated before the offline check too, so that a
+        // scheduled knock while the machine is offline does not paint a warning strip either.
         if (!await IsDueAsync(trigger, account, cancellationToken).ConfigureAwait(false))
         {
             _logger.LogDebug("Cycle triggered by {Trigger} deferred: the configured frequency has not elapsed.", trigger);
@@ -129,6 +137,17 @@ public sealed partial class SyncEngine
         }
 
         var frequency = await ReadSyncFrequencyAsync(cancellationToken).ConfigureAwait(false);
+
+        // A local change - a meal, a photograph - is uploaded as soon as it is journaled: the outbox
+        // exists to get it out, and holding it back until the weekly (or monthly) schedule is due would
+        // leave the cloud stale for days while the user believes the data was synchronized. The
+        // schedule still decides how often the app checks the cloud on its own, and "only with the
+        // button below" keeps every automatic upload switched off.
+        if (trigger is SyncTrigger.LocalChange or SyncTrigger.PostSignIn)
+        {
+            return frequency != SyncFrequency.Manual;
+        }
+
         var age = account.LastSynchronizedAt is { } last ? _clock.UtcNow - last : (TimeSpan?)null;
         return SyncFrequencyRules.IsDue(frequency, age);
     }

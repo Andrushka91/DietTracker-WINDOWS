@@ -6,9 +6,11 @@
   "scripts": {
     "start": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1",
     "remove": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Remove-App.ps1",
-    "build": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Build-All.ps1",
+    "build:app": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
     "start:debug": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Run-App.ps1 -Configuration Debug",
     "build:debug": "dotnet build src/DietTracker.App/DietTracker.App.csproj -c Debug -p:Platform=x64 -m:1 -p:WindowsPackageType=None -p:EnableMsixTooling=false",
+    "installer": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/Update-Installer.ps1",
     "test": "dotnet test tests/DietTracker.UnitTests/DietTracker.UnitTests.csproj -c Debug -p:Platform=x64",
     "test:all": "dotnet test tests/DietTracker.UnitTests/DietTracker.UnitTests.csproj -c Debug -p:Platform=x64 && dotnet test tests/DietTracker.IntegrationTests/DietTracker.IntegrationTests.csproj -c Debug -p:Platform=x64",
     "test:ui": "dotnet test tests/DietTracker.UITests/DietTracker.UITests.csproj -c Debug -p:Platform=x64"

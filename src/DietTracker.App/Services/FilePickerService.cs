@@ -31,14 +31,30 @@ public sealed class FilePickerService : IFilePickerService
     }
 
     /// <inheritdoc />
-    public async Task<string?> PickSaveFileAsync(string suggestedFileName, string extension, CancellationToken cancellationToken = default)
+    public async Task<string?> PickSaveFileAsync(
+        string suggestedFileName,
+        IReadOnlyList<SaveFileChoice> choices,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(choices);
+
         var picker = new FileSavePicker();
         Initialize(picker);
 
         picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
         picker.SuggestedFileName = suggestedFileName;
-        picker.FileTypeChoices.Add(extension.TrimStart('.').ToUpperInvariant(), [extension]);
+
+        // The first choice is the default type of the dialog; the user picks another one from the
+        // list, and the extension of the chosen type is appended to the file name automatically.
+        foreach (var choice in choices)
+        {
+            if (string.IsNullOrWhiteSpace(choice.Extension))
+            {
+                continue;
+            }
+
+            picker.FileTypeChoices.Add(choice.Label, [choice.Extension]);
+        }
 
         var file = await picker.PickSaveFileAsync();
         return file?.Path;

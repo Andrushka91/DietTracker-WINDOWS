@@ -141,7 +141,7 @@ CREATE TABLE AppPreferences (
     TimeZone              TEXT    NOT NULL DEFAULT '',
     ShowSnackCards        INTEGER NOT NULL DEFAULT 1,
     StartWithWindows      INTEGER NOT NULL DEFAULT 0,
-    MinimizeToTray        INTEGER NOT NULL DEFAULT 1,
+    MinimizeToTray        INTEGER NOT NULL DEFAULT 0,
     RemindersEnabled      INTEGER NOT NULL DEFAULT 1,
     Use12HourClock        INTEGER NOT NULL DEFAULT 0,
     SynchronizationEnabled INTEGER NOT NULL DEFAULT 0,

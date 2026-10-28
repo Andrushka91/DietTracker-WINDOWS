@@ -13,7 +13,12 @@ public interface IFilePickerService
 {
     Task<IReadOnlyList<string>> PickImagesAsync(int maxCount, CancellationToken cancellationToken = default);
 
-    Task<string?> PickSaveFileAsync(string suggestedFileName, string extension, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Asks where to save a file and offers every format of <paramref name="choices"/> in the type
+    /// list of the dialog, so one button can export the same data in more than one format (a backup
+    /// archive or a printable PDF report, for example).
+    /// </summary>
+    Task<string?> PickSaveFileAsync(string suggestedFileName, IReadOnlyList<SaveFileChoice> choices, CancellationToken cancellationToken = default);
 
     Task<string?> PickOpenFileAsync(string extension, CancellationToken cancellationToken = default);
 
@@ -22,6 +27,15 @@ public interface IFilePickerService
     /// <summary>Opens a file with the shell (used for the full-size photo preview).</summary>
     Task OpenWithShellAsync(string path);
 }
+
+/// <summary>
+/// One entry of the type list of a save dialog: the text the user reads and the extension the file
+/// gets (<c>.dtbackup</c>, <c>.pdf</c>). Keeping it in Core lets a view model describe the formats it
+/// can write without referencing the Windows pickers.
+/// </summary>
+/// <param name="Label">Text shown in the type list, already localized.</param>
+/// <param name="Extension">Extension including the leading dot.</param>
+public sealed record SaveFileChoice(string Label, string Extension);
 
 /// <summary>Reports network availability so that the engine can defer cloud work and show "Offline".</summary>
 public interface IConnectivityMonitor

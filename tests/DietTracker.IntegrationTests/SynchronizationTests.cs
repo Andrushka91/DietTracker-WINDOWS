@@ -233,7 +233,7 @@ public sealed class SynchronizationTests
     }
 
     [Fact]
-    public async Task Edits_wait_for_the_weekly_schedule_instead_of_synchronizing_continuously()
+    public async Task An_edit_is_uploaded_immediately_and_the_schedule_only_governs_automatic_checks()
     {
         await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
 
@@ -241,21 +241,25 @@ public sealed class SynchronizationTests
         var first = await environment.Sync.SynchronizeAsync(SyncTrigger.PostSignIn);
         Assert.True(first.Succeeded);
 
-        // Everything edited during the week stays in the journal: the cycle is deferred, so there is
-        // no cloud traffic and no state change - which is exactly why the status strip used to flash
-        // on every save.
+        // An edit is uploaded at once instead of waiting up to a week: otherwise a photograph attached
+        // today would never reach the cloud until the schedule came round, which looked like a broken
+        // synchronization while the journal silently filled up.
         await SeedLunchAsync(environment, new DateOnly(2026, 3, 20), "Scheduled lunch");
-        var deferred = await environment.Sync.SynchronizeAsync(SyncTrigger.LocalChange);
+        var localChange = await environment.Sync.SynchronizeAsync(SyncTrigger.LocalChange);
+
+        Assert.True(localChange.Succeeded);
+        Assert.False(localChange.Deferred);
+        Assert.True(localChange.Uploaded >= 1);
+        Assert.True(environment.Cloud.ObjectCount >= 1);
+
+        // The schedule still governs the automatic knocks: nothing is due during the same week, so an
+        // hourly check produces neither cloud traffic nor a state change (the status strip stays quiet).
+        var objectsAfterEdit = environment.Cloud.ObjectCount;
+        var deferred = await environment.Sync.SynchronizeAsync(SyncTrigger.Periodic);
 
         Assert.True(deferred.Deferred);
         Assert.True(deferred.Succeeded);
-        Assert.Equal(0, environment.Cloud.ObjectCount);
-
-        // The explicit button always runs and uploads the queued change.
-        var manual = await environment.Sync.SynchronizeAsync(SyncTrigger.Manual);
-        Assert.True(manual.Succeeded);
-        Assert.True(manual.Uploaded >= 1);
-        Assert.True(environment.Cloud.ObjectCount >= 1);
+        Assert.Equal(objectsAfterEdit, environment.Cloud.ObjectCount);
     }
 
     [Fact]

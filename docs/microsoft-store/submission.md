@@ -56,7 +56,7 @@ Store metadata to prepare in Partner Center:
 * **Category:** Health & fitness (secondary: Productivity)
 * **Age rating:** IARC questionnaire - no objectionable content expected (health/wellness data is not
   a rating category).
-* **Supported languages:** Romanian (default), English, Spanish.
+* **Supported languages:** English (the only interface language).
 * **Description (short and long):** plan five daily meals, mark what you ate, attach photographs, get
   native reminders, keep everything offline and optionally synchronize with your own Google account.
 * **Privacy policy URL:** the published version of `docs/privacy/privacy-policy.md`.
@@ -67,8 +67,8 @@ Store metadata to prepare in Partner Center:
 
 Provide this text in the "Notes for certification" field:
 
-> Diet Tracker works fully offline and **no account is required**. To test the cloud features, use the
-> Account and sync page: sign in with a Google account, then use "Synchronize now".
+> Diet Tracker works fully offline and **no account is required**. To test the cloud features, open
+> Settings: sign in with a Google account in the Account card, then use "Synchronize now".
 > Authentication uses the official OAuth 2.0 flow with PKCE in the system browser and never asks for a
 > password inside the application. Google Drive storage is limited to the hidden `appDataFolder`. All
 > privacy controls (export, local backup, sign out, disable synchronization, delete local data, delete
@@ -110,5 +110,5 @@ Provide this text in the "Notes for certification" field:
 - Photographs (JPEG/PNG/WEBP) with thumbnails and offline viewing.
 - Native Windows reminders with snooze and notification actions.
 - Optional Google sign-in with Google Drive synchronization.
-- Local export and backup, privacy controls, three interface languages.
+- Local export and backup, privacy controls, a single (English) interface language.
 ```

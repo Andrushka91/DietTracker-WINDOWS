@@ -23,8 +23,32 @@ public partial class App : Application
 {
     private Window? _window;
     private ServiceProvider? _services;
+    private readonly SingleInstanceGuard _singleInstance = new();
+    private readonly bool _isPrimaryInstance;
 
-    public App() => InitializeComponent();
+    public App()
+    {
+        // One instance per Windows session, decided before anything is composed: the second launch
+        // only brings the open window to the foreground and ends (see OnLaunched), so two copies can
+        // never write to the same SQLite database.
+        _isPrimaryInstance = _singleInstance.TryAcquire();
+
+        // The interface ships in English only. The override is applied before the first resource is
+        // loaded, so an earlier language choice (or a non-English Windows) can never leak into the UI.
+        try
+        {
+            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = SupportedLanguage;
+        }
+        catch (Exception)
+        {
+            // A locked or read-only language store only costs the override: the app keeps starting.
+        }
+
+        InitializeComponent();
+    }
+
+    /// <summary>The single interface language Diet Tracker ships with.</summary>
+    internal const string SupportedLanguage = "en-US";
 
     /// <summary>Service provider of the running application (used by pages and the tray icon).</summary>
     internal static IServiceProvider Services => Current is App app && app._services is not null
@@ -34,9 +58,24 @@ public partial class App : Application
     /// <summary>Main window of the application, or <see langword="null"/> before it is created.</summary>
     internal static Window? MainAppWindow => (Current as App)?._window;
 
+    /// <summary>
+    /// Releases the single-instance mutex on an explicit exit, so a restart does not have to take over
+    /// an abandoned mutex. Every other way of ending the process releases it automatically.
+    /// </summary>
+    internal static void ReleaseSingleInstance() => (Current as App)?._singleInstance.Dispose();
+
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         UnhandledException += OnUnhandledException;
+
+        if (!_isPrimaryInstance)
+        {
+            // Another copy is already open: show it instead of a second window and leave immediately,
+            // before services, database or background synchronization exist in this process.
+            SingleInstanceGuard.ActivateRunningInstance();
+            Exit();
+            return;
+        }
 
         _services = BuildServices();
 
@@ -85,6 +124,7 @@ public partial class App : Application
         services.AddSingleton<IUserInterfaceContext, WindowHandleProvider>();
         services.AddSingleton<ILocalizationService, ResourceLocalizationService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IBusyOverlayService, BusyOverlayService>();
         services.AddSingleton<IFilePickerService, FilePickerService>();
         services.AddSingleton<ITrayIconService, TrayIconService>();
 
@@ -96,7 +136,6 @@ public partial class App : Application
         services.AddTransient<StatisticsViewModel>();
         services.AddTransient<TemplatesViewModel>();
         services.AddTransient<SettingsViewModel>();
-        services.AddTransient<AccountSyncViewModel>();
 
         var provider = services.BuildServiceProvider(new ServiceProviderOptions
         {
@@ -154,13 +193,30 @@ public partial class App : Application
             // Reminders and notifications.
             await _services.GetRequiredService<IReminderScheduler>().StartAsync();
 
+            var syncEngine = _services.GetRequiredService<ISyncEngine>();
+
+            // Report what the stored account implies before anything else happens: without this the
+            // engine still holds its "not configured" start value, and every screen would claim that no
+            // account is connected even though the user is signed in and the account is stored.
+            await syncEngine.RefreshStateAsync();
+
             // Restore the previous provider session silently and synchronize when allowed.
             var authentication = _services.GetRequiredService<IAuthenticationCoordinator>();
             var restored = await authentication.TryRestoreSessionAsync();
 
             if (restored is { Succeeded: true })
             {
-                _services.GetRequiredService<ISyncEngine>().RequestSync(SyncTrigger.PostSignIn);
+                syncEngine.RequestSync(SyncTrigger.PostSignIn);
+            }
+
+            // Cloud-only policy: a signed-in account owns the cache. Without one, nothing of an earlier
+            // session may survive on this device - the data was uploaded and deleted when the user
+            // signed out, and a crash between those two steps is repaired here.
+            var session = _services.GetRequiredService<ICloudDataSession>();
+            var enforcement = await session.EnforceOnStartupAsync();
+            if (enforcement is { LocalDataCleared: true })
+            {
+                (MainAppWindow as MainWindow)?.ReloadCurrentPage();
             }
         }
         catch (Exception ex)

@@ -40,7 +40,8 @@ public sealed partial class MainWindow : Window
         // explicitly (otherwise Windows keeps showing the generic application icon).
         ApplyWindowIcon();
 
-        // Opens sized so all five meal cards fit, and limits resizing to the space the content uses.
+        // Opens as tall as the dashboard needs and freezes that size for the whole session; the width
+        // is limited so the content never stretches over an unused area. Page switches never resize.
         InitializeWindowSize();
 
         // The caption bar is drawn by the shell, not by XAML: paint it with the colour of the
@@ -56,6 +57,9 @@ public sealed partial class MainWindow : Window
         _trayIcon.ExitRequested += (_, _) => ExitApplication();
 
         AppWindow.Closing += OnWindowClosing;
+
+        // The overlay reports every long running cloud operation and can lock the close button.
+        InitializeBusyOverlay();
 
         Navigate("dashboard");
     }
@@ -132,7 +136,6 @@ public sealed partial class MainWindow : Window
             "calendar" => typeof(Views.CalendarPage),
             "statistics" => typeof(Views.StatisticsPage),
             "templates" => typeof(Views.TemplatesPage),
-            "account" => typeof(Views.AccountSyncPage),
             "settings" => typeof(Views.SettingsPage),
             "onboarding" => typeof(Views.OnboardingPage),
             _ => typeof(Views.DashboardPage),
@@ -152,6 +155,18 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Reloads the page that is open, with a fresh view model. Used after the local cache was emptied or
+    /// rebuilt by the cloud-only data lifecycle, so the screen never shows records that no longer exist.
+    /// </summary>
+    public void ReloadCurrentPage()
+    {
+        if (ContentFrame.CurrentSourcePageType is { } pageType)
+        {
+            ContentFrame.Navigate(pageType, null);
+        }
+    }
+
     private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
         if (args.SelectedItem is NavigationViewItem { Tag: string tag })
@@ -162,6 +177,15 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
+        // A critical cloud operation (sign-out, synchronize) must finish before the process may go
+        // away: the overlay covers the window and the close button is ignored for its duration.
+        if (!_exitRequested && IsCloseBlocked)
+        {
+            args.Cancel = true;
+            ShowCloseBlockedHint();
+            return;
+        }
+
         if (_exitRequested || !MinimizeToTrayEnabled())
         {
             _trayIcon.HideAsync().GetAwaiter().GetResult();
@@ -196,8 +220,17 @@ public sealed partial class MainWindow : Window
 
     private void ExitApplication()
     {
+        // The notification area offers a second way out; it obeys the same rule as the close button.
+        if (IsCloseBlocked)
+        {
+            RestoreFromTray();
+            ShowCloseBlockedHint();
+            return;
+        }
+
         _exitRequested = true;
         _trayIcon.HideAsync().GetAwaiter().GetResult();
+        App.ReleaseSingleInstance();
         Application.Current.Exit();
     }
 }

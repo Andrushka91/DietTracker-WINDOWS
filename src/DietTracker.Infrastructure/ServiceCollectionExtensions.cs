@@ -5,6 +5,7 @@ using DietTracker.Infrastructure.Cloud;
 using DietTracker.Infrastructure.Diagnostics;
 using DietTracker.Infrastructure.FileStorage;
 using DietTracker.Infrastructure.Notifications;
+using DietTracker.Infrastructure.Reporting;
 using DietTracker.Infrastructure.Repositories;
 using DietTracker.Infrastructure.Security;
 using DietTracker.Infrastructure.Services;
@@ -67,6 +68,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConnectivityMonitor, ConnectivityMonitor>();
         services.AddSingleton<IBackupService, BackupService>();
 
+        // Printable PDF report of the stored meals (read-only, no cloud and no account needed).
+        services.AddSingleton<IMealReportService, MealReportService>();
+
         // Authentication
         services.AddSingleton<IUserInterfaceContext, HeadlessUserInterfaceContext>();
         services.AddSingleton<GoogleAuthenticationProvider>();
@@ -86,6 +90,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncJournal, SyncJournal>();
         services.AddSingleton<IPrivacyService, PrivacyService>();
+
+        // Cloud-only data lifecycle: the local database is a cache of the connected account only.
+        services.AddSingleton<ICloudDataSession, CloudDataSession>();
 
         // Notifications and Windows integration
         services.AddSingleton<INotificationService, WindowsNotificationService>();

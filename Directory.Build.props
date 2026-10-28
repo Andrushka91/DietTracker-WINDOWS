@@ -16,7 +16,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <Copyright>Copyright (c) Diet Tracker</Copyright>
-    <NeutralLanguage>ro-RO</NeutralLanguage>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <InvariantGlobalization>false</InvariantGlobalization>
     <Deterministic>true</Deterministic>
   </PropertyGroup>

@@ -1,35 +1,74 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
+using DietTracker.Core.BusinessRules;
+using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
+using DietTracker.Core.Models;
 
 namespace DietTracker.App.ViewModels;
 
 /// <summary>
-/// Data lifecycle commands of the settings screen.
+/// Data lifecycle commands of the settings screen: export, restore and the integrity check.
 /// </summary>
 /// <remarks>
-/// The four operations below are deliberately distinct and each one is confirmed explicitly:
-/// creating a backup, restoring a backup, deleting local data and deleting cloud data. Deleting local
-/// data never touches the cloud, and deleting cloud data requires a separate confirmation.
+/// The three actions are deliberately non destructive - a backup is written, a backup is merged and
+/// the database is inspected - so none of them needs a confirmation that deletes something. The
+/// destructive operations still exist in the services (the sign-out flow uses them), they are simply
+/// not offered as buttons any more.
 /// </remarks>
 public sealed partial class SettingsViewModel
 {
+    /// <summary>Extension of the portable archive written by <see cref="IBackupService"/>.</summary>
+    private const string BackupExtension = ".dtbackup";
+
+    /// <summary>Extension of the printable report written by <see cref="IMealReportService"/>.</summary>
+    private const string PdfExtension = ".pdf";
+
+    /// <summary>
+    /// Export asks for the file first and the chosen extension decides the content: the same button
+    /// writes the portable archive (restorable in the application) or the printable PDF report (for a
+    /// doctor, a dietitian or a printout).
+    /// </summary>
     [RelayCommand]
-    private async Task ExportBackupAsync()
+    private async Task ExportDataAsync()
     {
-        var path = await _filePicker.PickSaveFileAsync($"diettracker-{DateTime.Now:yyyyMMdd}", ".dtbackup");
+        var path = await _filePicker.PickSaveFileAsync(
+            $"diettracker-{DateTime.Now:yyyyMMdd}",
+            [
+                new SaveFileChoice(_localization.Get("Settings_ExportFormatBackup"), BackupExtension),
+                new SaveFileChoice(_localization.Get("Settings_ExportFormatPdf"), PdfExtension),
+            ]);
+
         if (string.IsNullOrEmpty(path))
         {
             return;
         }
 
-        var summary = await _backup.ExportAsync(path);
-        StatusMessage = _localization.Format("Settings_BackupCreated", summary.MealEntries, summary.Photos);
+        BackupStatusMessage = string.Empty;
+        try
+        {
+            if (string.Equals(Path.GetExtension(path), PdfExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                var report = await _reports.ExportPdfAsync(path, BuildReportOptions());
+                BackupStatusMessage = _localization.Format("Settings_PdfCreated", report.MealEntries, report.Days);
+                return;
+            }
+
+            var summary = await _backup.ExportAsync(path);
+            BackupStatusMessage = _localization.Format("Settings_BackupCreated", summary.MealEntries, summary.Photos);
+        }
+        catch (Exception)
+        {
+            // The export may be the only copy the user has, so a failure is reported instead of
+            // leaving an empty status line behind.
+            BackupStatusMessage = _localization.Get("Settings_ExportFailed");
+        }
     }
 
     [RelayCommand]
     private async Task ImportBackupAsync()
     {
-        var path = await _filePicker.PickOpenFileAsync(".dtbackup");
+        var path = await _filePicker.PickOpenFileAsync(BackupExtension);
         if (string.IsNullOrEmpty(path))
         {
             return;
@@ -42,79 +81,41 @@ public sealed partial class SettingsViewModel
         }
 
         var summary = await _backup.RestoreAsync(path);
-        StatusMessage = _localization.Format("Settings_RestoreDone", summary.MealEntries, summary.Photos);
+        BackupStatusMessage = _localization.Format("Settings_RestoreDone", summary.MealEntries, summary.Photos);
     }
 
     [RelayCommand]
     private async Task CheckIntegrityAsync()
     {
         var issues = await _integrity.CheckAsync();
-        StatusMessage = issues.Count == 0
+        BackupStatusMessage = issues.Count == 0
             ? _localization.Get("Settings_IntegrityOk")
             : _localization.Format("Settings_IntegrityIssues", issues.Count, string.Join("; ", issues.Select(i => i.Code)));
     }
 
-    [RelayCommand]
-    private async Task SyncNowAsync()
+    /// <summary>
+    /// Collects the localized texts and the culture of the PDF report. The report service has no
+    /// access to the resource files, so naming the slots and the states is the job of this layer -
+    /// which keeps exactly the labels the dashboard shows ("Mic dejun", "Finalizată", ...).
+    /// </summary>
+    private MealReportOptions BuildReportOptions() => new()
     {
-        await _syncEngine.SynchronizeAsync(SyncTrigger.Manual);
-        LastSyncText = _syncEngine.LastSuccessfulSyncAt is { } timestamp
-            ? _localization.Format("Sync_LastSuccess", timestamp.ToLocalTime().ToString("g"))
-            : _localization.Get("Sync_Never");
-    }
-
-    [RelayCommand]
-    private async Task DeleteLocalDataAsync()
-    {
-        var confirmed = await _dialogs.ConfirmAsync("Privacy_DeleteLocalTitle", "Privacy_DeleteLocalMessage");
-        if (!confirmed)
+        CultureName = CultureInfo.CurrentCulture.Name,
+        TimeFormat = Use12HourClock ? "h:mm tt" : "HH:mm",
+        DocumentTitle = _localization.Get("Report_Title"),
+        PeriodFormat = _localization.Get("Report_Period"),
+        GeneratedFormat = _localization.Get("Report_Generated"),
+        SummaryFormat = _localization.Get("Report_Summary"),
+        EmptyText = _localization.Get("Report_Empty"),
+        PageFormat = _localization.Get("Report_Page"),
+        CategoryNames = MealSlotRules.AllSlots.ToDictionary(
+            key => key,
+            key => _localization.Get($"Meal_{key}_Name")),
+        StatusNames = new Dictionary<MealStatus, string>
         {
-            return;
-        }
-
-        // A safety copy is written first so a mistaken click is always recoverable.
-        await _backup.CreateSafetyCopyAsync("delete-local");
-        await _privacy.DeleteLocalDataAsync(includePhotographs: true);
-
-        StatusMessage = _localization.Get("Privacy_DeleteLocalDone");
-    }
-
-    [RelayCommand]
-    private async Task DeleteCloudDataAsync()
-    {
-        var confirmed = await _dialogs.ConfirmAsync("Privacy_DeleteCloudTitle", "Privacy_DeleteCloudMessage");
-        if (!confirmed)
-        {
-            return;
-        }
-
-        var deleted = await _privacy.DeleteCloudDataAsync();
-        StatusMessage = _localization.Format("Privacy_DeleteCloudDone", deleted);
-    }
-
-    [RelayCommand]
-    private async Task DeletePhotographsAsync()
-    {
-        var confirmed = await _dialogs.ConfirmAsync("Privacy_DeletePhotosTitle", "Privacy_DeletePhotosMessage");
-        if (!confirmed)
-        {
-            return;
-        }
-
-        var deleted = await _privacy.DeleteAllPhotographsAsync();
-        StatusMessage = _localization.Format("Privacy_DeletePhotosDone", deleted);
-    }
-
-    [RelayCommand]
-    private async Task DisableSynchronizationAsync()
-    {
-        var confirmed = await _dialogs.ConfirmAsync("Privacy_DisableSyncTitle", "Privacy_DisableSyncMessage");
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await _privacy.DisableSynchronizationAsync();
-        StatusMessage = _localization.Get("Privacy_DisableSyncDone");
-    }
+            [MealStatus.Done] = _localization.Get("Status_Done"),
+            [MealStatus.Missed] = _localization.Get("Status_Missed"),
+            [MealStatus.Pending] = _localization.Get("Status_Pending"),
+        },
+    };
 }

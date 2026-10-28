@@ -4,9 +4,12 @@ A native Windows 11 desktop application (WinUI 3, .NET 10, C#) for planning five
 tracking what was actually eaten, attaching photographs, receiving native Windows reminders and
 synchronizing the data with the user's own Google Drive account.
 
-The application is **offline first**: SQLite is the authoritative working database and every feature
-works without an account. Signing in is optional and only adds secure cloud synchronization and
-data recovery.
+The application keeps your data **in your own cloud account**. SQLite is a working copy (a cache) of
+the account that is signed in: edits are written locally first, so the interface never waits for the
+network, and the cloud is the copy that survives. Connecting an account downloads its dataset at once,
+and signing out uploads what is still pending before every meal, photograph and template is deleted
+from the device - so two accounts never see each other's records. Without an account the application
+still works offline; the records of a first sign-in are adopted (uploaded) by that account.
 
 ## Highlights
 
@@ -30,9 +33,26 @@ data recovery.
   its own X to remove it. A photograph whose bytes are already attached to that meal is refused with
   "Photo was already uploaded" rather than stored twice.
 * **Native Windows notifications** with snooze, "mark as DONE" and deep links back into the app.
+* **A window that stays where it is**: it opens exactly as tall as the dashboard needs (all five meal
+  cards, no vertical scrollbar) and keeps that size for the whole session - navigating between the
+  dashboard, the calendar, the statistics, the templates and the settings never resizes it, and no
+  panel scrolls vertically.
+* **Clear progress for cloud work**: a dark overlay with a spinner explains signing in, signing out,
+  synchronizing, restoring and deleting cloud data. While signing out or synchronizing, the window
+  cannot be closed until the operation finished (with a two minute safety limit).
+* **One instance per Windows session**: starting Diet Tracker again does not open a second copy - the
+  window that is already open is brought to the foreground (and restored from the notification area),
+  so two processes can never write to the same SQLite database. The packaged and the unpackaged build
+  behave identically.
 * **Google account** sign-in (OAuth 2.0 with PKCE in the system browser, Google Drive
   `appDataFolder`) with silent session restoration.
-* **Three interface languages**: Romanian (default), English and Spanish.
+* **Cloud-only data, one account at a time**: connecting an account downloads its dataset
+  immediately; switching accounts never shows the previous account's records. Signing out uploads
+  what is still pending and then deletes every meal, photograph and template from the device. If a
+  change cannot be uploaded the sign-out is refused instead of deleting the only copy, and a cache
+  that survives a crash without a connected account is removed at the next start.
+* **English interface**: one language, so no switch that could silently fail to apply. The translated
+  resource files stay in the repository for a future release, but they are not selectable.
 * **Light and dark appearance that follows Windows**: the whole interface and the window title bar
   switch together with the system setting for apps, including while the application is running.
 * **MSIX packaging** ready for Microsoft Store submission.
@@ -77,17 +97,20 @@ There is no "rebuild" step to remember: **`npm start` always builds whatever cha
 | Command | What it does | Where the built .exe goes |
 |---|---|---|
 | **`npm start`** | **build + run - the one command after every change** | `dist/exec/DietTracker.exe` - and it is started for you |
-| `npm run build` | build only, no start | `dist/exec/DietTracker.exe` |
+| **`npm run build`** | build **both** flavours, no start: the runnable app and the signed MSIX installer | `dist/exec/DietTracker.exe` **and** `artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle` |
+| `npm run build:app` | build the runnable app only - the fast loop (no installer) | `dist/exec/DietTracker.exe` |
+| `npm run installer` | build the MSIX installer **and install it** (next revision, signed) | `artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle` |
 | `npm run start:debug` | build + run a debuggable build (only when debugging) | `dist/debug/DietTracker.exe` |
 | `npm run build:debug` | debuggable build only | `dist/debug/DietTracker.exe` |
 | `npm test` | run the unit tests | (no app .exe) |
 | `npm run test:all` | unit + integration tests | (no app .exe) |
 | `npm run test:ui` | UI smoke tests (start the real app) | uses the `dist/exec` .exe |
 
-**Where the exe file goes after `npm run build`:**
+**Where the built files go after `npm run build`:**
 
 ```text
-dist/exec/DietTracker.exe
+dist/exec/DietTracker.exe                                     <- the runnable application
+artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle     <- the signed installer
 ```
 
 `dist/` is the conventional folder name for the built application - the same convention the npm/webpack
@@ -95,6 +118,15 @@ world uses - so it is always obvious where the executable is, and `exec` means "
 optimized application you actually run. That folder is the complete application: besides
 `DietTracker.exe` it contains the freshly built `DietTracker.Core.dll`,
 `DietTracker.Infrastructure.dll` and all XAML resources - so always start the exe **from its folder**.
+
+The installer is the **MSIX bundle**, not a separate setup `.exe`: double-clicking the `.msixbundle`
+(or `Add-AppxPackage`) installs Diet Tracker for the current user. `npm run build` builds and signs it
+but does **not** install it - use `npm run installer` for that (it builds the next revision and
+installs it over the previous one). The build order inside `tools\Build-All.ps1` matters and is
+handled for you: the packaged build leaves an identity-bound `DietTracker.exe` (plus an
+`AppxManifest.xml`) in `dist\exec`, so the runnable flavour is rebuilt afterwards and the packaging
+leftovers are removed - `dist\exec` is always startable from disk after `npm run build`. Pass
+`-SkipInstaller` (or use `npm run build:app`) when only the runnable application is needed.
 
 **What about `Debug`?** A `Debug` build is unoptimized and carries debug symbols - it exists only for
 debugging sessions with Visual Studio or a debugger, never for normal use. That is why the commands
@@ -168,38 +200,37 @@ change and recompiles just that project before producing the executable - so "ed
   `dotnet build DietTracker.sln -c Debug -p:Platform=x64 -m:1` - then run the application build above
   afterwards, because the solution build leaves the packaged flavour.
 
-### Packaged build (optional - the Store package)
+### Packaged build (the Store package and the installer)
+
+`npm run build` already produces the signed package (it runs `tools\Build-All.ps1`, which calls the
+packaging script with `-NoInstall`). Use the following when the package also has to be **installed**
+on this machine:
 
 ```powershell
-# Windows rejects unsigned packages (0x800B0100) and packages whose publisher certificate chain
-# cannot be verified (0x800B010A), so the package must be signed with a certificate whose subject
-# matches Publisher="CN=DietTracker" in Package.appxmanifest. Developer Mode must also be enabled
-# (Settings > System > For developers).
-$cert = Get-ChildItem Cert:\CurrentUser\My |
-        Where-Object { $_.Subject -eq 'CN=DietTracker' -and $_.NotAfter -gt (Get-Date) } |
-        Sort-Object NotAfter -Descending | Select-Object -First 1
-if (-not $cert) {
-  $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=DietTracker' `
-            -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(3)
-  Export-Certificate -Cert $cert -FilePath artifacts\msix\DietTracker.cer | Out-Null
-  # One-time, in an elevated shell: trust it for the deployment engine.
-  #   Import-Certificate -FilePath artifacts\msix\DietTracker.cer -CertStoreLocation Cert:\LocalMachine\Root
-  #   Import-Certificate -FilePath artifacts\msix\DietTracker.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
-}
-
-dotnet build src/DietTracker.App/DietTracker.App.csproj -c Release -p:Platform=x64 -m:1 `
-  -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true `
-  -p:PackageCertificateThumbprint=$($cert.Thumbprint)
-Add-AppxPackage -Path artifacts/msix/DietTracker.App_1.0.0.0_Test/DietTracker.App_1.0.0.0_x64.msix
+# Rebuilds, signs and installs the package in one step, then prints the artifact path, size and
+# SHA-256. Run it after every change that has to be tested as an installed application.
+npm run installer
 ```
 
-The package (`.msix` plus `.msixbundle`, signed with the self-signed certificate above, ~30 MB -
-the publish profiles keep foreign-architecture and foreign-OS native assets out of the payload,
-which used to push it to 82 MB) is
-written to `artifacts\msix\DietTracker.App_1.0.0.0_Test\`; the trusted public certificate is kept at
-`artifacts\msix\DietTracker.cer`. Installing and running the packaged application (notifications, the
-`startupTask` extension) was **not** verified in this environment -
-see [docs/known-limitations.md](docs/known-limitations.md) item 4.
+The script (`tools\Update-Installer.ps1`) stops a running instance, finds or creates the self-signed
+certificate whose subject matches `Publisher="CN=DietTracker"` in `Package.appxmanifest`, builds the
+Release package with signing enabled, verifies the Authenticode signature, installs it over the
+previous version and reports what it produced. Options: `-NoInstall` (build only, used by
+`npm run build` and `_build_msix.ps1`) and `-KeepRunningApp`. Windows rejects unsigned packages
+(0x800B0100) and packages whose certificate chain cannot be verified (0x800B010A), so a **newly
+created** certificate has to be trusted once in an elevated shell (the script prints the two
+`Import-Certificate` commands); Developer Mode must also be enabled (Settings > System > For
+developers).
+
+The package (`.msix` plus `.msixbundle`, ~30 MB - the publish profiles keep foreign-architecture and
+foreign-OS native assets out of the payload, which used to push it to 82 MB) is written to
+`artifacts\msix\DietTracker.App_<version>_Test\`; the trusted public certificate is kept at
+`artifacts\msix\DietTracker.cer`. The version in that folder name is the installed package's version
+plus one revision (1.0.0.1, 1.0.0.2, ...), because Windows refuses to reinstall the same version with
+different content (0x80073CFB); when nothing is installed yet - or when only `npm run build` ran with
+`-NoInstall` - the manifest version `1.0.0.0` is used. Only the newest artifact folder is kept. The
+tracked manifest always keeps `1.0.0.0`: the script patches it only for the build and restores it
+afterwards, so the package data (`LocalState`) survives every refresh.
 
 Uninstall with `npm run remove` (add `-- -KeepData` to save the packaged data first). It closes the
 running app before calling `Remove-AppxPackage`, because otherwise the deployment engine waits for
@@ -268,8 +299,8 @@ file handle, so you can read the log while the application is running. A first s
 
 ```bash
 # Build the application first (see "Run the app"): the UI tests start that exact executable.
-dotnet test tests/DietTracker.UnitTests          -c Debug -p:Platform=x64   # 83 tests, ~0.8 s
-dotnet test tests/DietTracker.IntegrationTests   -c Debug -p:Platform=x64   # 15 tests, ~0.7 s
+dotnet test tests/DietTracker.UnitTests          -c Debug -p:Platform=x64   # 149 tests, ~0.9 s
+dotnet test tests/DietTracker.IntegrationTests   -c Debug -p:Platform=x64   # 17 tests, ~0.8 s
 dotnet test tests/DietTracker.UITests            -c Debug -p:Platform=x64   # 2 tests, ~5 s, starts the real app
 ```
 

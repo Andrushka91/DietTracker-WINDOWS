@@ -21,7 +21,6 @@
   <data name="Nav_Statistics" xml:space="preserve"><value>Statistics</value></data>
   <data name="Nav_Templates" xml:space="preserve"><value>Templates</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="Nav_AccountSync" xml:space="preserve"><value>Account and sync</value></data>
   <data name="Tray_Open" xml:space="preserve"><value>Open Diet Tracker</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Meal_Breakfast_Name" xml:space="preserve"><value>Breakfast</value></data>
@@ -91,22 +90,23 @@
   <data name="Template_Notice" xml:space="preserve"><value>Templates never contain completion state or photographs.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_General" xml:space="preserve"><value>General</value></data>
-  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
   <data name="Settings_Reminders" xml:space="preserve"><value>Reminders</value></data>
   <data name="Settings_StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
   <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimize to the notification area</value></data>
   <data name="Settings_12Hour" xml:space="preserve"><value>Use the 12 hour clock</value></data>
   <data name="Settings_Saved" xml:space="preserve"><value>Your settings were saved.</value></data>
-  <data name="Settings_Backup" xml:space="preserve"><value>Backup</value></data>
+  <data name="Settings_SaveFailed" xml:space="preserve"><value>The change could not be saved. Try again.</value></data>
+  <data name="Settings_AutoSaveHint" xml:space="preserve"><value>Every change is saved immediately; the page has no Save button.</value></data>
   <data name="Settings_Export" xml:space="preserve"><value>Export data</value></data>
+  <data name="Settings_ExportFormatBackup" xml:space="preserve"><value>Diet Tracker backup</value></data>
+  <data name="Settings_ExportFormatPdf" xml:space="preserve"><value>PDF report</value></data>
+  <data name="Settings_PdfCreated" xml:space="preserve"><value>PDF report created: {0} meals over {1} day(s).</value></data>
+  <data name="Settings_ExportFailed" xml:space="preserve"><value>The export failed. Nothing was changed; try another location.</value></data>
   <data name="Settings_Import" xml:space="preserve"><value>Restore backup</value></data>
   <data name="Settings_Integrity" xml:space="preserve"><value>Check integrity</value></data>
-  <data name="Settings_Privacy" xml:space="preserve"><value>Privacy</value></data>
-  <data name="Settings_PrivacyHint" xml:space="preserve"><value>These actions are independent: signing out, disabling synchronization, deleting local data and deleting cloud data.</value></data>
-  <data name="Settings_DisableSync" xml:space="preserve"><value>Disable synchronization</value></data>
-  <data name="Settings_DeletePhotos" xml:space="preserve"><value>Delete photographs</value></data>
-  <data name="Settings_DeleteLocal" xml:space="preserve"><value>Delete local data</value></data>
-  <data name="Settings_DeleteCloud" xml:space="preserve"><value>Delete cloud data</value></data>
+  <data name="Settings_PrivacyAndBackup" xml:space="preserve"><value>Privacy and backup</value></data>
+  <data name="Settings_PrivacyHint" xml:space="preserve"><value>Nothing is ever deleted from this page. Export writes a backup archive or a printable PDF report, restoring merges a backup into this device and the integrity check only reads the database.</value></data>
   <data name="Settings_About" xml:space="preserve"><value>About</value></data>
   <data name="Settings_SyncNow" xml:space="preserve"><value>Synchronize now</value></data>
   <data name="Settings_StorageUsage" xml:space="preserve"><value>Stored photographs: {0:0.##} MB</value></data>
@@ -117,24 +117,31 @@
   <data name="Settings_RestoreDone" xml:space="preserve"><value>Restore finished: {0} meals and {1} photographs.</value></data>
   <data name="Settings_IntegrityOk" xml:space="preserve"><value>The integrity check found no problems.</value></data>
   <data name="Settings_IntegrityIssues" xml:space="preserve"><value>{0} integrity issue(s): {1}</value></data>
-  <data name="Account_Title" xml:space="preserve"><value>Account and synchronization</value></data>
   <data name="Account_GuestInfo" xml:space="preserve"><value>You are using Diet Tracker without an account</value></data>
-  <data name="Account_Current" xml:space="preserve"><value>Connected account</value></data>
-  <data name="Account_SignIn" xml:space="preserve"><value>Sign in</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Sign in with Google</value></data>
   <data name="Account_SignOut" xml:space="preserve"><value>Sign out</value></data>
-  <data name="Account_Sync" xml:space="preserve"><value>Synchronization</value></data>
+  <data name="Account_SignOutTitle" xml:space="preserve"><value>Sign out?</value></data>
+  <data name="Account_SignOutMessage" xml:space="preserve"><value>What is still pending is uploaded first. Then every meal, photograph and template is deleted from this device; your data stays in the cloud account.</value></data>
+  <data name="Account_SignOutPendingTitle" xml:space="preserve"><value>Changes could not be uploaded</value></data>
+  <data name="Account_SignOutPendingMessage" xml:space="preserve"><value>Diet Tracker deletes the local data when you sign out, because your cloud account is the only copy.</value></data>
+  <data name="Account_SignOutPendingDetail" xml:space="preserve"><value>{0} change(s) are still waiting for the cloud. Sign out and delete them anyway?</value></data>
+  <data name="Account_SignOutPendingKept" xml:space="preserve"><value>Sign-out cancelled. Nothing was deleted and the changes stay on this device.</value></data>
+  <data name="Account_SignOutDiscarded" xml:space="preserve"><value>Signed out. The changes that could not be uploaded were deleted with the local data.</value></data>
+  <data name="Account_SignInPendingChanges" xml:space="preserve"><value>{0} change(s) could not be uploaded yet. Go online and synchronize before signing in to another account.</value></data>
+  <data name="Account_CloudDataLoaded" xml:space="preserve"><value>{0} record(s) synchronized. This account's data is on the device now.</value></data>
+  <data name="Account_CloudDataPending" xml:space="preserve"><value>Signed in, but the data could not be loaded yet. Use "Synchronize now" once you are online.</value></data>
   <data name="Account_Preview" xml:space="preserve"><value>What is in the cloud?</value></data>
   <data name="Account_Restore" xml:space="preserve"><value>Restore from the cloud</value></data>
-  <data name="Account_Consent" xml:space="preserve"><value>Upload my meal data and photographs</value></data>
+  <data name="Account_CloudSaveHint" xml:space="preserve"><value>Once you are signed in, meals and photographs are saved to your account automatically. There is no switch to turn this off.</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Meals, notes, completion state, templates, preferences and photographs are uploaded. The storage limits of the selected account apply.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Explicit consent is required before the first upload.</value></data>
-  <data name="Account_PrivacySummary" xml:space="preserve"><value>Diet Tracker keeps your data local. Synchronization writes directly into the application folder of your own account.</value></data>
+  <data name="Account_PrivacySummary" xml:space="preserve"><value>Your data lives in the application folder of your own cloud account. This device only keeps a working copy while you are signed in; it is uploaded and deleted when you sign out.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>No account (guest mode)</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Every essential feature works offline without an account.</value></data>
+  <data name="Account_NoEmail" xml:space="preserve"><value>Not signed in</value></data>
   <data name="Account_SignedIn" xml:space="preserve"><value>Signed in successfully.</value></data>
-  <data name="Account_SignedOut" xml:space="preserve"><value>Signed out. Your local meals and photographs were kept.</value></data>
+  <data name="Account_SignedOut" xml:space="preserve"><value>Signed out. Everything was uploaded and the local data was deleted.</value></data>
   <data name="Account_Quota" xml:space="preserve"><value>Cloud space left: {0:0.#} GB</value></data>
   <data name="Account_SyncResult" xml:space="preserve"><value>Synchronization finished: {0} uploaded, {1} downloaded.</value></data>
   <data name="Account_NoCloudData" xml:space="preserve"><value>No Diet Tracker data was found in the connected account.</value></data>
@@ -142,7 +149,16 @@
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restore from the cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Local data is not deleted. Only records that exist in the cloud are added or updated.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restore finished: {0} record(s).</value></data>
-  <data name="Account_Environment" xml:space="preserve"><value>Environment</value></data>
+  <data name="Busy_Synchronizing" xml:space="preserve"><value>Synchronizing your data…</value></data>
+  <data name="Busy_UploadingChanges" xml:space="preserve"><value>Uploading your changes…</value></data>
+  <data name="Busy_SigningOut" xml:space="preserve"><value>Signing out and deleting the local data…</value></data>
+  <data name="Busy_WaitingForBrowser" xml:space="preserve"><value>Waiting for your browser…</value></data>
+  <data name="Busy_Downloading" xml:space="preserve"><value>Downloading your account's data…</value></data>
+  <data name="Busy_LoadingAccount" xml:space="preserve"><value>Preparing this device for your account…</value></data>
+  <data name="Busy_Restoring" xml:space="preserve"><value>Restoring from the cloud…</value></data>
+  <data name="Busy_DeletingCloudData" xml:space="preserve"><value>Deleting the cloud data…</value></data>
+  <data name="Busy_Hint" xml:space="preserve"><value>Please wait, this can take a few seconds.</value></data>
+  <data name="Busy_CloseBlocked" xml:space="preserve"><value>Diet Tracker is finishing this operation. The window closes as soon as it is done.</value></data>
   <data name="Onboarding_Title" xml:space="preserve"><value>Welcome to Diet Tracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Plan five meals a day, confirm what you actually ate and keep the history. Signing in enables secure synchronization and data recovery after reinstalling or on another PC.</value></data>
   <data name="Onboarding_ChooseProvider" xml:space="preserve"><value>Choose how to keep your data</value></data>
@@ -159,12 +175,12 @@
   <data name="Sync_BalloonTitle" xml:space="preserve"><value>Diet Tracker synchronized</value></data>
   <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} uploaded, {1} downloaded.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronization error</value></data>
-  <data name="Sync_Paused" xml:space="preserve"><value>Synchronization paused</value></data>
+  <data name="Sync_Paused" xml:space="preserve"><value>Synchronization is turned off</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Last successful synchronization: {0}</value></data>
   <data name="Sync_Never" xml:space="preserve"><value>No synchronization yet</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Synchronization</value></data>
   <data name="Settings_SyncFrequency" xml:space="preserve"><value>Automatic synchronization</value></data>
-  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Edits are saved on this device immediately and are uploaded when the schedule above is due, or when you press Synchronize now.</value></data>
+  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices.</value></data>
   <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Every week</value></data>
   <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Every month</value></data>
   <data name="Sync_FrequencyManual" xml:space="preserve"><value>Only with the button below</value></data>
@@ -192,18 +208,12 @@
   <data name="Auth_sync_quota_exceeded" xml:space="preserve"><value>The cloud storage space is full.</value></data>
   <data name="Auth_sync_restore_failed" xml:space="preserve"><value>The restore failed; your local data is intact.</value></data>
   <data name="Auth_sync_failed" xml:space="preserve"><value>Synchronization failed; it will be retried.</value></data>
-  <data name="Privacy_DeleteLocalTitle" xml:space="preserve"><value>Delete the local data?</value></data>
-  <data name="Privacy_DeleteLocalMessage" xml:space="preserve"><value>Meals, templates, reminders and photographs are deleted from this device. Cloud data is untouched and a safety copy is created first.</value></data>
-  <data name="Privacy_DeleteLocalDone" xml:space="preserve"><value>The local data was deleted.</value></data>
-  <data name="Privacy_DeleteCloudTitle" xml:space="preserve"><value>Delete the cloud data?</value></data>
-  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>The Diet Tracker files are deleted from the connected account. Local data stays on this device.</value></data>
-  <data name="Privacy_DeleteCloudDone" xml:space="preserve"><value>{0} object(s) were deleted from the cloud.</value></data>
-  <data name="Privacy_DeletePhotosTitle" xml:space="preserve"><value>Delete the photographs?</value></data>
-  <data name="Privacy_DeletePhotosMessage" xml:space="preserve"><value>The local image files are deleted; the meal records remain.</value></data>
-  <data name="Privacy_DeletePhotosDone" xml:space="preserve"><value>{0} file(s) were deleted.</value></data>
-  <data name="Privacy_DisableSyncTitle" xml:space="preserve"><value>Disable synchronization?</value></data>
-  <data name="Privacy_DisableSyncMessage" xml:space="preserve"><value>The authorization is kept, but nothing is uploaded or downloaded. Files already in the cloud are not deleted.</value></data>
-  <data name="Privacy_DisableSyncDone" xml:space="preserve"><value>Synchronization was disabled.</value></data>
+  <data name="Report_Title" xml:space="preserve"><value>Diet Tracker - Meal report</value></data>
+  <data name="Report_Period" xml:space="preserve"><value>Period: {0} - {1}</value></data>
+  <data name="Report_Generated" xml:space="preserve"><value>Generated on {0}</value></data>
+  <data name="Report_Summary" xml:space="preserve"><value>{0} meals recorded: {1} done, {2} missed, {3} pending</value></data>
+  <data name="Report_Empty" xml:space="preserve"><value>No meals were recorded in this period.</value></data>
+  <data name="Report_Page" xml:space="preserve"><value>Page {0} of {1}</value></data>
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>The title is too long.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>The category is not one of the five permanent slots.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Only JPEG, PNG and WEBP images are supported.</value></data>

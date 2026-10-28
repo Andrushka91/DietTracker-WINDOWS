@@ -70,6 +70,32 @@ public sealed partial class PrivacyService : IPrivacyService
     }
 
     /// <inheritdoc />
+    public async Task SetUploadConsentAsync(bool granted, CancellationToken cancellationToken = default)
+    {
+        var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
+        if (account is not null)
+        {
+            account.SynchronizationEnabled = granted;
+            await _accounts.UpdateAsync(account, cancellationToken).ConfigureAwait(false);
+        }
+
+        var profile = await _profiles.GetOrCreateActiveProfileAsync(cancellationToken).ConfigureAwait(false);
+        var preferences = await _preferences.GetAsync(profile.Id, cancellationToken).ConfigureAwait(false);
+        if (preferences is not null)
+        {
+            preferences.SynchronizationEnabled = granted;
+
+            // The consent itself is remembered even when it is withdrawn again: it records that the
+            // user has been asked, not that uploads are currently allowed.
+            preferences.CloudUploadConsentGranted = preferences.CloudUploadConsentGranted || granted;
+            preferences.UpdatedAt = DateTimeOffset.UtcNow;
+            await _preferences.UpsertAsync(preferences, cancellationToken).ConfigureAwait(false);
+        }
+
+        _logger.LogInformation("Cloud uploads were {State}. Nothing is deleted either way.", granted ? "allowed" : "refused");
+    }
+
+    /// <inheritdoc />
     public async Task DisconnectAccountAsync(Guid cloudAccountId, CancellationToken cancellationToken = default)
     {
         var account = await _accounts.GetAsync(cloudAccountId, cancellationToken).ConfigureAwait(false);

@@ -21,7 +21,6 @@
   <data name="Nav_Statistics" xml:space="preserve"><value>Estadísticas</value></data>
   <data name="Nav_Templates" xml:space="preserve"><value>Plantillas</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Configuración</value></data>
-  <data name="Nav_AccountSync" xml:space="preserve"><value>Cuenta y sincronización</value></data>
   <data name="Tray_Open" xml:space="preserve"><value>Abrir Diet Tracker</value></data>
   <data name="Tray_Exit" xml:space="preserve"><value>Salir</value></data>
   <data name="Meal_Breakfast_Name" xml:space="preserve"><value>Desayuno</value></data>
@@ -91,22 +90,23 @@
   <data name="Template_Notice" xml:space="preserve"><value>Las plantillas nunca incluyen el estado de confirmación ni fotografías.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Configuración</value></data>
   <data name="Settings_General" xml:space="preserve"><value>General</value></data>
-  <data name="Settings_Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Settings_Account" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Settings_Reminders" xml:space="preserve"><value>Recordatorios</value></data>
   <data name="Settings_StartWithWindows" xml:space="preserve"><value>Iniciar con Windows</value></data>
   <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimizar al área de notificación</value></data>
   <data name="Settings_12Hour" xml:space="preserve"><value>Usar el reloj de 12 horas</value></data>
   <data name="Settings_Saved" xml:space="preserve"><value>La configuración se ha guardado.</value></data>
-  <data name="Settings_Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
+  <data name="Settings_SaveFailed" xml:space="preserve"><value>No se pudo guardar el cambio. Inténtalo de nuevo.</value></data>
+  <data name="Settings_AutoSaveHint" xml:space="preserve"><value>Cada cambio se guarda al instante; la página no tiene botón Guardar.</value></data>
   <data name="Settings_Export" xml:space="preserve"><value>Exportar datos</value></data>
+  <data name="Settings_ExportFormatBackup" xml:space="preserve"><value>Copia de Diet Tracker</value></data>
+  <data name="Settings_ExportFormatPdf" xml:space="preserve"><value>Informe PDF</value></data>
+  <data name="Settings_PdfCreated" xml:space="preserve"><value>Informe PDF creado: {0} comidas en {1} día(s).</value></data>
+  <data name="Settings_ExportFailed" xml:space="preserve"><value>La exportación falló. No se cambió nada; prueba otra ubicación.</value></data>
   <data name="Settings_Import" xml:space="preserve"><value>Restaurar copia</value></data>
   <data name="Settings_Integrity" xml:space="preserve"><value>Comprobar integridad</value></data>
-  <data name="Settings_Privacy" xml:space="preserve"><value>Privacidad</value></data>
-  <data name="Settings_PrivacyHint" xml:space="preserve"><value>Estas acciones son independientes: cerrar sesión, desactivar la sincronización, borrar datos locales y borrar datos en la nube.</value></data>
-  <data name="Settings_DisableSync" xml:space="preserve"><value>Desactivar la sincronización</value></data>
-  <data name="Settings_DeletePhotos" xml:space="preserve"><value>Eliminar las fotografías</value></data>
-  <data name="Settings_DeleteLocal" xml:space="preserve"><value>Eliminar los datos locales</value></data>
-  <data name="Settings_DeleteCloud" xml:space="preserve"><value>Eliminar los datos en la nube</value></data>
+  <data name="Settings_PrivacyAndBackup" xml:space="preserve"><value>Privacidad y copia de seguridad</value></data>
+  <data name="Settings_PrivacyHint" xml:space="preserve"><value>Desde esta página nunca se elimina nada. Exportar escribe una copia de seguridad o un informe PDF, restaurar combina una copia con este dispositivo y la comprobación de integridad solo lee la base de datos.</value></data>
   <data name="Settings_About" xml:space="preserve"><value>Acerca de</value></data>
   <data name="Settings_SyncNow" xml:space="preserve"><value>Sincronizar ahora</value></data>
   <data name="Settings_StorageUsage" xml:space="preserve"><value>Fotografías almacenadas: {0:0.##} MB</value></data>
@@ -117,24 +117,31 @@
   <data name="Settings_RestoreDone" xml:space="preserve"><value>Restauración finalizada: {0} comidas y {1} fotografías.</value></data>
   <data name="Settings_IntegrityOk" xml:space="preserve"><value>La comprobación de integridad no encontró problemas.</value></data>
   <data name="Settings_IntegrityIssues" xml:space="preserve"><value>{0} problema(s) de integridad: {1}</value></data>
-  <data name="Account_Title" xml:space="preserve"><value>Cuenta y sincronización</value></data>
   <data name="Account_GuestInfo" xml:space="preserve"><value>Estás usando Diet Tracker sin cuenta</value></data>
-  <data name="Account_Current" xml:space="preserve"><value>Cuenta conectada</value></data>
-  <data name="Account_SignIn" xml:space="preserve"><value>Iniciar sesión</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Iniciar sesión con Google</value></data>
   <data name="Account_SignOut" xml:space="preserve"><value>Cerrar sesión</value></data>
-  <data name="Account_Sync" xml:space="preserve"><value>Sincronización</value></data>
+  <data name="Account_SignOutTitle" xml:space="preserve"><value>¿Cerrar sesión?</value></data>
+  <data name="Account_SignOutMessage" xml:space="preserve"><value>Primero se sube lo que está pendiente. Después se eliminan de este dispositivo todas las comidas, fotografías y plantillas; los datos permanecen en la cuenta en la nube.</value></data>
+  <data name="Account_SignOutPendingTitle" xml:space="preserve"><value>No se pudieron subir los cambios</value></data>
+  <data name="Account_SignOutPendingMessage" xml:space="preserve"><value>Diet Tracker elimina los datos locales al cerrar la sesión, porque tu cuenta en la nube es la única copia.</value></data>
+  <data name="Account_SignOutPendingDetail" xml:space="preserve"><value>{0} cambio(s) siguen esperando a la nube. ¿Cerrar la sesión y eliminarlos de todos modos?</value></data>
+  <data name="Account_SignOutPendingKept" xml:space="preserve"><value>Cierre de sesión cancelado. No se eliminó nada y los cambios permanecen en este dispositivo.</value></data>
+  <data name="Account_SignOutDiscarded" xml:space="preserve"><value>Sesión cerrada. Los cambios que no se pudieron subir se eliminaron junto con los datos locales.</value></data>
+  <data name="Account_SignInPendingChanges" xml:space="preserve"><value>{0} cambio(s) aún no se han podido subir. Conéctate y sincroniza antes de iniciar sesión con otra cuenta.</value></data>
+  <data name="Account_CloudDataLoaded" xml:space="preserve"><value>{0} registro(s) sincronizados. Los datos de esta cuenta ya están en el dispositivo.</value></data>
+  <data name="Account_CloudDataPending" xml:space="preserve"><value>Sesión iniciada, pero los datos aún no se han podido cargar. Usa "Sincronizar ahora" cuando tengas conexión.</value></data>
   <data name="Account_Preview" xml:space="preserve"><value>¿Qué hay en la nube?</value></data>
   <data name="Account_Restore" xml:space="preserve"><value>Restaurar desde la nube</value></data>
-  <data name="Account_Consent" xml:space="preserve"><value>Subir mis comidas y fotografías</value></data>
+  <data name="Account_CloudSaveHint" xml:space="preserve"><value>Cuando inicias sesión, las comidas y las fotografías se guardan automáticamente en tu cuenta. No hay ningún interruptor para desactivarlo.</value></data>
   <data name="Account_ConsentText" xml:space="preserve"><value>Se suben las comidas, las notas, el estado de confirmación, las plantillas, las preferencias y las fotografías. Se aplican los límites de espacio de la cuenta elegida.</value></data>
   <data name="Account_ConsentRequired" xml:space="preserve"><value>Se requiere consentimiento explícito antes de la primera subida.</value></data>
-  <data name="Account_PrivacySummary" xml:space="preserve"><value>Diet Tracker mantiene los datos en local. La sincronización escribe directamente en la carpeta de la aplicación de tu propia cuenta.</value></data>
+  <data name="Account_PrivacySummary" xml:space="preserve"><value>Tus datos viven en la carpeta de la aplicación de tu propia cuenta en la nube. Este dispositivo solo guarda una copia de trabajo mientras la sesión está iniciada; se sube y se elimina al cerrar la sesión.</value></data>
   <data name="Account_ProviderNone" xml:space="preserve"><value>Sin cuenta (modo invitado)</value></data>
   <data name="Account_ProviderGoogle" xml:space="preserve"><value>Google Drive</value></data>
   <data name="Account_GuestDescription" xml:space="preserve"><value>Todas las funciones esenciales funcionan sin conexión y sin cuenta.</value></data>
+  <data name="Account_NoEmail" xml:space="preserve"><value>Sin sesión iniciada</value></data>
   <data name="Account_SignedIn" xml:space="preserve"><value>Sesión iniciada correctamente.</value></data>
-  <data name="Account_SignedOut" xml:space="preserve"><value>Sesión cerrada. Tus comidas y fotografías locales se han conservado.</value></data>
+  <data name="Account_SignedOut" xml:space="preserve"><value>Sesión cerrada. Todo se subió y los datos locales se eliminaron.</value></data>
   <data name="Account_Quota" xml:space="preserve"><value>Espacio en la nube disponible: {0:0.#} GB</value></data>
   <data name="Account_SyncResult" xml:space="preserve"><value>Sincronización finalizada: {0} subidos, {1} descargados.</value></data>
   <data name="Account_NoCloudData" xml:space="preserve"><value>No se encontraron datos de Diet Tracker en la cuenta conectada.</value></data>
@@ -142,7 +149,16 @@
   <data name="Account_RestoreTitle" xml:space="preserve"><value>¿Restaurar desde la nube?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Los datos locales no se eliminan. Solo se añaden o actualizan los registros que existen en la nube.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restauración finalizada: {0} registro(s).</value></data>
-  <data name="Account_Environment" xml:space="preserve"><value>Entorno</value></data>
+  <data name="Busy_Synchronizing" xml:space="preserve"><value>Sincronizando tus datos…</value></data>
+  <data name="Busy_UploadingChanges" xml:space="preserve"><value>Subiendo tus cambios…</value></data>
+  <data name="Busy_SigningOut" xml:space="preserve"><value>Cerrando la sesión y eliminando los datos locales…</value></data>
+  <data name="Busy_WaitingForBrowser" xml:space="preserve"><value>Esperando al navegador…</value></data>
+  <data name="Busy_Downloading" xml:space="preserve"><value>Descargando los datos de tu cuenta…</value></data>
+  <data name="Busy_LoadingAccount" xml:space="preserve"><value>Preparando este dispositivo para tu cuenta…</value></data>
+  <data name="Busy_Restoring" xml:space="preserve"><value>Restaurando desde la nube…</value></data>
+  <data name="Busy_DeletingCloudData" xml:space="preserve"><value>Eliminando los datos de la nube…</value></data>
+  <data name="Busy_Hint" xml:space="preserve"><value>Espera un momento, esto puede tardar unos segundos.</value></data>
+  <data name="Busy_CloseBlocked" xml:space="preserve"><value>Diet Tracker está terminando esta operación. La ventana se cerrará en cuanto termine.</value></data>
   <data name="Onboarding_Title" xml:space="preserve"><value>Te damos la bienvenida a Diet Tracker</value></data>
   <data name="Onboarding_Description" xml:space="preserve"><value>Planifica cinco comidas al día, confirma lo que has comido y conserva el historial. Iniciar sesión permite sincronizar de forma segura y recuperar los datos tras reinstalar o en otro equipo.</value></data>
   <data name="Onboarding_ChooseProvider" xml:space="preserve"><value>Elige cómo guardar tus datos</value></data>
@@ -159,12 +175,12 @@
   <data name="Sync_BalloonTitle" xml:space="preserve"><value>Diet Tracker sincronizado</value></data>
   <data name="Sync_BalloonDetail" xml:space="preserve"><value>{0} subidos, {1} descargados.</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Error de sincronización</value></data>
-  <data name="Sync_Paused" xml:space="preserve"><value>Sincronización en pausa</value></data>
+  <data name="Sync_Paused" xml:space="preserve"><value>La sincronización está desactivada</value></data>
   <data name="Sync_LastSuccess" xml:space="preserve"><value>Última sincronización correcta: {0}</value></data>
   <data name="Sync_Never" xml:space="preserve"><value>Aún no se ha sincronizado</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Sincronización</value></data>
   <data name="Settings_SyncFrequency" xml:space="preserve"><value>Sincronización automática</value></data>
-  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Los cambios se guardan en este dispositivo al instante y se suben cuando toque según el programado de arriba, o cuando pulse Sincronizar ahora.</value></data>
+  <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Las comidas y las fotografías se suben en cuanto se guardan; el programa de arriba solo decide cada cuánto comprueba la aplicación los cambios hechos en otros dispositivos.</value></data>
   <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Cada semana</value></data>
   <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Cada mes</value></data>
   <data name="Sync_FrequencyManual" xml:space="preserve"><value>Solo con el botón de abajo</value></data>
@@ -192,18 +208,12 @@
   <data name="Auth_sync_quota_exceeded" xml:space="preserve"><value>El espacio de almacenamiento en la nube está lleno.</value></data>
   <data name="Auth_sync_restore_failed" xml:space="preserve"><value>La restauración falló; tus datos locales están intactos.</value></data>
   <data name="Auth_sync_failed" xml:space="preserve"><value>La sincronización falló; se volverá a intentar.</value></data>
-  <data name="Privacy_DeleteLocalTitle" xml:space="preserve"><value>¿Eliminar los datos locales?</value></data>
-  <data name="Privacy_DeleteLocalMessage" xml:space="preserve"><value>Se eliminan las comidas, plantillas, recordatorios y fotografías de este dispositivo. Los datos en la nube no se tocan y antes se crea una copia de seguridad.</value></data>
-  <data name="Privacy_DeleteLocalDone" xml:space="preserve"><value>Los datos locales se han eliminado.</value></data>
-  <data name="Privacy_DeleteCloudTitle" xml:space="preserve"><value>¿Eliminar los datos en la nube?</value></data>
-  <data name="Privacy_DeleteCloudMessage" xml:space="preserve"><value>Se eliminan los archivos de Diet Tracker de la cuenta conectada. Los datos locales permanecen en este dispositivo.</value></data>
-  <data name="Privacy_DeleteCloudDone" xml:space="preserve"><value>Se eliminaron {0} objeto(s) de la nube.</value></data>
-  <data name="Privacy_DeletePhotosTitle" xml:space="preserve"><value>¿Eliminar las fotografías?</value></data>
-  <data name="Privacy_DeletePhotosMessage" xml:space="preserve"><value>Se eliminan los archivos de imagen locales; los registros de las comidas permanecen.</value></data>
-  <data name="Privacy_DeletePhotosDone" xml:space="preserve"><value>Se eliminaron {0} archivo(s).</value></data>
-  <data name="Privacy_DisableSyncTitle" xml:space="preserve"><value>¿Desactivar la sincronización?</value></data>
-  <data name="Privacy_DisableSyncMessage" xml:space="preserve"><value>La autorización se conserva, pero no se sube ni se descarga nada. Los archivos ya presentes en la nube no se eliminan.</value></data>
-  <data name="Privacy_DisableSyncDone" xml:space="preserve"><value>La sincronización se ha desactivado.</value></data>
+  <data name="Report_Title" xml:space="preserve"><value>Diet Tracker: informe de comidas</value></data>
+  <data name="Report_Period" xml:space="preserve"><value>Período: {0} - {1}</value></data>
+  <data name="Report_Generated" xml:space="preserve"><value>Generado el {0}</value></data>
+  <data name="Report_Summary" xml:space="preserve"><value>{0} comidas registradas: {1} hechas, {2} omitidas, {3} pendientes</value></data>
+  <data name="Report_Empty" xml:space="preserve"><value>No se registró ninguna comida en este período.</value></data>
+  <data name="Report_Page" xml:space="preserve"><value>Página {0} de {1}</value></data>
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>El título es demasiado largo.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>La categoría no es una de las cinco permanentes.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Solo se admiten imágenes JPEG, PNG y WEBP.</value></data>

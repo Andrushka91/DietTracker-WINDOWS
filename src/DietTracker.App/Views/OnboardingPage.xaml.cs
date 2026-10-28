@@ -6,7 +6,7 @@ namespace DietTracker.App.Views;
 
 /// <summary>
 /// First-launch welcome screen. Signing in is optional: every essential feature works in Guest Mode,
-/// and the screen can always be reached again from the account page.
+/// and the account can always be connected again from the settings page.
 /// </summary>
 public sealed partial class OnboardingPage : Page
 {

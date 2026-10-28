@@ -44,11 +44,27 @@ public interface ISyncEngine
     /// <summary>Debounced request used after local changes (never blocks the caller).</summary>
     void RequestSync(SyncTrigger trigger);
 
+    /// <summary>
+    /// Re-reads the connected account and reports the state that follows from it - no account,
+    /// synchronization switched off, pending changes or the outcome of the previous cycle - without
+    /// contacting the provider. Used at start-up, so a screen never claims that no account is
+    /// connected while the user is signed in.
+    /// </summary>
+    Task<SyncState> RefreshStateAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Inspects the cloud account and reports what a restore would bring in.</summary>
     Task<RestorePreview?> PreviewRestoreAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Downloads and applies cloud data to this device.</summary>
     Task<SyncResult> RestoreAsync(IProgress<RestoreProgress>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Downloads the whole dataset of the connected account and applies every document, including the
+    /// ones this installation uploaded itself. Used when the local cache was emptied on purpose (an
+    /// account change): the regular pull skips its own uploads as "echo", which would leave a rebuilt
+    /// cache empty.
+    /// </summary>
+    Task<SyncResult> RebuildFromCloudAsync(IProgress<RestoreProgress>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>Uploads every local record, ignoring cursors (used after switching providers).</summary>
     Task<SyncResult> PushAllAsync(IProgress<RestoreProgress>? progress = null, CancellationToken cancellationToken = default);

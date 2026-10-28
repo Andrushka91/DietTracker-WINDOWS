@@ -27,6 +27,9 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
     /// <summary>Number of uploads performed (used to prove that identical content is not uploaded twice).</summary>
     public int UploadCount => _uploadedPaths.Count;
 
+    /// <summary>Paths of the uploads in the order they happened (used to prove the upload ordering).</summary>
+    public IReadOnlyList<string> UploadedPaths => _uploadedPaths;
+
     public IReadOnlyCollection<string> Paths => _objects.Keys;
 
     public int ObjectCount => _objects.Count;

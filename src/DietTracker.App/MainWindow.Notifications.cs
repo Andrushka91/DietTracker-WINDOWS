@@ -102,6 +102,7 @@ public sealed partial class MainWindow
         {
             SyncState.Syncing => (InfoBarSeverity.Informational, _localization.Get("Sync_Syncing")),
             SyncState.PendingChanges => (InfoBarSeverity.Informational, _localization.Get("Sync_PendingChanges")),
+            SyncState.Paused => (InfoBarSeverity.Informational, _localization.Get("Sync_Paused")),
             SyncState.Offline => (InfoBarSeverity.Warning, _localization.Get("Sync_Offline")),
             SyncState.AuthenticationRequired => (InfoBarSeverity.Warning, _localization.Get("Sync_AuthenticationRequired")),
             SyncState.Error => (InfoBarSeverity.Error, _localization.Get("Sync_Error")),

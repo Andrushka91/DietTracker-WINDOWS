@@ -19,8 +19,8 @@ public sealed class AppPreferences
     /// <summary>Start Diet Tracker when the user signs in to Windows.</summary>
     public bool StartWithWindows { get; set; }
 
-    /// <summary>Keep running in the notification area when the window is closed.</summary>
-    public bool MinimizeToTray { get; set; } = true;
+    /// <summary>Keep running in the notification area when the window is closed (off by default).</summary>
+    public bool MinimizeToTray { get; set; }
 
     /// <summary>Master switch for reminders.</summary>
     public bool RemindersEnabled { get; set; } = true;

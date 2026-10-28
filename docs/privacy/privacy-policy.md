@@ -4,10 +4,11 @@
 
 ## Summary
 
-Diet Tracker stores your meal plan, your completion history and your photographs **on your own device**.
-If you choose to sign in with a Google account, the same data is copied to a private
-application folder inside **your own** cloud storage. There is no Diet Tracker server: the application
-never sends your data to the vendor.
+Diet Tracker keeps your meal plan, your completion history and your photographs in a private
+application folder inside **your own** cloud storage when you sign in. While you are signed in, the
+device holds a working copy so the interface works offline; signing out uploads what is still pending
+and then deletes that copy. There is no Diet Tracker server: the application never sends your data to
+the vendor.
 
 ## 1. Who processes your data
 
@@ -19,7 +20,7 @@ Contact for privacy questions and data deletion requests: `privacy@diettracker.e
 
 ## 2. Which information is processed
 
-**Stored locally (always):**
+**Stored locally (working copy while an account is signed in):**
 
 * meal plan content: titles, descriptions and planned times;
 * completion state and completion timestamps (DONE / PENDING);
@@ -47,12 +48,14 @@ application folder.
 | Completion state and timestamps | yes | yes |
 | Photographs and thumbnails | yes | yes (original images; thumbnails are regenerated locally) |
 | Reminder settings and card colours | yes | yes |
-| Application preferences | yes | partially (language, time zone, reminder toggles) |
+| Application preferences | yes | partially (time zone, reminder toggles) |
 | Access/refresh tokens | DPAPI protected, per Windows user | never |
 | Device identifier (random GUID) | yes | yes (used to detect echoes of your own uploads) |
 
 Uploads only happen after you explicitly enable synchronization and accept the consent switch that is
-shown before the first upload.
+shown before the first upload. "Local" means the working copy described above: it is deleted when you
+sign out, after the pending changes were uploaded. Records created before a first sign-in are the only
+exception - they are uploaded to the account instead of being deleted.
 
 ## 4. Where the data is stored in the cloud
 
@@ -64,9 +67,12 @@ privacy policy in addition to this document.
 
 ## 5. Purpose of synchronization
 
-Synchronization lets you keep one meal plan across several Windows PCs and restore your records after
-reinstalling the application or moving to another computer. It is optional: every feature except
-cross-device synchronization works in Guest Mode.
+Synchronization keeps your data in your own cloud account and lets you use it on several Windows PCs
+or after reinstalling the application. The account is the copy that persists: this device holds a
+working copy while you are signed in. Signing in downloads the account's data; signing out uploads
+what is still pending and then deletes every meal, photograph and template from the device, so a
+second account can never see the first one's records. Without an account the application still works
+offline; records created before the first sign-in are uploaded to (adopted by) that account.
 
 ## 6. Encryption
 
@@ -79,25 +85,30 @@ cross-device synchronization works in Guest Mode.
 
 ## 7. Your controls
 
-In **Settings -> Privacy** and **Account and sync** you can, independently of each other:
+In **Settings** you can:
 
-* **Sign out** - removes the credentials from this device; your meals and photographs stay.
-* **Disable synchronization** - keeps the authorization but stops uploading and downloading. Files
-  already in the cloud are **not** deleted.
-* **Disconnect the account** - forgets the authorization for an account.
-* **Delete local data** - removes meals, templates, reminders and photographs from this device; a safety
-  copy is created first and the cloud data is untouched.
-* **Delete photographs** - removes only the local image files.
-* **Delete cloud data** - deletes the Diet Tracker files in the connected account (requires a separate
-  confirmation).
-* **Export data / create local backup** - writes a `.dtbackup` archive (JSON plus photographs) that you
-  can keep anywhere.
+* **Sign out** - uploads changes that are still pending, removes the credentials and deletes the local
+  working copy (meals, photographs, templates, reminders and the synchronization journal). If changes
+  cannot be uploaded, the operation is refused so nothing is lost; you can still sign out explicitly
+  and discard them.
+* **Export data** - writes either a `.dtbackup` archive (JSON plus photographs) that you can keep
+  anywhere and restore later, or a printable PDF report of the stored meals.
+* **Restore backup** and **check integrity** - merge a `.dtbackup` archive into the device and verify
+  the database; neither of them deletes anything.
+
+The destructive operations (deleting the local data, deleting the photographs, deleting the cloud copy
+and turning synchronization off while keeping the authorization) are not offered as buttons on the
+Settings page any more. The local working copy is still deleted by **Sign out**, the application data
+folder can be removed at any time with the usual Windows tools (or by uninstalling the application),
+and the Diet Tracker folder of the connected account can be removed in the provider's own interface.
 
 ## 8. Retention
 
-Data is retained until you delete it. Local data lives until you delete it, uninstall the application
-(packaged installs remove the application's local data folder) or restore a backup over it. Cloud data
-lives until you delete it in Diet Tracker or in the provider's own interface.
+Data is retained until you delete it. The working copy on the device lives while an account is signed
+in: signing out deletes it (after uploading the pending changes), and a cache that survives a crash is
+deleted at the next start. Uninstalling the application (packaged installs remove the application's
+local data folder) or restoring a backup over it also removes it. Cloud data lives until you delete it
+in Diet Tracker or in the provider's own interface.
 
 ## 9. Children
 

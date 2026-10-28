@@ -11,7 +11,10 @@
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
-    <DefaultLanguage>ro-RO</DefaultLanguage>
+    <!-- English is the only interface language. The other resource files stay in the repository so the
+         strings of a future translation are already collected, but they are never selected at runtime
+         (see App.SupportedLanguage). -->
+    <DefaultLanguage>en-US</DefaultLanguage>
     <ApplicationTitle>Diet Tracker</ApplicationTitle>
     <!-- FileDescription in the executable's version info (Task Manager, file properties) comes from
          AssemblyTitle; without it Windows shows the technical assembly name "DietTracker". -->
