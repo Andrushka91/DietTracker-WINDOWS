@@ -12,7 +12,9 @@
              (see UpdateContentHeight in the code-behind) stretch the panels down to the bottom of
              the window. -->
         <Style x:Key="SettingsCardStyle" TargetType="Border" BasedOn="{StaticResource ProgressCardStyle}">
-            <Setter Property="Padding" Value="24,20" />
+            <!-- Uniform on all four sides: the right-aligned action rows then sit on exactly the
+                 same padding as the last row at the bottom of every card. -->
+            <Setter Property="Padding" Value="24" />
         </Style>
         <Style x:Key="SettingsSectionHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource SectionHeaderStyle}">
             <Setter Property="FontSize" Value="18" />
@@ -92,15 +94,25 @@
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Account" Text="Account" />
 
-                        <!-- The free space under the title carries a large user glyph, so the panel
-                             uses the height it has instead of showing an empty gap. -->
-                        <FontIcon
+                        <!-- The free space under the title carries the framed user glyph, pinned to the
+                             left so the tile lines up with the text below it. -->
+                        <Border
                             Grid.Row="1"
-                            Glyph="&#xE77B;"
-                            FontSize="96"
-                            HorizontalAlignment="Center"
+                            Width="120"
+                            Height="120"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{StaticResource SubtleTextBrush}" />
+                            Background="{StaticResource GalleryFillBrush}"
+                            BorderBrush="{StaticResource GalleryBorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{StaticResource CardCornerRadius}">
+                            <FontIcon
+                                Glyph="&#xE77B;"
+                                FontSize="64"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource SubtleTextBrush}" />
+                        </Border>
 
                         <Grid Grid.Row="2">
                             <Grid.RowDefinitions>
@@ -211,13 +223,14 @@
                 </Border>
 
                 <!-- Row 1 left: everything the engine really reports, pushed to the bottom of the
-                     panel. A large sync glyph fills the space under the title; below it the state
+                     panel. A framed sync glyph sits on the left under the title; below it the state
                      line, the schedule, the hint and the confirmation follow in one contiguous
-                     block (14 px apart) and the actions close the card on the bottom padding,
-                     right-aligned so "Synchronize now" ends at the right edge. The ring appears
-                     only while a cycle runs, so it never pushes the buttons off the right side.
-                     Buttons wrap through UniformWrapPanel, so a narrow window moves "Restore from
-                     the cloud" to a second line. -->
+                     block (14 px apart) and the actions close the card on the right padding,
+                     right-aligned so "Synchronize now" ends exactly where the card's bottom row
+                     ends, measured from the right edge. The ring appears only while a cycle runs,
+                     so it never pushes the buttons off that edge. Buttons wrap through
+                     UniformWrapPanel, so a narrow window moves "Restore from the cloud" to a
+                     second line. -->
                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -232,13 +245,23 @@
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Sync" Text="Synchronization" />
 
-                        <FontIcon
+                        <Border
                             Grid.Row="1"
-                            Glyph="&#xE72C;"
-                            FontSize="96"
-                            HorizontalAlignment="Center"
+                            Width="120"
+                            Height="120"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{StaticResource SubtleTextBrush}" />
+                            Background="{StaticResource GalleryFillBrush}"
+                            BorderBrush="{StaticResource GalleryBorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{StaticResource CardCornerRadius}">
+                            <FontIcon
+                                Glyph="&#xE72C;"
+                                FontSize="64"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource SubtleTextBrush}" />
+                        </Border>
 
                         <Grid Grid.Row="2" Margin="0,14,0,0" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
@@ -278,56 +301,46 @@
                             Text="{x:Bind ViewModel.SyncStatusMessage, Mode=OneWay}"
                             Visibility="{x:Bind ViewModel.SyncStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
 
-                        <!-- A Grid (not a horizontal StackPanel) gives the wrap panel the real width it may
-                             fill; the panel itself is right-aligned so the actions end at the right
-                             edge of the card, and the ring only takes its column while a cycle
-                             runs. -->
-                        <Grid Grid.Row="6" Margin="0,14,0,0" ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <controls:UniformWrapPanel
-                                Grid.Column="0"
-                                HorizontalAlignment="Right"
-                                UniformHeight="False"
-                                MinItemWidth="150"
-                                HorizontalSpacing="8"
-                                VerticalSpacing="8">
-                                <Button
-                                    x:Uid="Settings_SyncNow"
-                                    Content="Synchronize now"
-                                    FontSize="15"
-                                    Command="{x:Bind ViewModel.SyncNowCommand}"
-                                    IsEnabled="{x:Bind ViewModel.IsSignedIn, Mode=OneWay}" />
-                                <Button
-                                    x:Uid="Account_Preview"
-                                    Content="What is in the cloud?"
-                                    FontSize="15"
-                                    Command="{x:Bind ViewModel.PreviewRestoreCommand}"
-                                    Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
-                                <Button
-                                    x:Uid="Account_Restore"
-                                    Content="Restore from the cloud"
-                                    FontSize="15"
-                                    Command="{x:Bind ViewModel.RestoreCommand}"
-                                    Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
-                            </controls:UniformWrapPanel>
-                            <ProgressRing
-                                Grid.Column="1"
-                                IsActive="{x:Bind ViewModel.IsSyncBusy, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.IsSyncBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
-                                Width="20"
-                                Height="20"
-                                VerticalAlignment="Center" />
-                        </Grid>
+                        <!-- A wrap panel (not a horizontal StackPanel) keeps the row wrappable on narrow
+                             windows; being right-aligned it ends exactly on the card's right padding,
+                             the same value as the bottom rows. The busy state needs no spinner here:
+                             every cycle opens the full-window overlay (Busy_Synchronizing /
+                             Busy_Restoring) with its own ring, message and closing block, so
+                             nothing can push these buttons off the edge. -->
+                        <controls:UniformWrapPanel
+                            Grid.Row="6"
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Right"
+                            UniformHeight="False"
+                            MinItemWidth="150"
+                            HorizontalSpacing="8"
+                            VerticalSpacing="8">
+                            <Button
+                                x:Uid="Settings_SyncNow"
+                                Content="Synchronize now"
+                                FontSize="15"
+                                Command="{x:Bind ViewModel.SyncNowCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsSignedIn, Mode=OneWay}" />
+                            <Button
+                                x:Uid="Account_Preview"
+                                Content="What is in the cloud?"
+                                FontSize="15"
+                                Command="{x:Bind ViewModel.PreviewRestoreCommand}"
+                                Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
+                            <Button
+                                x:Uid="Account_Restore"
+                                Content="Restore from the cloud"
+                                FontSize="15"
+                                Command="{x:Bind ViewModel.RestoreCommand}"
+                                Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
+                        </controls:UniformWrapPanel>
                     </Grid>
                 </Border>
 
                 <!-- Row 1 right: privacy and backup in one card with everything pushed to the bottom:
-                     a large shield glyph fills the space under the title, the explanatory texts
+                     a framed lock glyph sits on the left under the title, the explanatory texts
                      and the confirmation form the bottom block (directly above the actions) and
-                     the three buttons close the card on the padding, right-aligned. The three
+                     the three buttons close the card on the right padding, right-aligned. The three
                      actions are the three that never remove anything: export (backup archive or
                      PDF report), restore a backup and verify the database. The destructive
                      buttons are gone on purpose. -->
@@ -343,13 +356,23 @@
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_PrivacyAndBackup" Text="Privacy and backup" />
 
-                        <FontIcon
+                        <Border
                             Grid.Row="1"
-                            Glyph="&#xE72E;"
-                            FontSize="96"
-                            HorizontalAlignment="Center"
+                            Width="120"
+                            Height="120"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{StaticResource SubtleTextBrush}" />
+                            Background="{StaticResource GalleryFillBrush}"
+                            BorderBrush="{StaticResource GalleryBorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{StaticResource CardCornerRadius}">
+                            <FontIcon
+                                Glyph="&#xE72E;"
+                                FontSize="64"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource SubtleTextBrush}" />
+                        </Border>
 
                         <StackPanel Grid.Row="2" Margin="0,14,0,0" Spacing="14">
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" x:Uid="Settings_PrivacyHint" Text="Your data stays on this device unless you are signed in. Export writes a backup archive or a printable PDF report; restoring merges a backup; the integrity check only reads the database." />
