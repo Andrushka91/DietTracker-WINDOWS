@@ -75,33 +75,37 @@
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
 
-                <!-- Row 0 left: the connected account - e-mail, provider, remaining cloud space,
-                     sign-in state and what the account stores. The identity sits at the top of the
-                     panel and the sign-in button stays together with the three texts that explain
-                     what an account keeps, the whole group pushed against the bottom edge by the
-                     star row in between. -->
+                <!-- Row 0 left: the connected account. The title stays on top and everything else forms
+                     one contiguous block at the bottom: provider/quota line, identity, sign-in
+                     button and the texts that explain what an account keeps - each 14 px below the
+                     previous element, so "Not signed in" sits right above the button and the button
+                     right above its texts. Auto rows with per-element margins keep that rhythm even
+                     when a line collapses (the confirmation is empty), and the star row above pushes
+                     the whole block onto the bottom padding of the card. -->
                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" MinHeight="14" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Spacing="14">
-                            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Account" Text="Account" />
+                        <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Account" Text="Account" />
 
-                            <TextBlock
-                                Text="{x:Bind ViewModel.AccountEmailText, Mode=OneWay}"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                TextWrapping="Wrap"
-                                IsTextSelectionEnabled="True" />
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
                             <!-- Provider and remaining cloud space share one line: two short facts do not
                                  need two rows on a card this wide. A Grid (not a horizontal StackPanel)
                                  lets the provider caption wrap when the window is narrow. -->
-                            <Grid ColumnSpacing="12">
+                            <Grid Grid.Row="0" ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -109,13 +113,17 @@
                                 <TextBlock Grid.Column="0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.AccountDetailText, Mode=OneWay}" />
                                 <TextBlock Grid.Column="1" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.QuotaText, Mode=OneWay}" />
                             </Grid>
-                        </StackPanel>
 
-                        <!-- The bottom group: whatever height the row of the grid reaches, sign-in
-                             (or sign-out), the status line and the two consent texts end together on
-                             the bottom edge of the panel. -->
-                        <StackPanel Grid.Row="2" Spacing="14">
-                            <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,14,0,0"
+                                Text="{x:Bind ViewModel.AccountEmailText, Mode=OneWay}"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap"
+                                IsTextSelectionEnabled="True" />
+
+                            <StackPanel Grid.Row="2" Margin="0,14,0,0" Orientation="Horizontal" Spacing="12">
                                 <Button
                                     x:Uid="Account_Google"
                                     Content="Sign in with Google"
@@ -134,13 +142,19 @@
                                 <ProgressRing IsActive="{x:Bind ViewModel.IsAccountBusy, Mode=OneWay}" Width="20" Height="20" VerticalAlignment="Center" />
                             </StackPanel>
 
-                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.AccountStatusMessage, Mode=OneWay}" />
+                            <!-- Collapsed while empty, so the button keeps touching its texts. -->
+                            <TextBlock
+                                Grid.Row="3"
+                                Margin="0,14,0,0"
+                                Style="{StaticResource SettingsCaptionStyle}"
+                                Text="{x:Bind ViewModel.AccountStatusMessage, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.AccountStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
 
                             <!-- There is no "upload my meals" switch any more: signing in is the consent,
                                  and these two captions say exactly what the account keeps. -->
-                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.CloudSaveText}" />
-                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.ConsentText}" />
-                        </StackPanel>
+                            <TextBlock Grid.Row="4" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.CloudSaveText}" />
+                            <TextBlock Grid.Row="5" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.ConsentText}" />
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -187,18 +201,15 @@
                 </Border>
 
                 <!-- Row 1 left: what the engine really reports, the schedule, a manual cycle and the
-                     two restore actions. Starred gaps separate every block, so the card spreads
-                     vertically instead of packing its content, and the action row (with the
-                     confirmation right below it) ends on the same bottom padding as the account
-                     card. Buttons wrap through UniformWrapPanel, so a narrow window moves "Restore
-                     from the cloud" to a second line instead of clipping it. -->
+                     two restore actions. The title stays on top, the state line, the schedule and
+                     the hint form one contiguous block (each 14 px below the previous element, so
+                     "No account connected" sits close to the combo box and the combo box right
+                     above the text) and the two star rows spread the card over its height while the
+                     action row ends on the bottom padding. Buttons wrap through UniformWrapPanel,
+                     so a narrow window moves "Restore from the cloud" to a second line. -->
                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="14" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="14" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" MinHeight="14" />
                             <RowDefinition Height="Auto" />
@@ -209,36 +220,36 @@
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Sync" Text="Synchronization" />
 
-                        <Grid Grid.Row="2" ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SyncStateText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="1" Style="{StaticResource SettingsCaptionStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" />
-                        </Grid>
+                        <StackPanel Grid.Row="2" Spacing="14">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SyncStateText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Style="{StaticResource SettingsCaptionStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" />
+                            </Grid>
 
-                        <!-- How often the cloud is contacted on its own; the journal is kept in any
-                             case, so an edit is never at risk while it waits for the schedule. -->
-                        <ComboBox
-                            Grid.Row="4"
-                            x:Uid="Settings_SyncFrequency"
-                            Header="Automatic synchronization"
-                            HeaderTemplate="{StaticResource SettingsHeaderTemplate}"
-                            FontSize="16"
-                            ItemsSource="{x:Bind ViewModel.SyncFrequencyOptions}"
-                            DisplayMemberPath="DisplayName"
-                            SelectedValuePath="Tag"
-                            SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
-                        <TextBlock
-                            Grid.Row="6"
-                            Style="{StaticResource SettingsCaptionStyle}"
-                            x:Uid="Settings_SyncFrequencyHint"
-                            Text="Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices." />
+                            <!-- How often the cloud is contacted on its own; the journal is kept in any
+                                 case, so an edit is never at risk while it waits for the schedule. -->
+                            <ComboBox
+                                x:Uid="Settings_SyncFrequency"
+                                Header="Automatic synchronization"
+                                HeaderTemplate="{StaticResource SettingsHeaderTemplate}"
+                                FontSize="16"
+                                ItemsSource="{x:Bind ViewModel.SyncFrequencyOptions}"
+                                DisplayMemberPath="DisplayName"
+                                SelectedValuePath="Tag"
+                                SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
+                            <TextBlock
+                                Style="{StaticResource SettingsCaptionStyle}"
+                                x:Uid="Settings_SyncFrequencyHint"
+                                Text="Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices." />
+                        </StackPanel>
 
                         <!-- A Grid (not a horizontal StackPanel) gives the wrap panel the real width it
                              may fill; the ring keeps its own column. -->
-                        <Grid Grid.Row="8" ColumnSpacing="8">
+                        <Grid Grid.Row="4" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -279,7 +290,7 @@
                         <!-- Collapsed while empty: the buttons are then the last visible row and sit
                              exactly on the card padding; a shown message takes that place instead. -->
                         <TextBlock
-                            Grid.Row="9"
+                            Grid.Row="5"
                             Margin="0,14,0,0"
                             Style="{StaticResource SettingsCaptionStyle}"
                             Text="{x:Bind ViewModel.SyncStatusMessage, Mode=OneWay}"
