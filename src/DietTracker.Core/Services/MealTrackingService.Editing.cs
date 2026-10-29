@@ -39,6 +39,42 @@ public sealed partial class MealTrackingService
     }
 
     /// <inheritdoc />
+    public async Task<MealEntry> ClearMealAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
+    {
+        var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
+
+        // Everything the card holds goes back to the empty placeholder of the permanent slot: the
+        // text, the planned time and the whole completion state. The slot row itself is never
+        // deleted, so the dashboard and the calendar keep their five permanent cards.
+        entry.Title = string.Empty;
+        entry.Ingredients = string.Empty;
+        entry.PlannedTime = null;
+        entry.Status = MealStatus.Pending;
+        entry.CompletedAt = null;
+        entry.Photos = [];
+
+        var validation = MealEntryValidator.Validate(entry, requireContent: false);
+        if (!validation.IsValid)
+        {
+            throw new ValidationException(validation);
+        }
+
+        await PersistAsync(entry, cancellationToken).ConfigureAwait(false);
+
+        // The photographs are wiped as well: the record first, then the local files, each step
+        // journaled so the deletion reaches the connected account at the next synchronization.
+        var photos = await _photos.GetForMealAsync(mealEntryId, cancellationToken).ConfigureAwait(false);
+        foreach (var photo in photos)
+        {
+            await _photos.DeleteAsync(photo.Id, cancellationToken).ConfigureAwait(false);
+            await _photoStore.DeleteFilesAsync(photo, cancellationToken).ConfigureAwait(false);
+            await _journal.RecordDeleteAsync(EntityType.MealPhoto, photo.Id, cancellationToken).ConfigureAwait(false);
+        }
+
+        return entry;
+    }
+
+    /// <inheritdoc />
     public async Task<MealEntry> MarkDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default)
     {
         var entry = await RequireEntryAsync(mealEntryId, cancellationToken).ConfigureAwait(false);

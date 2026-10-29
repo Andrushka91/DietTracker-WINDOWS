@@ -8,6 +8,7 @@
     <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
     <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
     <converters:StringToVisibilityConverter x:Key="StringToVisibility" />
+    <converters:StringToImageSourceConverter x:Key="StringToImageSource" />
     <converters:TimeOnlyConverter x:Key="TimeOnly" />
 
     <!-- Dimensions of the permanent cards: every meal card has the same height and is laid out by
@@ -28,7 +29,6 @@
     <x:Double x:Key="CardSpacing">16</x:Double>
 
     <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
-    <CornerRadius x:Key="PillCornerRadius">10</CornerRadius>
 
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource CardStrokeColorDefault}" />
@@ -83,7 +83,9 @@
     </Style>
 
     <Style x:Key="StatusPillStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="{StaticResource PillCornerRadius}" />
+        <!-- The status badge is no longer a full capsule: it is gently rounded with the same
+             feel as the card's own corners instead of the pill radius. -->
+        <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="8,2,10,2" />
         <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>

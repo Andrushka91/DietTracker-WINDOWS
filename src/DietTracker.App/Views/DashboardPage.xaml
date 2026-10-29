@@ -83,6 +83,17 @@
                             <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="#FFA4262C" />
                         </Button>
                         <Button x:Uid="Dashboard_SaveDayTemplate" Content="Save as template" Command="{x:Bind ViewModel.SaveDayTemplateCommand}" />
+                        <!-- Saves every card that is open in inline editing with one press, so the
+                             individual Save button of each card no longer has to be pressed one by
+                             one. Enabled only while at least one editor is open (CanSaveAll); each
+                             open card runs the same validation as its own Save button, so a card
+                             whose title or description is still empty keeps its editor open and
+                             shows the reason on its own error line while the others are written. -->
+                        <Button
+                            x:Uid="Dashboard_SaveAll"
+                            Content="Save all"
+                            IsEnabled="{x:Bind ViewModel.CanSaveAll, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.SaveAllCommand}" />
                         <TextBlock
                             Style="{StaticResource CaptionStyle}"
                             VerticalAlignment="Center"

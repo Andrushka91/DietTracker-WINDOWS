@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DietTracker.Core.Enums;
@@ -121,6 +122,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
             var meals = await _tracking.GetDayAsync(SelectedDate, cancellationToken);
             var progress = await _tracking.GetDayProgressAsync(SelectedDate, cancellationToken);
 
+            // The cards of the previous day are dropped with their listeners: the page follows the
+            // inline editors of the cards it currently shows (CanSaveAll), and a stale listener
+            // would raise that change for a card nobody can see any more.
+            foreach (var previous in Cards)
+            {
+                previous.PropertyChanged -= OnCardPropertyChanged;
+            }
+
             Cards.Clear();
             foreach (var category in categories.OrderBy(c => c.FixedCategoryKey))
             {
@@ -133,6 +142,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
                 var card = new MealCardViewModel(entry, category, this);
 
                 await AttachPhotosAsync(card, cancellationToken);
+                card.PropertyChanged += OnCardPropertyChanged;
                 Cards.Add(card);
             }
 
@@ -153,6 +163,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
             // The two day-wide buttons (mark all done / mark all missed) enable and disable with the cards.
             OnPropertyChanged(nameof(CanMarkAllDone));
             OnPropertyChanged(nameof(CanMarkAllMissed));
+
+            // A reloaded day never carries an open editor, so the "Save all" button settles with it.
+            OnPropertyChanged(nameof(CanSaveAll));
         }
     }
 

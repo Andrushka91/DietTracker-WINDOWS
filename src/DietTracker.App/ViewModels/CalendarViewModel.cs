@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Core.Models;
 using Microsoft.UI;
@@ -34,6 +35,33 @@ public sealed partial class CalendarDayViewModel : ObservableObject
     private static readonly Brush DoneFillBrush = new SolidColorBrush(ColorHelper.FromArgb(26, 16, 124, 16));
     private static readonly Brush MissedFillBrush = new SolidColorBrush(ColorHelper.FromArgb(26, 164, 38, 44));
     private static readonly Brush NeutralFillBrush = new SolidColorBrush(ColorHelper.FromArgb(18, 138, 136, 134));
+    // The pressed day: the accent colour as a strong wash, so the selection is obvious without
+    // hiding the state border of the cell.
+    private static readonly Brush SelectedFillBrush = new SolidColorBrush(ColorHelper.FromArgb(104, 15, 108, 189));
+    // Today is already the accent colour: a selected today deepens the fill instead, so the press
+    // still changes the background while the white day number stays readable.
+    private static readonly Brush SelectedTodayFillBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 9, 72, 124));
+
+    /// <summary>
+    /// Number of chip rows inside a day cell: two columns, three rows = the five permanent slots.
+    /// The grid always keeps all three rows (untouched slots render invisible), so every square has
+    /// exactly the same size and position no matter how many of them are filled.
+    /// </summary>
+    private const double ChipRows = 3d;
+
+    /// <summary>Gap between the chip rows (the VerticalSpacing of the chip panel): the same 4 px as
+    /// the horizontal spacing, so the vertical distance between two rows equals the distance
+    /// between the two columns.</summary>
+    private const double ChipGap = 4d;
+
+    /// <summary>Smallest row a chip may get before its row hides: below it the day number and the
+    /// title line no longer fit inside the square (the title alone needs its line plus the 3 px
+    /// padding on both sides).</summary>
+    private const double MinChipRow = 18d;
+
+    /// <summary>Space of the cell the chips cannot use: button padding and border (28) plus the row
+    /// of the day number (about 25), with one pixel of slack.</summary>
+    private const double CellChrome = 54d;
 
     /// <summary>
     /// The normal day number color, resolved from the active theme; the theme lookup is defensive
@@ -87,6 +115,11 @@ public sealed partial class CalendarDayViewModel : ObservableObject
     [ObservableProperty]
     private double _cellHeight = double.NaN;
 
+    /// <summary>Width of this cell (the column of the grid), set by the page together with
+    /// <see cref="CellHeight"/>. It decides how many chip columns fit into the square.</summary>
+    [ObservableProperty]
+    private double _cellWidth;
+
     [ObservableProperty]
     private int _completed;
 
@@ -104,14 +137,70 @@ public sealed partial class CalendarDayViewModel : ObservableObject
     [ObservableProperty]
     private int _missed;
 
+    /// <summary>True while this day is the selected day: the background takes the selection colour
+    /// (the border keeps the state, so a selected day still reads green, red or gray).</summary>
+    [ObservableProperty]
+    private bool _isSelected;
+
+    /// <summary>
+    /// The recorded meals of this day, rendered inside the cell as mini cards (at most five: one
+    /// per permanent slot). Filled by the page's view model whenever the month is rebuilt; the
+    /// collection instance never changes, so the cell's template binds to it once.
+    /// </summary>
+    public ObservableCollection<CalendarMealChipViewModel> Meals { get; } = [];
+
+    /// <summary>
+    /// True when the cell has room for the mini cards. The three rows always stretch over the whole
+    /// area under the day number (two columns), so a square never changes size with the number of
+    /// filled slots; below <see cref="MinChipRow"/> the row could no longer hold its title, and an
+    /// untouched day never shows a row at all.
+    /// </summary>
+    public bool ShowChips => Meals.Any(meal => meal.IsRecorded)
+        && !double.IsNaN(CellWidth)
+        && CellWidth - 28d >= 48d
+        && ChipRowHeight >= MinChipRow;
+
+    /// <summary>Height one chip row gets from the cell: the three rows share everything the day
+    /// number leaves over (zero until the page has sized the cell).</summary>
+    private double ChipRowHeight => double.IsNaN(CellHeight)
+        ? 0d
+        : (CellHeight - CellChrome - ((ChipRows - 1) * ChipGap)) / ChipRows;
+
+    /// <summary>
+    /// Fits every chip of this day to the rows the cell offers: the photograph, the second line and
+    /// its font grow with the row, so the squares use all the space that is available while the
+    /// text never spills over the frame.
+    /// </summary>
+    private void UpdateChipLayout()
+    {
+        var rowHeight = ChipRowHeight;
+        foreach (var meal in Meals)
+        {
+            meal.UpdateLayout(rowHeight, StateTextBrush);
+        }
+    }
+
+    /// <summary>Replaces the chips of this day and fits them to the rows the cell offers.</summary>
+    internal void SetMeals(IEnumerable<CalendarMealChipViewModel> meals)
+    {
+        Meals.Clear();
+        foreach (var meal in meals)
+        {
+            Meals.Add(meal);
+        }
+
+        UpdateChipLayout();
+        OnPropertyChanged(nameof(ShowChips));
+    }
+
     /// <summary>True when the day has at least one recorded meal (used for the completion indicator).</summary>
     public bool HasRecords => Completed > 0;
 
     /// <summary>
-    /// Percentage as compact text ("42 %"): the confirmed share of the meals that were decided on
-    /// this day (the same figure the dashboard bar shows). Empty while nothing was decided yet, so
-    /// an untouched cell shows its day number and nothing else - pending meals never produce a
-    /// figure.
+    /// Percentage as compact text ("42 %"): the confirmed share of the five permanent slots of
+    /// this day - completed meals divided by five (the same figure the dashboard bar shows). Empty
+    /// while nothing was decided yet, so an untouched cell shows its day number and nothing else -
+    /// pending meals never produce a figure.
     /// </summary>
     public string PercentageText => Completed > 0 || Missed > 0
         ? FormattableString.Invariant($"{Percentage:0.#} %")
@@ -184,12 +273,22 @@ public sealed partial class CalendarDayViewModel : ObservableObject
             DayBackground = NeutralFillBrush;
         }
 
-        if (IsToday)
+        if (IsSelected)
+        {
+            // The pressed day shows the selection colour instead of the state tint - the border
+            // keeps the state, so the cell still reads green, red or gray while selected.
+            DayBackground = IsToday ? SelectedTodayFillBrush : SelectedFillBrush;
+        }
+        else if (IsToday)
         {
             // Today keeps the accent fill and the white day number so it can be found at a glance;
             // the border still carries the day state. The figure below is white as well, because the
             // strong accent fill no longer leaves room for the dark secondary text of the light theme.
             DayBackground = TodayFillBrush;
+        }
+
+        if (IsToday)
+        {
             DayNumberBrush = WhiteBrush;
             StateTextBrush = WhiteBrush;
         }
@@ -205,6 +304,10 @@ public sealed partial class CalendarDayViewModel : ObservableObject
         OnPropertyChanged(nameof(StateTextBrush));
         OnPropertyChanged(nameof(CellOpacity));
         OnPropertyChanged(nameof(PercentageText));
+
+        // The chips carry the same text colour as the percentage row (white on the accent fill of
+        // today), so they follow every re-resolution of the theme dependent brushes.
+        UpdateChipLayout();
     }
 
     partial void OnCompletedChanged(int value) => UpdateStateVisuals();
@@ -214,6 +317,136 @@ public sealed partial class CalendarDayViewModel : ObservableObject
     partial void OnIsFullyCompletedChanged(bool value) => UpdateStateVisuals();
 
     partial void OnPercentageChanged(double value) => OnPropertyChanged(nameof(PercentageText));
+
+    partial void OnIsSelectedChanged(bool value) => UpdateStateVisuals();
+
+    partial void OnCellHeightChanged(double value)
+    {
+        // The rows of the mini cards are carved out of the height the number leaves over.
+        UpdateChipLayout();
+        OnPropertyChanged(nameof(ShowChips));
+    }
+
+    partial void OnCellWidthChanged(double value) => OnPropertyChanged(nameof(ShowChips));
+}
+
+/// <summary>
+/// One mini card inside a day cell: a scaled-down copy of the meal card with the first photograph,
+/// the title and the description of the slot, framed by the state colour - green when the meal was
+/// eaten, red when it was missed and gray while it is still pending. The title falls back to the
+/// localized category name when the user never typed one, so a card always has something to read.
+/// <para>
+/// Every permanent slot produces a chip; an untouched slot is <see cref="IsRecorded"/>
+/// <see langword="false"/> and renders invisible, so it keeps its place in the fixed grid without
+/// showing an empty frame. The chip itself is deliberately inert: a press on it does nothing of its
+/// own, the event bubbles to the day button and only moves the selection there; a double press
+/// opens the day as usual.
+/// </para>
+/// </summary>
+public sealed partial class CalendarMealChipViewModel : ObservableObject
+{
+    private static readonly Brush GreenBorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 16, 124, 16));
+    private static readonly Brush RedBorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 164, 38, 44));
+    private static readonly Brush GrayBorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 138, 136, 134));
+    private static readonly Brush GreenFillBrush = new SolidColorBrush(ColorHelper.FromArgb(26, 16, 124, 16));
+    private static readonly Brush RedFillBrush = new SolidColorBrush(ColorHelper.FromArgb(26, 164, 38, 44));
+    private static readonly Brush GrayFillBrush = new SolidColorBrush(ColorHelper.FromArgb(26, 138, 136, 134));
+    private static readonly Brush DefaultTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 138, 136, 134));
+
+    public CalendarMealChipViewModel(
+        string title,
+        string description,
+        string statusLabel,
+        MealStatus status,
+        string? thumbnailPath,
+        bool isRecorded)
+    {
+        Title = title;
+        Description = description;
+        ThumbnailPath = thumbnailPath;
+        HasPhoto = thumbnailPath is not null;
+        IsRecorded = isRecorded;
+        BorderBrush = status switch
+        {
+            MealStatus.Done => GreenBorderBrush,
+            MealStatus.Missed => RedBorderBrush,
+            _ => GrayBorderBrush,
+        };
+        Fill = status switch
+        {
+            MealStatus.Done => GreenFillBrush,
+            MealStatus.Missed => RedFillBrush,
+            _ => GrayFillBrush,
+        };
+
+        // The second line of the miniature is the description when there is one and the status of
+        // the slot otherwise, so every card keeps the same two-line shape and reaches both the top
+        // and the bottom edge of its frame with the same padding as the sides.
+        BottomText = string.IsNullOrWhiteSpace(description) ? statusLabel : description;
+
+        // The miniature lines are trimmed to the frame; the tooltip always shows the full content.
+        Tooltip = string.IsNullOrWhiteSpace(description) ? title : $"{title}\n{description}";
+    }
+
+    /// <summary>Meal title, or the localized category name when the entry has none.</summary>
+    public string Title { get; }
+
+    /// <summary>The description (ingredients) of the meal: the second miniature line.</summary>
+    public string Description { get; }
+
+    /// <summary>What sits on the bottom edge of the miniature: the description when the meal has
+    /// one, the localized status of the slot (Done / Missed / Pending) otherwise.</summary>
+    public string BottomText { get; }
+
+    /// <summary>Border and background carry the state of the slot (green / red / gray).</summary>
+    public Brush BorderBrush { get; }
+
+    public Brush Fill { get; }
+
+    /// <summary>Absolute path of the first photograph of the meal, null when it has none.</summary>
+    public string? ThumbnailPath { get; }
+
+    public bool HasPhoto { get; }
+
+    /// <summary>False for an untouched slot: its square renders invisible and keeps its place in
+    /// the fixed grid, so the filled squares never change size or position.</summary>
+    public bool IsRecorded { get; }
+
+    /// <summary>Complete content of the meal (title and description) for the hover tooltip.</summary>
+    public string Tooltip { get; }
+
+    /// <summary>Text colour of the lines: follows the day cell (white on the fill of today).</summary>
+    [ObservableProperty]
+    private Brush _textBrush = DefaultTextBrush;
+
+    /// <summary>Edge of the square photograph: grows with the row the cell gives the chip.</summary>
+    [ObservableProperty]
+    private double _photoSize = 14d;
+
+    /// <summary>Font of the description line: the taller the row, the more of it fits.</summary>
+    [ObservableProperty]
+    private double _descriptionFontSize = 6d;
+
+    /// <summary>True when the row is tall enough for both lines (title and description).</summary>
+    [ObservableProperty]
+    private bool _showDescription;
+
+    /// <summary>
+    /// Fits the chip to the row its day cell offers: the photograph grows towards the frame (up to
+    /// 28 px), and the bottom line appears as soon as title and second line fit inside the frame
+    /// with the 3 px padding - the title then hugs the top edge, the second line the bottom edge,
+    /// so the card fills its miniature without the text spilling over the border.
+    /// </summary>
+    internal void UpdateLayout(double rowHeight, Brush textBrush)
+    {
+        TextBrush = textBrush;
+
+        // Fills the vertical slot (row minus the two borders and the 3 px top / bottom padding)
+        // up to 28 px, so the photograph itself never has more air than the text around it.
+        PhotoSize = Math.Clamp(rowHeight - 8d, 10d, 28d);
+        ShowDescription = rowHeight >= 27d;
+        DescriptionFontSize = rowHeight >= 40d ? 8d : rowHeight >= 30d ? 7d : 6d;
+    }
 }
 
 /// <summary>
@@ -224,12 +457,18 @@ public sealed partial class CalendarViewModel : ObservableObject
     private readonly IMealTrackingService _tracking;
     private readonly ILocalizationService _localization;
     private readonly IClock _clock;
+    private readonly IPhotoStore _photoStore;
 
-    public CalendarViewModel(IMealTrackingService tracking, ILocalizationService localization, IClock clock)
+    public CalendarViewModel(
+        IMealTrackingService tracking,
+        ILocalizationService localization,
+        IClock clock,
+        IPhotoStore photoStore)
     {
         _tracking = tracking;
         _localization = localization;
         _clock = clock;
+        _photoStore = photoStore;
         _visibleMonth = new DateOnly(clock.Today.Year, clock.Today.Month, 1);
     }
 
@@ -338,6 +577,21 @@ public sealed partial class CalendarViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Width of one day cell (the column of the grid), set by the page from the width the panel has.
+    /// The day cells read it to know how many chip columns fit into their square.
+    /// </summary>
+    [ObservableProperty]
+    private double _cellWidth = double.NaN;
+
+    partial void OnCellWidthChanged(double value)
+    {
+        foreach (var day in Days)
+        {
+            day.CellWidth = value;
+        }
+    }
+
+    /// <summary>
     /// Re-resolves the theme dependent brushes of every cell. The page raises it after a dark/light
     /// switch of the system, so cells that were built under the old theme do not keep its colours.
     /// </summary>
@@ -387,6 +641,9 @@ public sealed partial class CalendarViewModel : ObservableObject
             var day = new CalendarDayViewModel(date, date.Day, date.Month == first.Month, date == _clock.Today)
             {
                 CellHeight = CellHeight,
+                CellWidth = CellWidth,
+                // The cell of the selected day carries the selection colour of the background.
+                IsSelected = date == SelectedDate,
             };
 
             if (byDate.TryGetValue(date, out var dayProgress))
@@ -396,9 +653,54 @@ public sealed partial class CalendarViewModel : ObservableObject
                 day.Percentage = dayProgress.Percentage;
                 day.IsFullyCompleted = dayProgress.IsFullyCompleted;
                 day.HasPhotos = dayProgress.Slots.Any(s => s.PhotoCount > 0);
+                day.SetMeals(CreateMealChips(dayProgress.Slots));
             }
 
             Days.Add(day);
+        }
+    }
+
+    /// <summary>
+    /// Builds the mini cards drawn inside one day cell: one per permanent slot (at most five).
+    /// Recorded slots - confirmed, missed or a pending entry that already holds a content - are
+    /// visible; untouched ones are created as invisible placeholders so the five squares always
+    /// share the space of the cell in the same fixed grid. A day the user never touched therefore
+    /// shows its day number and nothing else.
+    /// </summary>
+    private List<CalendarMealChipViewModel> CreateMealChips(IReadOnlyList<MealSlotStatus> slots)
+    {
+        var chips = new List<CalendarMealChipViewModel>(5);
+        foreach (var slot in slots)
+        {
+            if (chips.Count >= 5)
+            {
+                break;
+            }
+
+            var isRecorded = slot.Status != MealStatus.Pending
+                || !string.IsNullOrWhiteSpace(slot.Title)
+                || slot.PhotoCount > 0;
+
+            var title = string.IsNullOrWhiteSpace(slot.Title)
+                ? _localization.Get($"Meal_{slot.MealCategoryKey}_Name")
+                : slot.Title;
+            var statusLabel = _localization.Get($"Status_{slot.Status}");
+            var thumbnailPath = string.IsNullOrEmpty(slot.FirstPhotoThumbnailId)
+                ? null
+                : _photoStore.GetThumbnailPath(slot.FirstPhotoThumbnailId);
+
+            chips.Add(new CalendarMealChipViewModel(title, slot.Ingredients, statusLabel, slot.Status, thumbnailPath, isRecorded));
+        }
+
+        return chips;
+    }
+
+    /// <summary>Keeps the selection colour on the one cell whose date is now selected.</summary>
+    partial void OnSelectedDateChanged(DateOnly value)
+    {
+        foreach (var day in Days)
+        {
+            day.IsSelected = day.Date == value;
         }
     }
 }

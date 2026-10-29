@@ -7,14 +7,14 @@
     Everything a test machine needs in one pass:
 
     1. builds and signs the MSIX bundle through tools\Update-Installer.ps1 -NoInstall, so the
-       packaging, signing, version-bumping and artifact-cleanup rules live in exactly one place,
+       packaging, signing and artifact-cleanup rules live in exactly one place,
     2. rebuilds the unpackaged (WindowsPackageType=None) flavour afterwards and removes the packaging
        leftovers from the output folder, because the packaged build leaves an identity-bound
        DietTracker.exe there that cannot be started from disk (0x80040154 "Class not registered"),
     3. reports both outputs: dist\<exec|debug>\DietTracker.exe and the .msixbundle under artifacts\msix.
 
-    The installer is built but NOT installed - installing is what `npm run installer` does (it builds
-    the next package revision, signs it and installs it over the previous version). Both commands stop
+    The installer is built but NOT installed - installing is what `npm run installer` does (it signs
+    the same 1.0.0.0 package and installs it over the previous version). Both commands stop
     a running instance first, because the build has to replace DietTracker.exe.
 
 .PARAMETER Configuration
@@ -110,7 +110,7 @@ if (-not $SkipInstaller) {
         Write-Host ("  Installer:   " + $bundle.FullName)
         Write-Host ("  Size:        " + $bundle.Length + " bytes")
         Write-Host ("  SHA256:      " + $hash)
-        Write-Host '  Install it:  npm run installer   (builds the next revision, signs and installs it)'
+        Write-Host '  Install it:  npm run installer   (builds 1.0.0.0, signs and installs it)'
     } else {
         Write-Warning 'No .msixbundle was found under artifacts\msix after the build.'
     }

@@ -47,7 +47,9 @@ public sealed class ProgressCalculatorTests
         Assert.Equal(1, progress.Missed);
         Assert.Equal(1, progress.Pending);
         Assert.Equal(4, progress.Decided);
-        Assert.Equal(75d, progress.Percentage);
+
+        // The day percentage counts against all five permanent slots: three confirmed of five = 60 %.
+        Assert.Equal(60d, progress.Percentage);
     }
 
     [Fact]
@@ -171,12 +173,42 @@ public sealed class MealEntryValidatorTests
         MealCategoryId = Guid.NewGuid(),
         MealCategoryKey = MealCategoryKey.Breakfast,
         Date = new DateOnly(2026, 3, 10),
+        Title = "Porridge",
+        Ingredients = "Oats and milk",
     };
 
     [Fact]
     public void A_valid_entry_passes()
     {
         Assert.True(MealEntryValidator.Validate(Valid()).IsValid);
+    }
+
+    [Fact]
+    public void A_save_without_a_title_or_a_description_is_rejected()
+    {
+        // Both fields are mandatory for every save - the card's own Save button and "Save all"
+        // run through this same rule - and a blank (whitespace only) value counts as empty.
+        var entry = Valid();
+        entry.Title = "   ";
+        entry.Ingredients = string.Empty;
+
+        var result = MealEntryValidator.Validate(entry);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Failures, f => f.Code == "meal.title.required");
+        Assert.Contains(result.Failures, f => f.Code == "meal.ingredients.required");
+    }
+
+    [Fact]
+    public void The_clear_action_may_write_an_empty_placeholder()
+    {
+        // Clearing a card deliberately puts the empty placeholder of the slot back, so that one
+        // path validates without the mandatory content of a save.
+        var entry = Valid();
+        entry.Title = string.Empty;
+        entry.Ingredients = string.Empty;
+
+        Assert.True(MealEntryValidator.Validate(entry, requireContent: false).IsValid);
     }
 
     [Fact]

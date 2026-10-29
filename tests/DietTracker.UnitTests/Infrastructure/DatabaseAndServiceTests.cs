@@ -231,6 +231,7 @@ public sealed class MealTrackingServiceTests
         var firstDay = await environment.Tracking.GetDayAsync(first);
         var lunch = firstDay.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
         lunch.Title = "Lentils";
+        lunch.Ingredients = "Lentil stew";
         await environment.Tracking.SaveEditsAsync(lunch);
         await environment.Tracking.MarkDoneAsync(lunch.Id);
 
@@ -250,6 +251,7 @@ public sealed class MealTrackingServiceTests
         var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
 
         lunch.Title = "Soup";
+        lunch.Ingredients = "With bread";
         await environment.Tracking.SaveEditsAsync(lunch);
         var completed = await environment.Tracking.MarkDoneAsync(lunch.Id);
         var completedAt = completed.CompletedAt;
@@ -264,12 +266,37 @@ public sealed class MealTrackingServiceTests
     }
 
     [Fact]
+    public async Task Saving_without_a_title_or_a_description_is_refused_and_writes_nothing()
+    {
+        // The two fields are mandatory for every save - the same rule behind the card's own Save
+        // button and behind "Save all" - so an incomplete card is reported and stays untouched.
+        await using var environment = await TestEnvironment.CreateAsync();
+        var date = new DateOnly(2026, 3, 10);
+        var day = await environment.Tracking.GetDayAsync(date);
+        var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
+        lunch.Title = "   ";
+        lunch.Ingredients = string.Empty;
+
+        var result = await environment.Tracking.SaveEditsAsync(lunch);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Failures, f => f.Code == "meal.title.required");
+        Assert.Contains(result.Failures, f => f.Code == "meal.ingredients.required");
+
+        var reread = await environment.Tracking.GetDayAsync(date);
+        Assert.Equal(string.Empty, reread.Single(e => e.MealCategoryKey == MealCategoryKey.Lunch).Title);
+    }
+
+    [Fact]
     public async Task Marking_done_twice_increments_the_statistics_only_once()
     {
         await using var environment = await TestEnvironment.CreateAsync();
         var date = new DateOnly(2026, 3, 10);
         var day = await environment.Tracking.GetDayAsync(date);
         var breakfast = day.First(e => e.MealCategoryKey == MealCategoryKey.Breakfast);
+        breakfast.Title = "Porridge";
+        breakfast.Ingredients = "Milk";
+        await environment.Tracking.SaveEditsAsync(breakfast);
 
         await environment.Tracking.MarkDoneAsync(breakfast.Id);
         await environment.Tracking.MarkDoneAsync(breakfast.Id);
@@ -278,10 +305,10 @@ public sealed class MealTrackingServiceTests
         Assert.Equal(1, progress.Completed);
         Assert.Equal(0, progress.Missed);
 
-        // The other four slots are untouched placeholders: they stay pending and are not part of
-        // the ratio, so one confirmed meal of one decided meal is one hundred percent.
+        // The other four slots are untouched placeholders: they still count towards the total, so
+        // one confirmed meal out of the five permanent slots is twenty percent.
         Assert.Equal(4, progress.Pending);
-        Assert.Equal(100d, progress.Percentage);
+        Assert.Equal(20d, progress.Percentage);
     }
 
     [Fact]
@@ -291,6 +318,9 @@ public sealed class MealTrackingServiceTests
         var date = new DateOnly(2026, 3, 10);
         var day = await environment.Tracking.GetDayAsync(date);
         var dinner = day.First(e => e.MealCategoryKey == MealCategoryKey.Dinner);
+        dinner.Title = "Fish";
+        dinner.Ingredients = "Green salad";
+        await environment.Tracking.SaveEditsAsync(dinner);
 
         await environment.Tracking.MarkDoneAsync(dinner.Id);
         await environment.Tracking.MarkMissedAsync(dinner.Id);
@@ -307,6 +337,9 @@ public sealed class MealTrackingServiceTests
         await using var environment = await TestEnvironment.CreateAsync();
         var day = await environment.Tracking.GetDayAsync(new DateOnly(2026, 3, 10));
         var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
+        lunch.Title = "Soup";
+        lunch.Ingredients = "With bread";
+        await environment.Tracking.SaveEditsAsync(lunch);
 
         await environment.Tracking.MarkDoneAsync(lunch.Id);
 
@@ -323,6 +356,7 @@ public sealed class MealTrackingServiceTests
         var day = await environment.Tracking.GetDayAsync(source);
         var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
         lunch.Title = "Pasta";
+        lunch.Ingredients = "Tomato sauce";
         await environment.Tracking.SaveEditsAsync(lunch);
         await environment.Tracking.MarkDoneAsync(lunch.Id);
 
@@ -344,6 +378,7 @@ public sealed class MealTrackingServiceTests
         var day = await environment.Tracking.GetDayAsync(source);
         var breakfast = day.First(e => e.MealCategoryKey == MealCategoryKey.Breakfast);
         breakfast.Title = "Porridge";
+        breakfast.Ingredients = "Milk";
         await environment.Tracking.SaveEditsAsync(breakfast);
 
         var copied = await environment.Tracking.DuplicateDayAsync(source, target);
@@ -355,12 +390,98 @@ public sealed class MealTrackingServiceTests
     }
 
     [Fact]
+    public async Task The_month_progress_carries_every_recorded_slot_the_calendar_squares_need()
+    {
+        await using var environment = await TestEnvironment.CreateAsync();
+        var date = new DateOnly(2026, 3, 10);
+
+        // One confirmed meal with a title and a photograph, one missed with a title; the rest of
+        // the day stays untouched.
+        var day = await environment.Tracking.GetDayAsync(date);
+        var breakfast = day.First(e => e.MealCategoryKey == MealCategoryKey.Breakfast);
+        breakfast.Title = "Porridge with berries";
+        breakfast.Ingredients = "Oats, milk and berries";
+        await environment.Tracking.SaveEditsAsync(breakfast);
+        await environment.Tracking.MarkDoneAsync(breakfast.Id);
+        await environment.Tracking.AddPhotoAsync(breakfast.Id, CreateTestJpeg(environment.RootPath));
+
+        var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
+        lunch.Title = "Soup";
+        lunch.Ingredients = "With bread";
+        await environment.Tracking.SaveEditsAsync(lunch);
+        await environment.Tracking.MarkMissedAsync(lunch.Id);
+
+        var month = await environment.Tracking.GetMonthProgressAsync(date);
+
+        var recorded = Assert.Single(month.Days, d => d.Date == date);
+        var slots = recorded.Slots;
+
+        // The calendar draws one square per recorded slot: title, state and first picture all
+        // have to survive the range query (the photographs live in their own table).
+        var breakfastSlot = Assert.Single(slots, s => s.MealCategoryKey == MealCategoryKey.Breakfast);
+        Assert.Equal(MealStatus.Done, breakfastSlot.Status);
+        Assert.Equal("Porridge with berries", breakfastSlot.Title);
+        Assert.Equal(1, breakfastSlot.PhotoCount);
+        Assert.False(string.IsNullOrEmpty(breakfastSlot.FirstPhotoThumbnailId));
+
+        var lunchSlot = Assert.Single(slots, s => s.MealCategoryKey == MealCategoryKey.Lunch);
+        Assert.Equal(MealStatus.Missed, lunchSlot.Status);
+        Assert.Equal("Soup", lunchSlot.Title);
+        Assert.Equal("With bread", lunchSlot.Ingredients);
+
+        // An untouched slot stays pending without a title, so it never produces a visible square.
+        var dinnerSlot = Assert.Single(slots, s => s.MealCategoryKey == MealCategoryKey.Dinner);
+        Assert.Equal(MealStatus.Pending, dinnerSlot.Status);
+        Assert.Equal(string.Empty, dinnerSlot.Title);
+        Assert.Equal(string.Empty, dinnerSlot.Ingredients);
+        Assert.Equal(string.Empty, dinnerSlot.FirstPhotoThumbnailId);
+    }
+
+    [Fact]
+    public async Task Clearing_a_meal_wipes_its_text_state_and_photographs()
+    {
+        await using var environment = await TestEnvironment.CreateAsync();
+        var date = new DateOnly(2026, 3, 10);
+        var day = await environment.Tracking.GetDayAsync(date);
+        var breakfast = day.First(e => e.MealCategoryKey == MealCategoryKey.Breakfast);
+        breakfast.Title = "Porridge with berries";
+        breakfast.Ingredients = "Oats, milk and berries";
+        breakfast.PlannedTime = new TimeOnly(8, 0);
+        await environment.Tracking.SaveEditsAsync(breakfast);
+        await environment.Tracking.MarkDoneAsync(breakfast.Id);
+        var photo = await environment.Tracking.AddPhotoAsync(breakfast.Id, CreateTestJpeg(environment.RootPath));
+        var store = environment.Services.GetRequiredService<IPhotoStore>();
+        var thumbnailPath = store.GetThumbnailPath(photo.ThumbnailId);
+
+        var cleared = await environment.Tracking.ClearMealAsync(breakfast.Id);
+
+        // The whole content of the card is gone: text, planned time and the completion state.
+        Assert.Equal(string.Empty, cleared.Title);
+        Assert.Equal(string.Empty, cleared.Ingredients);
+        Assert.Null(cleared.PlannedTime);
+        Assert.Equal(MealStatus.Pending, cleared.Status);
+        Assert.Null(cleared.CompletedAt);
+
+        // The photographs were wiped with their local files as well.
+        Assert.Empty(cleared.Photos);
+        Assert.Empty(await environment.Tracking.GetPhotosAsync(breakfast.Id));
+        Assert.NotNull(thumbnailPath);
+        Assert.False(File.Exists(thumbnailPath));
+
+        // The permanent slot itself survives as an empty pending placeholder, so the dashboard and
+        // the calendar keep their five cards.
+        var reread = await environment.Tracking.GetDayAsync(date);
+        Assert.Equal(MealStatus.Pending, reread.Single(e => e.MealCategoryKey == MealCategoryKey.Breakfast).Status);
+    }
+
+    [Fact]
     public async Task Templates_can_be_saved_and_applied_to_another_date()
     {
         await using var environment = await TestEnvironment.CreateAsync();
         var day = await environment.Tracking.GetDayAsync(new DateOnly(2026, 3, 10));
         var dinner = day.First(e => e.MealCategoryKey == MealCategoryKey.Dinner);
         dinner.Title = "Fish and salad";
+        dinner.Ingredients = "Green salad";
         await environment.Tracking.SaveEditsAsync(dinner);
 
         var template = await environment.Tracking.SaveTemplateAsync(dinner, "Dinner template");

@@ -40,6 +40,19 @@ public sealed partial class MealTrackingService
         var to = from.AddDays(dayCount);
         var range = await _entries.GetForRangeAsync(profile.Id, from, to, cancellationToken).ConfigureAwait(false);
 
+        // Photographs live in their own table: the entries of a range carry none, so load them for
+        // the whole range in a single query before the aggregation. Every slot then reports its
+        // true photo count and its first picture - which is what the calendar draws inside a day.
+        var photos = await _photos.GetForDateRangeAsync(profile.Id, from, to, cancellationToken).ConfigureAwait(false);
+        var photosByMeal = photos.ToLookup(photo => photo.MealEntryId);
+        foreach (var entries in range.Values)
+        {
+            foreach (var entry in entries)
+            {
+                entry.Photos = photosByMeal[entry.Id].ToList();
+            }
+        }
+
         return PeriodAnalytics.ForRange(from, to, range);
     }
 }

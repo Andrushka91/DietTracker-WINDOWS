@@ -101,7 +101,8 @@ public sealed partial class GoogleAuthenticationProvider
             _identity = new GoogleIdentity(
                 Subject: root.TryGetProperty("sub", out var sub) ? sub.GetString() ?? string.Empty : string.Empty,
                 Email: root.TryGetProperty("email", out var email) ? email.GetString() ?? string.Empty : string.Empty,
-                Name: root.TryGetProperty("name", out var name) ? name.GetString() ?? string.Empty : string.Empty);
+                Name: root.TryGetProperty("name", out var name) ? name.GetString() ?? string.Empty : string.Empty,
+                Picture: root.TryGetProperty("picture", out var picture) ? picture.GetString() ?? string.Empty : string.Empty);
 
             return _identity;
         }
@@ -113,5 +114,5 @@ public sealed partial class GoogleAuthenticationProvider
     }
 
     /// <summary>Minimal OpenID Connect identity of the signed-in Google account.</summary>
-    private sealed record GoogleIdentity(string Subject, string Email, string Name);
+    private sealed record GoogleIdentity(string Subject, string Email, string Name, string Picture);
 }

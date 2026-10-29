@@ -11,7 +11,17 @@ public static class MealEntryValidator
 
     public const int MaxIngredientsLength = 2000;
 
-    public static ValidationResult Validate(MealEntry entry)
+    /// <summary>
+    /// Validates a daily meal entry before it is written to SQLite.
+    /// </summary>
+    /// <param name="entry">The entry that is about to be persisted.</param>
+    /// <param name="requireContent">
+    /// Whether the two mandatory fields must be filled. Every entry saved from an editor needs a
+    /// title and a description, so an empty card never reaches the database - neither through its
+    /// own Save button nor through "Save all". The clear action passes <see langword="false"/>:
+    /// it deliberately writes the empty placeholder of the slot back.
+    /// </param>
+    public static ValidationResult Validate(MealEntry entry, bool requireContent = true)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -30,6 +40,21 @@ public static class MealEntryValidator
         if (entry.LocalProfileId == Guid.Empty)
         {
             failures.Add(new ValidationFailure("meal.profile.missing", nameof(entry.LocalProfileId), "Meal entry is not linked to a local profile."));
+        }
+
+        // Title and description are the two mandatory fields of a meal: both are checked before the
+        // length rules, so a blank field reports "required" instead of nothing at all.
+        if (requireContent)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Title))
+            {
+                failures.Add(new ValidationFailure("meal.title.required", nameof(entry.Title), "A meal needs a title."));
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.Ingredients))
+            {
+                failures.Add(new ValidationFailure("meal.ingredients.required", nameof(entry.Ingredients), "A meal needs a description."));
+            }
         }
 
         if (entry.Title.Length > MaxTitleLength)

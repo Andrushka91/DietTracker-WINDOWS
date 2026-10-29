@@ -119,6 +119,16 @@ public sealed partial class GoogleAuthenticationProvider : IAuthenticationProvid
     }
 
     /// <inheritdoc />
+    public async Task<string> GetProfilePhotoUrlAsync(CancellationToken cancellationToken = default)
+    {
+        // The identity is read once per session (at sign-in or at the silent restore) and then kept
+        // in memory, so this is normally free; without a usable session the endpoint cannot be called
+        // and an empty string tells the interface to keep its placeholder.
+        var identity = await EnsureIdentityAsync(cancellationToken).ConfigureAwait(false);
+        return identity?.Picture ?? string.Empty;
+    }
+
+    /// <inheritdoc />
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         _tokens = null;

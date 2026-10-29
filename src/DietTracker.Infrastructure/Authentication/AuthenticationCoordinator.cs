@@ -41,6 +41,15 @@ public sealed class AuthenticationCoordinator : IAuthenticationCoordinator
         => _accounts.GetActiveAsync(cancellationToken);
 
     /// <inheritdoc />
+    public async Task<string> GetActiveAccountPhotoAsync(CancellationToken cancellationToken = default)
+    {
+        var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
+        return account is null
+            ? string.Empty
+            : await _providers.Get(account.ProviderType).GetProfilePhotoUrlAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<AuthenticationResult> SignInAsync(
         ProviderType providerType,
         bool grantUploadConsent,

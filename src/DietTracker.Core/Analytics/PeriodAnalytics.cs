@@ -93,7 +93,7 @@ public static class PeriodAnalytics
 
     /// <summary>
     /// Produces the trend series used by the weekly and monthly charts: one point per day with the
-    /// confirmed share of that day's decided meals (zero while nothing was decided).
+    /// confirmed share of that day's five permanent slots (zero while nothing was confirmed).
     /// </summary>
     public static IReadOnlyList<TrendPoint> Trend(
         DateOnly from,

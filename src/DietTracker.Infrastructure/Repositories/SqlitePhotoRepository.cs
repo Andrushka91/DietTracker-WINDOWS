@@ -50,6 +50,36 @@ public sealed partial class SqlitePhotoRepository : IPhotoRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<MealPhoto>> GetForDateRangeAsync(
+        Guid profileId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT p.Id, p.MealEntryId, p.OriginalFileName, p.LocalFileId, p.ThumbnailId, " +
+            "p.CloudObjectId, p.CloudRevision, p.MimeType, p.FileSize, p.ContentHash, p.CreatedAt, " +
+            "p.UpdatedAt, p.SyncStatus FROM MealPhoto p " +
+            "INNER JOIN MealEntry e ON e.Id = p.MealEntryId " +
+            "WHERE e.LocalProfileId = $profile AND e.Date >= $from AND e.Date <= $to " +
+            "ORDER BY e.Date, e.MealCategoryKey, p.CreatedAt;";
+        command.Parameters.AddWithValue("$profile", SqliteValue.ToDb(profileId));
+        command.Parameters.AddWithValue("$from", SqliteValue.ToDb(from));
+        command.Parameters.AddWithValue("$to", SqliteValue.ToDb(to));
+
+        var result = new List<MealPhoto>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            result.Add(RowMappers.MapMealPhoto(reader));
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
     public async Task<MealPhoto?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);

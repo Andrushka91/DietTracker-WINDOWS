@@ -45,8 +45,11 @@ public static class CompletionRules
 
     /// <summary>
     /// Marks the meal as DONE and records the completion timestamp. Allowed for today and past
-    /// dates only; a future meal stays pending. Calling this repeatedly is idempotent: the original
-    /// timestamp is preserved so that statistics are never incremented twice.
+    /// dates only; a future meal stays pending. A meal with neither a title nor a description is
+    /// refused as well ("empty-content"): the empty placeholder must be edited before it may be
+    /// confirmed, which is what the card explains in its dialog before opening the editor.
+    /// Calling this repeatedly is idempotent: the original timestamp is preserved so that
+    /// statistics are never incremented twice.
     /// </summary>
     public static CompletionOutcome MarkDone(MealEntry entry, DateTimeOffset now)
     {
@@ -60,6 +63,13 @@ public static class CompletionRules
         if (entry.Status == MealStatus.Done)
         {
             return CompletionOutcome.NoChange("already-done");
+        }
+
+        if (string.IsNullOrWhiteSpace(entry.Title) && string.IsNullOrWhiteSpace(entry.Ingredients))
+        {
+            // Nothing is known about this meal, so it cannot be confirmed as eaten. The UI turns
+            // this reason into the "edit the meal first" dialog with the OK / Edit buttons.
+            return CompletionOutcome.NoChange("empty-content");
         }
 
         entry.Status = MealStatus.Done;

@@ -67,6 +67,13 @@ public interface IAuthenticationProvider
     /// <summary>Returns a currently valid access token, refreshing silently when possible.</summary>
     Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// URL of the profile picture of the connected account, or an empty string when the provider has
+    /// none (no photo, no session, identity unavailable). Display only: the value is never persisted,
+    /// because a provider may hand out a different URL for the same account later.
+    /// </summary>
+    Task<string> GetProfilePhotoUrlAsync(CancellationToken cancellationToken = default);
+
     /// <summary>True when a token can be produced without user interaction right now.</summary>
     Task<bool> HasValidSessionAsync(CancellationToken cancellationToken = default);
 
@@ -87,6 +94,13 @@ public interface IAuthenticationCoordinator
 {
     /// <summary>Account currently used for synchronization, or <see langword="null"/> in Guest Mode.</summary>
     Task<CloudAccount?> GetActiveAccountAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Profile picture of the active account (for the avatar in the interface), or an empty string in
+    /// Guest Mode, while the provider has no photo or when it cannot be read right now - the caller
+    /// then keeps its placeholder.
+    /// </summary>
+    Task<string> GetActiveAccountPhotoAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Runs the interactive sign-in for a provider and records the chosen account.</summary>
     Task<AuthenticationResult> SignInAsync(ProviderType providerType, bool grantUploadConsent, CancellationToken cancellationToken = default);

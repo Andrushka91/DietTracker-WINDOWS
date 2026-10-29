@@ -48,7 +48,7 @@ function Screenshot([IntPtr]$hwnd, [string]$path) {
 if (-not (Test-Path $ExePath)) { throw "Executable not found: $ExePath" }
 
 Write-Host "Starting $ExePath ..."
-$proc = Start-Process $ExePath -PassThru
+$proc = Start-Process $ExePath -WorkingDirectory (Split-Path -Parent $ExePath) -PassThru
 
 $main = [IntPtr]::Zero
 for ($i = 0; $i -lt 100; $i++) {

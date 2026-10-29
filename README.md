@@ -99,7 +99,7 @@ There is no "rebuild" step to remember: **`npm start` always builds whatever cha
 | **`npm start`** | **build + run - the one command after every change** | `dist/exec/DietTracker.exe` - and it is started for you |
 | **`npm run build`** | build **both** flavours, no start: the runnable app and the signed MSIX installer | `dist/exec/DietTracker.exe` **and** `artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle` |
 | `npm run build:app` | build the runnable app only - the fast loop (no installer) | `dist/exec/DietTracker.exe` |
-| `npm run installer` | build the MSIX installer **and install it** (next revision, signed) | `artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle` |
+| `npm run installer` | build the MSIX installer **and install it** (signed, replaces the installed package in place) | `artifacts/msix/DietTracker.App_<version>_Test/*.msixbundle` |
 | `npm run start:debug` | build + run a debuggable build (only when debugging) | `dist/debug/DietTracker.exe` |
 | `npm run build:debug` | debuggable build only | `dist/debug/DietTracker.exe` |
 | `npm test` | run the unit tests | (no app .exe) |
@@ -121,7 +121,7 @@ optimized application you actually run. That folder is the complete application:
 
 The installer is the **MSIX bundle**, not a separate setup `.exe`: double-clicking the `.msixbundle`
 (or `Add-AppxPackage`) installs Diet Tracker for the current user. `npm run build` builds and signs it
-but does **not** install it - use `npm run installer` for that (it builds the next revision and
+but does **not** install it - use `npm run installer` for that (it rebuilds `1.0.0.0` and
 installs it over the previous one). The build order inside `tools\Build-All.ps1` matters and is
 handled for you: the packaged build leaves an identity-bound `DietTracker.exe` (plus an
 `AppxManifest.xml`) in `dist\exec`, so the runnable flavour is rebuilt afterwards and the packaging
@@ -225,12 +225,12 @@ developers).
 The package (`.msix` plus `.msixbundle`, ~30 MB - the publish profiles keep foreign-architecture and
 foreign-OS native assets out of the payload, which used to push it to 82 MB) is written to
 `artifacts\msix\DietTracker.App_<version>_Test\`; the trusted public certificate is kept at
-`artifacts\msix\DietTracker.cer`. The version in that folder name is the installed package's version
-plus one revision (1.0.0.1, 1.0.0.2, ...), because Windows refuses to reinstall the same version with
-different content (0x80073CFB); when nothing is installed yet - or when only `npm run build` ran with
-`-NoInstall` - the manifest version `1.0.0.0` is used. Only the newest artifact folder is kept. The
-tracked manifest always keeps `1.0.0.0`: the script patches it only for the build and restores it
-afterwards, so the package data (`LocalState`) survives every refresh.
+`artifacts\msix\DietTracker.cer`. The version in that folder name is the manifest version `1.0.0.0`,
+the same for every refresh: the install passes `-ForceUpdateFromAnyVersion`, which bypasses the
+check that would otherwise refuse a same-version package with different content (0x80073CFB). That
+keeps the repository's single version and the installed package in step, and the package data
+(`LocalState`) survives the refresh. Only the newest artifact folder is kept. The tracked manifest
+is never patched.
 
 Uninstall with `npm run remove` (add `-- -KeepData` to save the packaged data first). It closes the
 running app before calling `Remove-AppxPackage`, because otherwise the deployment engine waits for

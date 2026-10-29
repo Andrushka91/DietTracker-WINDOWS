@@ -77,6 +77,10 @@ public sealed class CompletionRulesTests
         MealCategoryKey = MealCategoryKey.Lunch,
         MealCategoryId = Guid.NewGuid(),
         LocalProfileId = Guid.NewGuid(),
+
+        // Content is mandatory for DONE (see the empty-content rule below); these tests exercise
+        // the state machine, so the entry carries a title from the start.
+        Title = "Lunch",
     };
 
     [Fact]
@@ -149,6 +153,30 @@ public sealed class CompletionRulesTests
         Assert.True(outcome.Changed);
         Assert.Equal(MealStatus.Done, entry.Status);
         Assert.NotNull(entry.CompletedAt);
+    }
+
+    [Fact]
+    public void An_empty_meal_cannot_be_confirmed_until_it_has_content()
+    {
+        // The green check refuses the untouched placeholder: nothing is known about the meal, so
+        // it cannot be eaten yet (the card explains this and offers to open the editor).
+        var entry = CreateEntry(new DateOnly(2026, 3, 10));
+        entry.Title = string.Empty;
+        entry.Ingredients = string.Empty;
+
+        var refused = CompletionRules.MarkDone(entry, DateTimeOffset.UtcNow);
+
+        Assert.False(refused.Changed);
+        Assert.Equal("empty-content", refused.Reason);
+        Assert.Equal(MealStatus.Pending, entry.Status);
+        Assert.Null(entry.CompletedAt);
+
+        // Content in either field lifts the restriction: a title alone is enough.
+        entry.Title = "Soup";
+        var allowed = CompletionRules.MarkDone(entry, DateTimeOffset.UtcNow);
+
+        Assert.True(allowed.Changed);
+        Assert.Equal(MealStatus.Done, entry.Status);
     }
 
     [Fact]

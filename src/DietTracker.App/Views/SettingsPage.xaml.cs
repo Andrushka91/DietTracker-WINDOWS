@@ -23,6 +23,10 @@ public sealed partial class SettingsPage : Page
         // content size, guest info bar opening).
         ScrollHost.SizeChanged += (_, _) => UpdateContentHeight();
         SizeChanged += (_, _) => DispatcherQueue.TryEnqueue(UpdateContentHeight);
+
+        // The account photo is only known by its URL: when it cannot be downloaded (offline, address
+        // no longer served), the empty URL puts the framed glyph back instead of leaving an empty tile.
+        AccountPhotoImage.ImageFailed += (_, _) => ViewModel.AccountPhotoUrl = string.Empty;
     }
 
     /// <summary>View model of the page (exposed for <c>x:Bind</c>).</summary>

@@ -10,7 +10,8 @@
        Publisher="CN=DietTracker" in Package.appxmanifest,
     3. builds the Release package (MSIX + bundle) with signing enabled,
     4. verifies the Authenticode signature of the produced bundle,
-    5. installs it over the previous version (same version numbers reinstall cleanly),
+    5. installs it over the previous version with -ForceUpdateFromAnyVersion, so the package
+       keeps the manifest's 1.0.0.0 and its data (LocalState) survives the refresh,
     6. prints the artifact path, size, build time and SHA-256.
 
     Run it after every change that has to be tested as an installed application; "npm run installer"
@@ -90,57 +91,31 @@ if (-not $certificate) {
 
 Write-Host ("Signing certificate: " + $certificate.Thumbprint)
 
-# 3. Windows refuses to reinstall the same package version with different content
-#    (0x80073CFB), so the installer build gets the next revision. The tracked manifest keeps its
-#    version: it is patched for this build only and restored afterwards, so the repository stays
-#    clean and a Store submission is unaffected.
+# 3. The package version is the manifest version - 1.0.0.0 for every refresh. Windows normally
+#    refuses to install a package whose version equals the installed one when the content differs
+#    (0x80073CFB); that refusal used to force a new revision per refresh (1.0.0.1, 1.0.0.2, ...),
+#    so the repository's single version drifted away from what is installed. The install below now
+#    passes -ForceUpdateFromAnyVersion, which bypasses that version check: the package stays on the
+#    tracked version, its data (LocalState) survives the refresh and the manifest never needs a
+#    build-specific patch.
 $manifestPath = Join-Path $repositoryRoot 'src\DietTracker.App\Package.appxmanifest'
-$manifestBytes = [IO.File]::ReadAllBytes($manifestPath)
 $manifestText = [IO.File]::ReadAllText($manifestPath)
 $versionMatch = [regex]::Match($manifestText, 'Version="(\d+\.\d+\.\d+\.\d+)"')
 if (-not $versionMatch.Success) {
     throw 'Package.appxmanifest does not declare an x.y.z.w version.'
 }
 
-$manifestVersion = [version]$versionMatch.Groups[1].Value
-$installed = Get-AppxPackage -Name 'DietTracker.Desktop' -ErrorAction SilentlyContinue | Select-Object -First 1
-$buildVersion = $manifestVersion
+$buildVersion = [version]$versionMatch.Groups[1].Value
+Write-Host ("Package version: " + $buildVersion)
 
-if ($installed -and ([version]$installed.Version) -ge $manifestVersion) {
-    $installedVersion = [version]$installed.Version
-    if ($installedVersion.Revision -ge 65535) {
-        throw 'The installed package already uses the highest revision; remove it once and rerun.'
-    }
+# This compiles, packages and signs in one pass.
+$project = Join-Path $repositoryRoot 'src\DietTracker.App\DietTracker.App.csproj'
+dotnet build $project -c $Configuration -p:Platform=x64 -m:1 `
+    -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true `
+    "-p:PackageCertificateThumbprint=$($certificate.Thumbprint)"
 
-    $buildVersion = [version]::new(
-        $installedVersion.Major,
-        $installedVersion.Minor,
-        $installedVersion.Build,
-        $installedVersion.Revision + 1)
-}
-
-Write-Host ("Package version: " + $buildVersion + " (manifest " + $manifestVersion + ")")
-
-$patchedManifest = $manifestText.Substring(0, $versionMatch.Index) +
-    ('Version="' + $buildVersion + '"') +
-    $manifestText.Substring($versionMatch.Index + $versionMatch.Length)
-
-try {
-    [IO.File]::WriteAllText($manifestPath, $patchedManifest, (New-Object System.Text.UTF8Encoding($false)))
-
-    # This compiles, packages and signs in one pass.
-    $project = Join-Path $repositoryRoot 'src\DietTracker.App\DietTracker.App.csproj'
-    dotnet build $project -c $Configuration -p:Platform=x64 -m:1 `
-        -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true `
-        "-p:PackageCertificateThumbprint=$($certificate.Thumbprint)"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "The package build failed with exit code $LASTEXITCODE."
-    }
-}
-finally {
-    # The manifest is a tracked file: it must not keep the build specific version.
-    [IO.File]::WriteAllBytes($manifestPath, $manifestBytes)
+if ($LASTEXITCODE -ne 0) {
+    throw "The package build failed with exit code $LASTEXITCODE."
 }
 
 # 4. The freshest bundle is the installer; a stale one from an earlier run must never be reported.
@@ -157,11 +132,19 @@ if ($signature.Status -ne 'Valid') {
     throw ("The generated package is not signed correctly: " + $signature.Status)
 }
 
-# 5. Install over the previous version.
+# 5. Install over what is installed. -ForceUpdateFromAnyVersion accepts the same (or an older)
+#    version, which is what keeps the package at 1.0.0.0 instead of growing a new revision, and it
+#    is an update, so the package data (LocalState) survives.
 $package = $null
 if (-not $NoInstall) {
-    Write-Host 'Installing the package (an installed previous version is replaced)...'
-    Add-AppxPackage -Path $bundle.FullName -ForceApplicationShutdown
+    Write-Host 'Installing the package (the installed version is replaced in place, LocalState kept)...'
+    try {
+        Add-AppxPackage -Path $bundle.FullName -ForceApplicationShutdown -ForceUpdateFromAnyVersion
+    } catch {
+        throw ("The package could not be installed: " + $_.Exception.Message + "`r`n" +
+            "If Windows still refuses the version, run 'npm run remove -- -KeepData' first " +
+            "(it saves the package data) and rerun this script.")
+    }
     $package = Get-AppxPackage -Name 'DietTracker.Desktop' -ErrorAction SilentlyContinue | Select-Object -First 1
 
     if (-not $package) {
@@ -169,7 +152,7 @@ if (-not $NoInstall) {
     }
 }
 
-# 6. Keep only the folder of the installer that was just produced (each refresh uses a new version).
+# 6. Keep only the folder of the installer that was just produced (each refresh replaces the old one).
 Get-ChildItem (Join-Path $repositoryRoot 'artifacts\msix') -Directory -Filter 'DietTracker.App_*_Test' -ErrorAction SilentlyContinue |
     Where-Object { $_.FullName -ne $bundle.Directory.FullName } |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue

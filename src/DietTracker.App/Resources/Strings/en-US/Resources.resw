@@ -38,6 +38,9 @@
   <data name="Dashboard_CountPending" xml:space="preserve"><value>Pending</value></data>
   <data name="Dashboard_AllDone" xml:space="preserve"><value>All meals are confirmed.</value></data>
   <data name="Dashboard_AllMissed" xml:space="preserve"><value>All meals are marked as missed.</value></data>
+  <data name="Dashboard_SaveAll" xml:space="preserve"><value>Save all</value></data>
+  <data name="Dashboard_SaveAllDone" xml:space="preserve"><value>All open cards were saved.</value></data>
+  <data name="Dashboard_SaveAllPartial" xml:space="preserve"><value>Saved {0} of {1} open cards.</value></data>
   <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Save as template</value></data>
   <data name="Meal_Title" xml:space="preserve"><value>Title</value></data>
   <data name="Meal_PlannedTime" xml:space="preserve"><value>Time</value></data>
@@ -46,6 +49,12 @@
 
   <data name="Meal_MarkDone" xml:space="preserve"><value>Mark as DONE</value></data>
   <data name="Meal_MarkMissed" xml:space="preserve"><value>Mark as MISSED</value></data>
+  <data name="Meal_Clear" xml:space="preserve"><value>Clear meal</value></data>
+  <data name="Meal_ClearTitle" xml:space="preserve"><value>Clear this meal?</value></data>
+  <data name="Meal_ClearMessage" xml:space="preserve"><value>The title, description, planned time, status and every photograph of this meal are deleted. This cannot be undone.</value></data>
+  <data name="Meal_EmptyDoneTitle" xml:space="preserve"><value>Edit the meal first</value></data>
+  <data name="Meal_EmptyDoneMessage" xml:space="preserve"><value>This meal has no title and no description yet, so it cannot be marked as done. Press Edit to fill it in first.</value></data>
+  <data name="Meal_EmptyDoneSomeMessage" xml:space="preserve"><value>The meals without a title or description were not marked as done. Edit them first.</value></data>
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmed at</value></data>
   <data name="Photo_Add" xml:space="preserve"><value>Add photo</value></data>
   <data name="Photo_GalleryHeader" xml:space="preserve"><value>Photos</value></data>
@@ -91,7 +100,6 @@
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_General" xml:space="preserve"><value>General</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
-  <data name="Settings_Reminders" xml:space="preserve"><value>Reminders</value></data>
   <data name="Settings_StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
   <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimize to the notification area</value></data>
   <data name="Settings_12Hour" xml:space="preserve"><value>Use the 12 hour clock</value></data>
@@ -215,6 +223,8 @@
   <data name="Report_Empty" xml:space="preserve"><value>No meals were recorded in this period.</value></data>
   <data name="Report_Page" xml:space="preserve"><value>Page {0} of {1}</value></data>
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>The title is too long.</value></data>
+  <data name="Error_meal_title_required" xml:space="preserve"><value>The title is required.</value></data>
+  <data name="Error_meal_ingredients_required" xml:space="preserve"><value>The description is required.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>The category is not one of the five permanent slots.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Only JPEG, PNG and WEBP images are supported.</value></data>
   <data name="Error_photo_tooLarge" xml:space="preserve"><value>The photograph exceeds 10 MB.</value></data>

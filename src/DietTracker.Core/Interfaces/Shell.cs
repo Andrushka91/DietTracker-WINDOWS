@@ -50,6 +50,12 @@ public interface IDialogService
 {
     Task<bool> ConfirmAsync(string titleResourceKey, string messageResourceKey, string? detail = null);
 
+    /// <summary>Shows a question whose primary button carries an action label (for example "Edit",
+    /// from <paramref name="primaryResourceKey"/>) beside a plain OK dismiss button. Returns true
+    /// only when the action button was pressed; OK (the default button) returns false, so the
+    /// keyboard and an accidental click always land on the safe answer.</summary>
+    Task<bool> OfferAsync(string titleResourceKey, string messageResourceKey, string primaryResourceKey, string? detail = null);
+
     Task ShowMessageAsync(string titleResourceKey, string messageResourceKey, string? detail = null);
 
     /// <summary>Asks the user to choose one of the supplied options (resource keys); returns the index.</summary>

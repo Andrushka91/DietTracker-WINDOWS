@@ -40,8 +40,25 @@ public sealed partial class MealCardViewModel
         IsEditing = false;
         ErrorMessage = null;
 
-        // Reloading the day restores the persisted values exactly as the user left them.
-        await _host.RefreshAsync();
+        // Reloading only this slot restores the persisted values of this card; the other cards -
+        // including one that is open in inline editing - keep their unsaved state untouched.
+        await _host.RefreshCardAsync(this);
+    }
+
+    /// <summary>Wipes the whole content of this card; the host asks for a yes/no confirmation first
+    /// and leaves everything untouched when the user answers no.</summary>
+    [RelayCommand]
+    private async Task ClearAsync()
+    {
+        IsBusy = true;
+        try
+        {
+            await _host.ClearCardAsync(this);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     /// <summary>Marks the meal as DONE and records the completion timestamp.</summary>

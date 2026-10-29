@@ -47,6 +47,11 @@ public interface IPhotoRepository
 
     Task<IReadOnlyList<MealPhoto>> GetForMealAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
 
+    /// <summary>Every photograph of every meal inside a date range (inclusive), ordered by date,
+    /// slot and creation time - one query instead of one per meal, used to fill a whole calendar
+    /// month with the first picture of each slot.</summary>
+    Task<IReadOnlyList<MealPhoto>> GetForDateRangeAsync(Guid profileId, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+
     Task<MealPhoto?> GetAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task AddAsync(MealPhoto photo, CancellationToken cancellationToken = default);

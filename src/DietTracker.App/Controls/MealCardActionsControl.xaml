@@ -6,10 +6,11 @@
     xmlns:controls="using:DietTracker.App.Controls">
 
     <!-- Action bar of one meal card, icon-first like the Microsoft card chrome. Order: the add-photo
-         action first, then the pencil that opens the inline editor, then the two state buttons - the
-         red cross marks the meal as missed and the green check confirms it as eaten (DONE). Both state
-         buttons are available on today or a past date only, so on a future day they stay disabled and
-         the meal keeps its pending state. -->
+         action first, then the pencil that opens the inline editor, then the red trash can that wipes
+         the whole card behind a yes/no dialog, then the two state buttons - the red cross marks the
+         meal as missed and the green check confirms it as eaten (DONE). Both state buttons are
+         available on today or a past date only, so on a future day they stay disabled and the meal
+         keeps its pending state; the clear button is disabled while the card is already empty. -->
     <controls:UniformWrapPanel UniformHeight="False" MinItemWidth="44" HorizontalSpacing="6" VerticalSpacing="6">
         <!-- Photo glyph with the upload arrow layered on top (the Segoe glyphs share one fixed origin
              and are designed to overlay). No padding override, so the button keeps the standard
@@ -31,6 +32,18 @@
             ToolTipService.ToolTip="Edit"
             Command="{x:Bind Card.EditCommand}">
             <FontIcon Glyph="&#xE70F;" FontSize="18" />
+        </Button>
+        <!-- Wipes the whole card (text, time, state and photographs); the host asks for a yes/no
+             confirmation first, so the button itself never deletes anything on its own. Disabled
+             while the card is already empty - there would be nothing to wipe. -->
+        <Button
+            x:Uid="Meal_Clear"
+            Padding="7"
+            AutomationProperties.Name="Clear meal"
+            ToolTipService.ToolTip="Clear meal"
+            Command="{x:Bind Card.ClearCommand}"
+            IsEnabled="{x:Bind Card.CanClear, Mode=OneWay}">
+            <FontIcon Glyph="&#xE74D;" FontSize="18" Foreground="#FFA4262C" />
         </Button>
         <Button
             x:Uid="Meal_MarkMissed"

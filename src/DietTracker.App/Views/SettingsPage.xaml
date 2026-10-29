@@ -32,7 +32,11 @@
         </DataTemplate>
     </Page.Resources>
 
-    <ScrollViewer x:Name="ScrollHost" Padding="24,24,24,32">
+    <!-- Symmetrical on all four sides: the bottom carries the same 24 px as the top and the sides.
+         The page has no status line of its own any more - confirmations float over it (see the
+         frameless line at the bottom) - so this padding does not have to be sacrificed to make room
+         for them. -->
+    <ScrollViewer x:Name="ScrollHost" Padding="24">
         <!-- The MinHeight is kept equal to the viewport (UpdateContentHeight) and the star rows below
              absorb everything the fixed content leaves over, so the page covers the whole window. -->
         <Grid x:Name="RootLayout" MaxWidth="{StaticResource PageMaxContentWidth}">
@@ -77,13 +81,16 @@
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
 
-                <!-- Row 0 left: the connected account. The title stays on top and everything else forms
-                     one contiguous block at the bottom: provider/quota line, identity, sign-in
-                     button and the texts that explain what an account keeps - each 14 px below the
-                     previous element, so "Not signed in" sits right above the button and the button
-                     right above its texts. Auto rows with per-element margins keep that rhythm even
-                     when a line collapses (the confirmation is empty), and the star row above pushes
-                     the whole block onto the bottom padding of the card. -->
+                <!-- Row 0 left: the connected account. The title stays on top, the framed user glyph
+                     fills the free space under it and everything else forms one contiguous block at
+                     the bottom: provider/quota line, identity, sign-in button and the texts that
+                     explain what an account keeps. The block starts 14 px below the glyph - the same
+                     gap the other icon panels (Synchronization, Privacy and backup) leave under
+                     theirs - and every following element is 14 px below the previous one, so
+                     "Not signed in" sits right above the button and the button right above its
+                     texts. Auto rows with per-element margins keep that rhythm even when a line
+                     collapses (the confirmation is empty), and the star row above pushes the whole
+                     block onto the bottom padding of the card. -->
                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -95,7 +102,10 @@
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Account" Text="Account" />
 
                         <!-- The free space under the title carries the framed user glyph, pinned to the
-                             left so the tile lines up with the text below it. -->
+                             left so the tile lines up with the text below it. When the connected account
+                             has a photo, the picture fills this very tile instead of the glyph - the tile
+                             itself (120 x 120, frame and rounding) does not change; without a photo the
+                             glyph stays exactly as it is. -->
                         <Border
                             Grid.Row="1"
                             Width="120"
@@ -106,17 +116,28 @@
                             BorderBrush="{StaticResource GalleryBorderBrush}"
                             BorderThickness="2"
                             CornerRadius="{StaticResource CardCornerRadius}">
-                            <FontIcon
-                                Glyph="&#xE77B;"
-                                FontSize="64"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="{StaticResource SubtleTextBrush}" />
+                            <Grid>
+                                <FontIcon
+                                    Glyph="&#xE77B;"
+                                    FontSize="64"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{StaticResource SubtleTextBrush}"
+                                    Visibility="{x:Bind ViewModel.AccountPlaceholderVisibility, Mode=OneWay}" />
+                                <Border CornerRadius="{StaticResource CardCornerRadius}">
+                                    <Image
+                                        x:Name="AccountPhotoImage"
+                                        Source="{x:Bind ViewModel.AccountPhotoUrl, Mode=OneWay, Converter={StaticResource StringToImageSource}}"
+                                        Stretch="UniformToFill"
+                                        Visibility="{x:Bind ViewModel.AccountPhotoVisibility, Mode=OneWay}" />
+                                </Border>
+                            </Grid>
                         </Border>
 
-                        <Grid Grid.Row="2">
+                        <!-- The block sits 14 px under the glyph tile, exactly like the text of the
+                             Synchronization and Privacy and backup panels sits under theirs. -->
+                        <Grid Grid.Row="2" Margin="0,14,0,0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -161,21 +182,12 @@
                                     MinWidth="140"
                                     Command="{x:Bind ViewModel.SignOutCommand}"
                                     Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
-                                <ProgressRing IsActive="{x:Bind ViewModel.IsAccountBusy, Mode=OneWay}" Width="20" Height="20" VerticalAlignment="Center" />
                             </StackPanel>
-
-                            <!-- Collapsed while empty, so the button keeps touching its texts. -->
-                            <TextBlock
-                                Grid.Row="3"
-                                Margin="0,14,0,0"
-                                Style="{StaticResource SettingsCaptionStyle}"
-                                Text="{x:Bind ViewModel.AccountStatusMessage, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.AccountStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
 
                             <!-- There is no "upload my meals" switch any more: signing in is the consent,
                                  and these two captions say exactly what the account keeps. -->
-                            <TextBlock Grid.Row="4" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.CloudSaveText}" />
-                            <TextBlock Grid.Row="5" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.ConsentText}" />
+                            <TextBlock Grid.Row="3" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.CloudSaveText}" />
+                            <TextBlock Grid.Row="4" Margin="0,14,0,0" Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.ConsentText}" />
                         </Grid>
                     </Grid>
                 </Border>
@@ -183,9 +195,11 @@
                 <!-- Row 0 right: the local switches. There is no Save button - every switch (and the
                      automatic synchronization interval) is written the moment it changes. The
                      switches live in auto rows separated by starred gaps, so they spread evenly over
-                     the whole height of the panel - and the confirmation, the last row, ends on the
-                     same bottom padding as the account card (it collapses while empty, so the last
-                     visible row is always flush with that padding). -->
+                     the whole height of the panel; the last visible row ends on the bottom padding of
+                     the card (the confirmation of a change is not part of this layout any more, it
+                     floats over the page - see the frameless line at the bottom of the page). There is no
+                     Reminders switch: no reminder can exist (nothing in the application creates one),
+                     so a switch that gates an empty list would only pretend to be a setting. -->
                 <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -197,28 +211,14 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" MinHeight="14" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="14" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_General" Text="General" />
                         <TextBlock Grid.Row="1" Style="{StaticResource SettingsCaptionStyle}" x:Uid="Settings_AutoSaveHint" Text="Every change is saved immediately; the page has no Save button." />
 
-                        <ToggleSwitch Grid.Row="3" FontSize="16" x:Uid="Settings_Reminders" Header="Reminders" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.RemindersEnabled, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="5" FontSize="16" x:Uid="Settings_StartWithWindows" Header="Start with Windows" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="7" FontSize="16" x:Uid="Settings_MinimizeToTray" Header="Minimize to the notification area" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}" />
-                        <ToggleSwitch Grid.Row="9" FontSize="16" x:Uid="Settings_12Hour" Header="Use the 12 hour clock" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.Use12HourClock, Mode=TwoWay}" />
-
-                        <!-- The margin is the usual 14 px gap and only exists while the message is
-                             shown: a collapsed element takes its margin with it, so the last visible
-                             row always ends on the card padding. -->
-                        <TextBlock
-                            Grid.Row="10"
-                            Margin="0,14,0,0"
-                            Style="{StaticResource SettingsCaptionStyle}"
-                            Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                            Visibility="{x:Bind ViewModel.StatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
+                        <ToggleSwitch Grid.Row="3" FontSize="16" x:Uid="Settings_StartWithWindows" Header="Start with Windows" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="5" FontSize="16" x:Uid="Settings_MinimizeToTray" Header="Minimize to the notification area" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}" />
+                        <ToggleSwitch Grid.Row="7" FontSize="16" x:Uid="Settings_12Hour" Header="Use the 12 hour clock" HeaderTemplate="{StaticResource SettingsHeaderTemplate}" IsOn="{x:Bind ViewModel.Use12HourClock, Mode=TwoWay}" />
                     </Grid>
                 </Border>
 
@@ -235,7 +235,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" MinHeight="120" />
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -291,15 +290,6 @@
                             x:Uid="Settings_SyncFrequencyHint"
                             Text="Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices." />
 
-                        <!-- Collapsed while empty: the block keeps its rhythm and the actions stay
-                             the last row on the card padding. -->
-                        <TextBlock
-                            Grid.Row="5"
-                            Margin="0,14,0,0"
-                            Style="{StaticResource SettingsCaptionStyle}"
-                            Text="{x:Bind ViewModel.SyncStatusMessage, Mode=OneWay}"
-                            Visibility="{x:Bind ViewModel.SyncStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
-
                         <!-- A wrap panel (not a horizontal StackPanel) keeps the row wrappable on narrow
                              windows; being right-aligned it ends exactly on the card's right padding,
                              the same value as the bottom rows. The busy state needs no spinner here:
@@ -307,7 +297,7 @@
                              Busy_Restoring) with its own ring, message and closing block, so
                              nothing can push these buttons off the edge. -->
                         <controls:UniformWrapPanel
-                            Grid.Row="6"
+                            Grid.Row="5"
                             Margin="0,14,0,0"
                             HorizontalAlignment="Right"
                             UniformHeight="False"
@@ -352,7 +342,6 @@
                             <RowDefinition Height="*" MinHeight="120" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_PrivacyAndBackup" Text="Privacy and backup" />
@@ -382,17 +371,8 @@
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.DatabasePath}" IsTextSelectionEnabled="True" />
                         </StackPanel>
 
-                        <!-- Collapsed while empty: the texts keep their rhythm and the buttons stay
-                             the last row on the card padding. -->
-                        <TextBlock
-                            Grid.Row="3"
-                            Margin="0,14,0,0"
-                            Style="{StaticResource SettingsCaptionStyle}"
-                            Text="{x:Bind ViewModel.BackupStatusMessage, Mode=OneWay}"
-                            Visibility="{x:Bind ViewModel.BackupStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
-
                         <controls:UniformWrapPanel
-                            Grid.Row="4"
+                            Grid.Row="3"
                             Margin="0,14,0,0"
                             HorizontalAlignment="Right"
                             UniformHeight="False"
@@ -423,6 +403,26 @@
                     </Grid>
                 </Border>
             </Grid>
+
+            <!-- Confirmation of the last action ("Your settings were saved.", "Backup created ...",
+                 the result of an integrity check, a synchronization). It deliberately is not a row
+                 of the card it belongs to: the cards have no spare height - the page fills the
+                 window exactly - so a line that arrived inside one pushed every row below it down
+                 and put the page into a scrollbar. Floating over the empty bottom-right corner of
+                 the About card it costs no layout at all: a toggle or a button never moves a card.
+                 The line carries no frame: a border made the text read like a button, the message
+                 alone is clearer. -->
+            <TextBlock
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                MaxWidth="460"
+                Margin="14,10"
+                Style="{StaticResource SettingsCaptionStyle}"
+                Text="{x:Bind ViewModel.ActiveStatusMessage, Mode=OneWay}"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind ViewModel.ActiveStatusMessage, Converter={StaticResource StringToVisibility}, Mode=OneWay}" />
         </Grid>
     </ScrollViewer>
 </Page>

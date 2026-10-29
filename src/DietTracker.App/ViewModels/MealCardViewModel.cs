@@ -214,6 +214,7 @@ public sealed partial class MealCardViewModel : ObservableObject
         OnPropertyChanged(nameof(StatusPillBrush));
         OnPropertyChanged(nameof(CanMarkMissed));
         OnPropertyChanged(nameof(CanMarkDone));
+        OnPropertyChanged(nameof(CanClear));
     }
 
     partial void OnCompletedAtChanged(DateTimeOffset? value) => OnPropertyChanged(nameof(CompletedAtText));
@@ -222,6 +223,22 @@ public sealed partial class MealCardViewModel : ObservableObject
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     partial void OnErrorMessageChanged(string? value) => OnPropertyChanged(nameof(HasError));
+
+    /// <summary>
+    /// True when the card holds anything the clear action could wipe - enables the clear button,
+    /// so an untouched placeholder never offers to delete data that is not there.
+    /// </summary>
+    public bool CanClear => !string.IsNullOrWhiteSpace(Title)
+        || !string.IsNullOrWhiteSpace(Ingredients)
+        || PlannedTime is not null
+        || Status != MealStatus.Pending
+        || Photos.Count > 0;
+
+    partial void OnTitleChanged(string value) => OnPropertyChanged(nameof(CanClear));
+
+    partial void OnIngredientsChanged(string value) => OnPropertyChanged(nameof(CanClear));
+
+    partial void OnPlannedTimeChanged(TimeOnly? value) => OnPropertyChanged(nameof(CanClear));
 
     /// <summary>Copies the editable values back into the domain entry before it is persisted.</summary>
     /// <returns>
@@ -276,5 +293,6 @@ public sealed partial class MealCardViewModel : ObservableObject
         OnPropertyChanged(nameof(HasPhotos));
         OnPropertyChanged(nameof(CanAddPhoto));
         OnPropertyChanged(nameof(PhotoLimitText));
+        OnPropertyChanged(nameof(CanClear));
     }
 }

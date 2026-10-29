@@ -15,12 +15,13 @@ namespace DietTracker.Core.Analytics;
 /// the user's own decision moves a slot out of pending.
 /// </para>
 /// <para>
-/// Only the decided meals take part in a ratio: confirmed plus missed. Slots that are still
-/// pending are excluded from every percentage - so an untouched day reports no value instead of
-/// dragging a period down to 0 %.
+/// The completion percentage of a single day = confirmed / 5 * 100: only the meals the user
+/// actually marked as done raise the figure, every other slot - missed, pending or untouched -
+/// counts towards the total, and a day reaches 100 % solely by completing all five slots.
+/// Period ratios (week, month) keep their decided-only denominator, so an untouched period
+/// still reports no ratio instead of being dragged down to 0 % by five empty slots per day.
 /// </para>
 /// <para>
-/// Daily completion = confirmed / (confirmed + missed) * 100, and zero while nothing was decided.
 /// The figures reflect what the user recorded, they are not medically verified dietary compliance;
 /// the API exposes raw numbers only so the UI can present them without punitive wording.
 /// </para>
@@ -67,7 +68,11 @@ public static class ProgressCalculator
                 Title = entry?.Title ?? string.Empty,
                 PlannedTime = entry?.PlannedTime,
                 CompletedAt = entry?.CompletedAt,
+                Ingredients = entry?.Ingredients ?? string.Empty,
                 PhotoCount = entry?.Photos.Count ?? 0,
+                // The photos arrive ordered by creation time, so the first one is the picture the
+                // calendar shows inside the day cell.
+                FirstPhotoThumbnailId = entry?.Photos.FirstOrDefault()?.ThumbnailId ?? string.Empty,
             });
         }
 
@@ -83,8 +88,8 @@ public static class ProgressCalculator
     }
 
     /// <summary>
-    /// Builds the completion percentage of a single date: the share of the decided meals that were
-    /// confirmed. Zero when nothing was decided yet.
+    /// Builds the completion percentage of a single date: the confirmed share of the five
+    /// permanent slots (completed / 5 * 100). Zero while nothing was confirmed.
     /// </summary>
     public static double PercentageForDay(IEnumerable<MealEntry> entries, DateOnly date)
         => ForDay(date, entries).Percentage;

@@ -85,6 +85,16 @@ public sealed partial class CalendarPage : Page
         // the cell is a perfect square (as wide as the seven columns make it).
         var fittingRow = (viewport - reserved - (CellSpacing * (rows - 1))) / rows;
         var squareRow = (DaysHost.ActualWidth - (CellSpacing * 6)) / 7d;
+
+        // The width of one cell decides how many chip columns fit inside a day square, so the day
+        // cells learn it here (the height follows below once the row is settled). The NaN check
+        // comes first: NaN arithmetic would keep the value unset forever and the meal squares
+        // would never appear.
+        if (double.IsNaN(ViewModel.CellWidth) || Math.Abs(ViewModel.CellWidth - squareRow) > 0.5d)
+        {
+            ViewModel.CellWidth = squareRow;
+        }
+
         var rowHeight = Math.Max(0d, Math.Min(fittingRow, squareRow));
         if (rowHeight <= 0d)
         {

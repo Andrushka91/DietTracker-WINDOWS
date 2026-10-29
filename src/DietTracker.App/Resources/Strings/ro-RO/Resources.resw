@@ -53,6 +53,9 @@
   <data name="Dashboard_CountPending" xml:space="preserve"><value>În așteptare</value></data>
   <data name="Dashboard_AllDone" xml:space="preserve"><value>Toate mesele sunt confirmate.</value></data>
   <data name="Dashboard_AllMissed" xml:space="preserve"><value>Toate mesele sunt marcate ca ratate.</value></data>
+  <data name="Dashboard_SaveAll" xml:space="preserve"><value>Salvează tot</value></data>
+  <data name="Dashboard_SaveAllDone" xml:space="preserve"><value>Toate cardurile deschise au fost salvate.</value></data>
+  <data name="Dashboard_SaveAllPartial" xml:space="preserve"><value>Au fost salvate {0} din {1} carduri deschise.</value></data>
   <data name="Dashboard_SaveDayTemplate" xml:space="preserve"><value>Salvează ca șablon</value></data>
 
   <data name="Meal_Title" xml:space="preserve"><value>Titlu</value></data>
@@ -62,6 +65,12 @@
 
   <data name="Meal_MarkDone" xml:space="preserve"><value>Marchează ca DONE</value></data>
   <data name="Meal_MarkMissed" xml:space="preserve"><value>Marchează ca ratată</value></data>
+  <data name="Meal_Clear" xml:space="preserve"><value>Șterge masa</value></data>
+  <data name="Meal_ClearTitle" xml:space="preserve"><value>Ștergi această masă?</value></data>
+  <data name="Meal_ClearMessage" xml:space="preserve"><value>Titlul, descrierea, ora planificată, starea și toate fotografiile acestei mese sunt șterse. Nu se poate anula.</value></data>
+  <data name="Meal_EmptyDoneTitle" xml:space="preserve"><value>Editează mai întâi masa</value></data>
+  <data name="Meal_EmptyDoneMessage" xml:space="preserve"><value>Această masă nu are încă titlu și descriere, deci nu poate fi marcată ca DONE. Apasă Editează pentru a o completa mai întâi.</value></data>
+  <data name="Meal_EmptyDoneSomeMessage" xml:space="preserve"><value>Mesele fără titlu sau descriere nu au fost marcate ca DONE. Editează-le mai întâi.</value></data>
   <data name="Meal_CompletedAt" xml:space="preserve"><value>Confirmat la</value></data>
 
   <data name="Photo_Add" xml:space="preserve"><value>Adaugă fotografie</value></data>
@@ -111,7 +120,6 @@
   <data name="Settings_Title" xml:space="preserve"><value>Setări</value></data>
   <data name="Settings_General" xml:space="preserve"><value>General</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Cont</value></data>
-  <data name="Settings_Reminders" xml:space="preserve"><value>Memento-uri</value></data>
   <data name="Settings_StartWithWindows" xml:space="preserve"><value>Pornește cu Windows</value></data>
   <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimizează în zona de notificare</value></data>
   <data name="Settings_12Hour" xml:space="preserve"><value>Folosește formatul de 12 ore</value></data>
@@ -238,6 +246,8 @@
   <data name="Report_Page" xml:space="preserve"><value>Pagina {0} din {1}</value></data>
 
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>Titlul este prea lung.</value></data>
+  <data name="Error_meal_title_required" xml:space="preserve"><value>Titlul este obligatoriu.</value></data>
+  <data name="Error_meal_ingredients_required" xml:space="preserve"><value>Descrierea este obligatorie.</value></data>
   <data name="Error_meal_category_invalid" xml:space="preserve"><value>Categoria nu este una dintre cele cinci permanente.</value></data>
   <data name="Error_photo_format_unsupported" xml:space="preserve"><value>Sunt acceptate doar imagini JPEG, PNG sau WEBP.</value></data>
   <data name="Error_photo_tooLarge" xml:space="preserve"><value>Fotografia depășește 10 MB.</value></data>

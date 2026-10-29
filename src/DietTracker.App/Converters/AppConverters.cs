@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace DietTracker.App.Converters;
 
@@ -65,6 +66,24 @@ public sealed class StringToVisibilityConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, string language)
         => value is string text && !string.IsNullOrEmpty(text) ? Visibility.Visible : Visibility.Collapsed;
 
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => throw new NotSupportedException();
+}
+
+/// <summary>
+/// Turns the URL of an account photo into the bitmap an <c>Image</c> shows. Anything that is not a
+/// usable absolute URL (empty in Guest Mode, a provider without a photo) yields <see langword="null"/>,
+/// which leaves the image blank while the placeholder beside it stays visible.
+/// </summary>
+public sealed class StringToImageSourceConverter : IValueConverter
+{
+    /// <inheritdoc />
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => value is string text && Uri.TryCreate(text, UriKind.Absolute, out var uri)
+            ? new BitmapImage(uri)
+            : null!; // Image.Source accepts null: no picture, no image.
+
+    /// <inheritdoc />
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();
 }

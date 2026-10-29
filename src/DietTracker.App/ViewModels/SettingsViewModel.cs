@@ -131,11 +131,19 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _accountDetailText = string.Empty;
 
+    /// <summary>
+    /// Profile picture of the connected account. Empty in Guest Mode, when the account has no photo or
+    /// when the provider could not be asked - the framed glyph of the tile then stays as it is.
+    /// </summary>
     [ObservableProperty]
-    private string _accountStatusMessage = string.Empty;
+    [NotifyPropertyChangedFor(nameof(AccountPhotoVisibility))]
+    [NotifyPropertyChangedFor(nameof(AccountPlaceholderVisibility))]
+    private string _accountPhotoUrl = string.Empty;
 
+    /// <summary>What the last sign-in or sign-out reported (shown in the Account card).</summary>
     [ObservableProperty]
-    private bool _isAccountBusy;
+    [NotifyPropertyChangedFor(nameof(ActiveStatusMessage))]
+    private string _accountStatusMessage = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SignInVisibility))]
@@ -152,6 +160,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     /// <summary>What the last manual synchronization or restore reported.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ActiveStatusMessage))]
     private string _syncStatusMessage = string.Empty;
 
     /// <summary>True while a manual synchronization, a preview or a restore is running.</summary>
@@ -179,8 +188,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>Signing out only makes sense while an account is connected.</summary>
     public Visibility SignedInVisibility => IsSignedIn ? Visibility.Visible : Visibility.Collapsed;
 
-    [ObservableProperty]
-    private bool _remindersEnabled = true;
+    /// <summary>The photo of the account replaces the glyph of the tile as soon as there is one.</summary>
+    public Visibility AccountPhotoVisibility => string.IsNullOrEmpty(AccountPhotoUrl) ? Visibility.Collapsed : Visibility.Visible;
+
+    /// <summary>The framed person glyph is the fallback while there is no photo to show.</summary>
+    public Visibility AccountPlaceholderVisibility => string.IsNullOrEmpty(AccountPhotoUrl) ? Visibility.Visible : Visibility.Collapsed;
 
     [ObservableProperty]
     private bool _startWithWindows;
@@ -196,11 +208,26 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     /// <summary>Confirmation of the last automatic save of a switch (shown in the General card).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ActiveStatusMessage))]
     private string _statusMessage = string.Empty;
 
     /// <summary>Result of the last export, restore or integrity check (shown in the data card).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ActiveStatusMessage))]
     private string _backupStatusMessage = string.Empty;
+
+    /// <summary>
+    /// The one message the page currently reports: the most specific of the four status texts that
+    /// is set. It is bound to the floating confirmation of the settings page instead of to a line
+    /// inside a card - the cards have no spare height (the page fills the window exactly), so a line
+    /// that arrived inside one would push every row below it down and put the page into a scrollbar.
+    /// Floating above the layout, the same message costs no height at all.
+    /// </summary>
+    public string ActiveStatusMessage =>
+        !string.IsNullOrEmpty(BackupStatusMessage) ? BackupStatusMessage :
+        !string.IsNullOrEmpty(SyncStatusMessage) ? SyncStatusMessage :
+        !string.IsNullOrEmpty(AccountStatusMessage) ? AccountStatusMessage :
+        StatusMessage;
 
     [ObservableProperty]
     private string _storageText = string.Empty;
@@ -233,7 +260,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         try
         {
             SelectedSyncFrequency = _preferences.SyncFrequency.ToString();
-            RemindersEnabled = _preferences.RemindersEnabled;
             MinimizeToTray = _preferences.MinimizeToTray;
             Use12HourClock = _preferences.Use12HourClock;
             ShowSnackCards = _preferences.ShowSnackCards;
@@ -305,6 +331,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         QuotaText = account?.QuotaRemainingBytes is { } remaining
             ? _localization.Format("Account_Quota", remaining / 1024d / 1024d / 1024d)
             : string.Empty;
+
+        // The photo of the account for the tile. Display only: no photo, no session or a failing
+        // provider must never keep the page from loading, so every failure leaves the placeholder.
+        try
+        {
+            AccountPhotoUrl = account is null
+                ? string.Empty
+                : await _authentication.GetActiveAccountPhotoAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            AccountPhotoUrl = string.Empty;
+        }
     }
 
     /// <summary>
@@ -371,8 +410,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// applied until a button is pressed is a setting the user cannot trust, and there is no Save
     /// button on the page any more, so the change is what saves it.
     /// </summary>
-    partial void OnRemindersEnabledChanged(bool value) => QueuePreferencesSave();
-
     partial void OnStartWithWindowsChanged(bool value) => QueuePreferencesSave();
 
     partial void OnMinimizeToTrayChanged(bool value) => QueuePreferencesSave();
@@ -415,7 +452,6 @@ public sealed partial class SettingsViewModel : ObservableObject
             preferences.SyncFrequency = Enum.TryParse<SyncFrequency>(SelectedSyncFrequency, out var syncFrequency)
                 ? syncFrequency
                 : SyncFrequency.Weekly;
-            preferences.RemindersEnabled = RemindersEnabled;
             preferences.MinimizeToTray = MinimizeToTray;
             preferences.Use12HourClock = Use12HourClock;
             preferences.ShowSnackCards = ShowSnackCards;
@@ -442,7 +478,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SignInGoogleAsync()
     {
-        IsAccountBusy = true;
         AccountStatusMessage = string.Empty;
         var overlayShown = false;
         try
@@ -493,7 +528,6 @@ public sealed partial class SettingsViewModel : ObservableObject
                 _busy.Hide();
             }
 
-            IsAccountBusy = false;
             await LoadAccountAsync();
         }
     }
@@ -507,7 +541,6 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        IsAccountBusy = true;
         try
         {
             // Signing out synchronizes on its own (upload, then delete the local cache) and locks the
@@ -558,7 +591,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         finally
         {
-            IsAccountBusy = false;
             await LoadAccountAsync();
             await RefreshSyncTextAsync();
         }

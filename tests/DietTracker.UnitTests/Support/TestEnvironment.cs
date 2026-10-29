@@ -228,6 +228,10 @@ public sealed class TestAuthenticationCoordinator : IAuthenticationCoordinator
             ? Task.FromResult<CloudAccount?>(null)
             : _accounts.GetActiveAsync(cancellationToken);
 
+    /// <summary>The test provider never reports a photo, so the interface keeps its placeholder.</summary>
+    public Task<string> GetActiveAccountPhotoAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(string.Empty);
+
     public Task<AuthenticationResult> SignInAsync(ProviderType providerType, bool grantUploadConsent, CancellationToken cancellationToken = default)
         => Task.FromResult(AuthenticationResult.Ok(providerType, "test-user", "Test User", "user@example.com", silent: false));
 

@@ -26,6 +26,11 @@ public interface IMealTrackingService
     /// <summary>Persists an inline edit, validates it, bumps the revision and journals the change for sync.</summary>
     Task<ValidationResult> SaveEditsAsync(MealEntry entry, CancellationToken cancellationToken = default);
 
+    /// <summary>Wipes the whole content of a slot: title, description, planned time, completion
+    /// state and every attached photograph (records and local files, both journaled for sync). The
+    /// slot itself stays - it returns to the empty PENDING placeholder of its permanent category.</summary>
+    Task<MealEntry> ClearMealAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
+
     /// <summary>Confirms the meal as eaten (today or a past date; future meals stay pending).</summary>
     Task<MealEntry> MarkDoneAsync(Guid mealEntryId, CancellationToken cancellationToken = default);
 

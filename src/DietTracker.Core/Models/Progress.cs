@@ -27,9 +27,13 @@ public sealed record DayProgress
     /// <summary>True when at least one meal was decided (confirmed or missed).</summary>
     public bool HasDecided => Decided > 0;
 
-    /// <summary>Share of the decided meals that were confirmed, in the range 0..100. Zero when
-    /// nothing was decided yet, so an untouched day never reports a value.</summary>
-    public double Percentage => Decided == 0 ? 0d : Math.Round(Completed * 100d / Decided, 2);
+    /// <summary>
+    /// Share of the five permanent slots that were confirmed as eaten, in the range 0..100:
+    /// completed / total * 100. Every other slot - missed, pending or untouched - counts towards
+    /// the total, so only the meals the user actually marked as done raise the figure and a day
+    /// reaches 100 % solely by completing all five slots. A day with nothing confirmed reports zero.
+    /// </summary>
+    public double Percentage => TotalSlots == 0 ? 0d : Math.Round(Completed * 100d / TotalSlots, 2);
 
     /// <summary>True when all five permanent slots were confirmed.</summary>
     public bool IsFullyCompleted => Completed == TotalSlots;
@@ -54,7 +58,15 @@ public sealed record MealSlotStatus
 
     public DateTimeOffset? CompletedAt { get; init; }
 
+    /// <summary>Free-form description of the meal (the entry's ingredients text). The calendar
+    /// draws it as the second miniature line of the day's mini card.</summary>
+    public string Ingredients { get; init; } = string.Empty;
+
     public int PhotoCount { get; init; }
+
+    /// <summary>Thumbnail file name of the first (oldest) photograph attached to the meal, empty
+    /// when the meal has none. The calendar cell draws this very picture inside its mini card.</summary>
+    public string FirstPhotoThumbnailId { get; init; } = string.Empty;
 }
 
 /// <summary>Aggregated progress for a period (week or month) plus its trend information.</summary>

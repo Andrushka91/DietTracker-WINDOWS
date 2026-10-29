@@ -10,9 +10,13 @@
          a weekday header row and a seven column grid of day cells. Gray is the pending state - the
          default of a day the user has not touched yet -, red marks a day on which at least one meal
          was missed and green a day where every meal was eaten; the border repeats the colour of
-         the background. Today keeps the accent fill around its day number. The legend explains the
-         three states. Meals the user never recorded are pending and never produce a figure, so an
-         untouched cell shows its day number and nothing else. -->
+         the background. Today keeps the accent fill around its day number. Pressing a day paints its
+         background with the accent selection colour, so the current selection is always visible.
+         Every recorded meal of a day appears inside its cell as a mini card (at most five, two per
+         row) with its title and first photograph framed by the state colour of the slot - the cards
+         are inert: a press on them only moves the selection to that day, a double press opens the
+         day. The legend explains the three states. Meals the user never recorded are pending and
+         never produce a figure, so an untouched cell shows its day number and nothing else. -->
     <ScrollViewer
         x:Name="ScrollHost"
         Padding="16,16,16,24"
@@ -99,52 +103,148 @@
                             Tag="{x:Bind}"
                             Click="OnDayClick"
                             DoubleTapped="OnDayDoubleTapped">
-                            <!-- Layout of the square: the day number hugs the top left corner and the photo marker
-                 with the percentage the bottom left corner - both at the same distance from the
-                 two borders they touch (the cell has equal padding on every side). The star row
-                 between them keeps both corners pinned to the corners at any cell height. -->
+                            <!-- Layout of the square: the day number and the photo marker with the percentage share
+                 the top row (number left, marker right), the meal cards below fill the star row.
+                 Both rows live inside the fixed height of the cell, so the day square never
+                 changes size with its content. -->
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
 
-                                <!-- Day number in the top left corner; today keeps the accent colour. The small negative
-                                     top margin compensates the font's internal leading, so the glyph
-                                     sits at the same visual distance from the left and the top border. -->
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Margin="0,-7,0,0"
-                                    Text="{x:Bind DayNumber}"
-                                    FontSize="24"
-                                    FontWeight="SemiBold"
-                                    VerticalAlignment="Top"
-                                    Foreground="{x:Bind DayNumberBrush, Mode=OneWay}" />
+                                <!-- Row 0: the day number on the left and the photo marker with the percentage on
+                                     the right of the same row. The small negative top margin of the number
+                                     compensates the font's internal leading, so the glyph sits at the same
+                                     visual distance from the left and the top border; the background colour
+                                     of the cell already tells the state of the day: nothing decided (gray),
+                                     all meals eaten (green) or at least one missed (red). -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Bottom left: photo marker and percentage (the small negative bottom margin offsets the
-                                     space under the baseline, so the glyph is as close to the bottom
-                                     border as it is to the left one). The background colour of
-                                     the cell already tells the state of the day: nothing decided
-                                     (gray), all meals eaten (green) or at least one missed (red) -->
-                                <StackPanel
-                                    Grid.Row="1"
-                                    Orientation="Horizontal"
-                                    Spacing="8"
-                                    Margin="0,0,0,-3"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Bottom">
-                                    <FontIcon
-                                        Glyph="&#xE91B;"
-                                        FontSize="14"
-                                        Foreground="{x:Bind StateTextBrush, Mode=OneWay}"
-                                        Visibility="{x:Bind HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
                                     <TextBlock
-                                        Style="{StaticResource CaptionStyle}"
-                                        FontSize="14"
-                                        VerticalAlignment="Center"
-                                        Foreground="{x:Bind StateTextBrush, Mode=OneWay}"
-                                        Text="{x:Bind PercentageText, Mode=OneWay}" />
-                                </StackPanel>
+                                        Grid.Column="0"
+                                        Margin="0,-7,0,0"
+                                        Text="{x:Bind DayNumber}"
+                                        FontSize="24"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Top"
+                                        Foreground="{x:Bind DayNumberBrush, Mode=OneWay}" />
+
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center">
+                                        <FontIcon
+                                            Glyph="&#xE91B;"
+                                            FontSize="14"
+                                            Foreground="{x:Bind StateTextBrush, Mode=OneWay}"
+                                            Visibility="{x:Bind HasPhotos, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                                        <TextBlock
+                                            Style="{StaticResource CaptionStyle}"
+                                            FontSize="14"
+                                            VerticalAlignment="Center"
+                                            Foreground="{x:Bind StateTextBrush, Mode=OneWay}"
+                                            Text="{x:Bind PercentageText, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 1: the five mini cards of the day in a fixed grid of two columns and three rows that
+                                     stretches over the whole area under the day number - every card keeps the
+                                     full miniature size of its grid cell and the rows fill the day square, while
+                                     the title and the second line hug the top and bottom edges so the visible
+                                     padding stays an even 3 px on all four sides (an untouched slot renders
+                                     invisible and simply holds its place). Each card is a scaled-down copy of
+                                     the meal card: first photograph, title and description in small fonts,
+                                     trimmed to the frame - hovering shows the full content. The cards are
+                                     inert: a press on them bubbles to the day button and only moves the
+                                     selection there, a double press opens the day. When the cell is too
+                                     short for a title line the row hides (ShowChips) and the day falls
+                                     back to its number and percentage. -->
+                                <ItemsControl
+                                    Grid.Row="1"
+                                    ItemsSource="{x:Bind Meals}"
+                                    Visibility="{x:Bind ShowChips, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <controls:ColumnGridPanel Columns="2" HorizontalSpacing="4" VerticalSpacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CalendarMealChipViewModel">
+                                            <!-- The frame carries the state of the slot: green (eaten), red (missed) or gray
+                                                 (pending); an untouched slot collapses and keeps its place in
+                                                 the grid. The card keeps the full miniature size of its grid
+                                                 cell, the title hugs the top edge and the second line the
+                                                 bottom edge, so the visible gap is an even 3 px on all four
+                                                 sides - and both miniature lines are trimmed with an ellipsis
+                                                 as soon as they run out of room (hovering shows the full
+                                                 content). -->
+                                            <Border
+                                                Padding="3"
+                                                BorderThickness="1"
+                                                BorderBrush="{x:Bind BorderBrush}"
+                                                Background="{x:Bind Fill}"
+                                                CornerRadius="3"
+                                                Visibility="{x:Bind IsRecorded, Converter={StaticResource BoolToVisibility}}"
+                                                ToolTipService.ToolTip="{x:Bind Tooltip}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- The first photograph of the meal; it grows with the row
+                                                         the cell offers, and the converter yields null (an
+                                                         empty picture) for a meal without one. -->
+                                                    <Image
+                                                        Grid.Column="0"
+                                                        Width="{x:Bind PhotoSize, Mode=OneWay}"
+                                                        Height="{x:Bind PhotoSize, Mode=OneWay}"
+                                                        Margin="0,0,4,0"
+                                                        VerticalAlignment="Center"
+                                                        Stretch="UniformToFill"
+                                                        Source="{x:Bind ThumbnailPath, Converter={StaticResource StringToImageSource}}"
+                                                        Visibility="{x:Bind HasPhoto, Converter={StaticResource BoolToVisibility}}" />
+
+                                                    <!-- Miniature copy of the meal card: the title is pinned to the top edge and the
+                                                         second line - the description, or the status of the slot
+                                                         when there is none - to the bottom edge, so both touch
+                                                         the frame with the same 3 px as the sides. -->
+                                                    <Grid Grid.Column="1">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock
+                                                            Grid.Row="0"
+                                                            FontSize="8"
+                                                            FontWeight="SemiBold"
+                                                            Text="{x:Bind Title}"
+                                                            TextTrimming="CharacterEllipsis"
+                                                            Foreground="{x:Bind TextBrush, Mode=OneWay}" />
+
+                                                        <TextBlock
+                                                            Grid.Row="2"
+                                                            FontSize="{x:Bind DescriptionFontSize, Mode=OneWay}"
+                                                            Text="{x:Bind BottomText}"
+                                                            TextTrimming="CharacterEllipsis"
+                                                            Opacity="0.8"
+                                                            Foreground="{x:Bind TextBrush, Mode=OneWay}"
+                                                            Visibility="{x:Bind ShowDescription, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </Grid>
                         </Button>
                     </DataTemplate>

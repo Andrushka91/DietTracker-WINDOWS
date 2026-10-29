@@ -87,6 +87,17 @@ public sealed class DialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<bool> OfferAsync(string titleResourceKey, string messageResourceKey, string primaryResourceKey, string? detail = null)
+    {
+        var dialog = BuildDialog(titleResourceKey, messageResourceKey, detail);
+        dialog.PrimaryButtonText = _localization.Get(primaryResourceKey);
+        dialog.CloseButtonText = _localization.Get("Common_Ok");
+        dialog.DefaultButton = ContentDialogButton.Close;
+
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    /// <inheritdoc />
     public async Task ShowMessageAsync(string titleResourceKey, string messageResourceKey, string? detail = null)
     {
         var dialog = BuildDialog(titleResourceKey, messageResourceKey, detail);

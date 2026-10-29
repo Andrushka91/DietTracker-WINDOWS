@@ -25,6 +25,7 @@ public sealed class CloudDataSessionTests
         var day = await environment.Tracking.GetDayAsync(TestDate);
         var lunch = day.First(entry => entry.MealCategoryKey == MealCategoryKey.Lunch);
         lunch.Title = title;
+        lunch.Ingredients = "Rice and vegetables";
         await environment.Tracking.SaveEditsAsync(lunch);
         return lunch;
     }

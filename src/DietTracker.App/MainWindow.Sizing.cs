@@ -18,6 +18,12 @@ namespace DietTracker.App;
 /// and maximum height become the same value). Switching between the pages never resizes the window: a
 /// short page (the settings page, for example) must not pull it down and a long page must not push it
 /// up. The fit is therefore restricted to the dashboard and stops for good once the content settled.
+/// Three things make that a guarantee rather than an intention: the freeze runs when the first fit
+/// measurement exists and the user leaves the dashboard (so the single possible correction happens
+/// before they can work on another page), an unconditional deadline timer freezes the height at the
+/// latest <see cref="InitialFitTimeout"/> after start-up (the fit cannot be skipped by a navigation),
+/// and <see cref="ResizeWindowHeight"/> refuses to move the height once it is frozen - the minimum
+/// and maximum being equal, Windows clamps every further height change, from the user or from code.
 /// </remarks>
 public sealed partial class MainWindow
 {
@@ -52,6 +58,10 @@ public sealed partial class MainWindow
     private FrameworkElement? _firstPageContent;
 
     private DispatcherQueueTimer? _fitSettleTimer;
+
+    /// <summary>Unconditional backstop: freezes the height at the latest this long after start-up.</summary>
+    private DispatcherQueueTimer? _fitDeadlineTimer;
+
     private DateTimeOffset _fitDeadline;
 
     /// <summary>Last measured height of the dashboard content (DIP), used when the height is frozen.</summary>
@@ -88,6 +98,17 @@ public sealed partial class MainWindow
         _fitSettleTimer.IsRepeating = false;
         _fitSettleTimer.Tick += (_, _) => FreezeWindowHeight();
 
+        // Backstop: whatever happens to the fit - a navigation in the first second, content that
+        // never settles, a page that is not the dashboard - the height is frozen when this fires.
+        // Without it a navigation away from the dashboard can leave the fit unrunnable (the deadline
+        // check lives inside the fit, which returns early), the height would stay flexible and a
+        // later correction could still move the window while the user works on another page.
+        _fitDeadlineTimer = DispatcherQueue.CreateTimer();
+        _fitDeadlineTimer.Interval = InitialFitTimeout;
+        _fitDeadlineTimer.IsRepeating = false;
+        _fitDeadlineTimer.Tick += (_, _) => FreezeWindowHeight();
+        _fitDeadlineTimer.Start();
+
         ContentFrame.Navigated += OnFrameNavigatedForSizing;
         RootGrid.SizeChanged += OnRootGridSizeChangedForSizing;
 
@@ -106,10 +127,21 @@ public sealed partial class MainWindow
 
     private void OnFrameNavigatedForSizing(object sender, NavigationEventArgs e)
     {
+        // A non-null _firstPageContent means the dashboard was the page being left.
+        var leavingDashboard = _firstPageContent is not null;
         if (_firstPageContent is not null)
         {
             _firstPageContent.SizeChanged -= OnFirstPageContentSizeChanged;
             _firstPageContent = null;
+        }
+
+        // Leaving the dashboard ends the fit: the page is unloaded, so its measured height cannot
+        // change any more and the last value is exactly what the settle timer would have frozen a
+        // moment later. Freezing here moves that single possible correction to a moment when the
+        // user has not started working on the new page yet - never while they are using it.
+        if (!_heightFixed && leavingDashboard && _fittedHeight > 0d)
+        {
+            FreezeWindowHeight();
         }
 
         // Only the dashboard defines the height. A short page (account, settings) or a long one must
@@ -171,7 +203,22 @@ public sealed partial class MainWindow
     /// </summary>
     private void UpdateInitialWindowHeight()
     {
-        if (_heightFixed || _sizeLimiter is null || _firstPageContent is null)
+        if (_heightFixed || _sizeLimiter is null)
+        {
+            return;
+        }
+
+        // The deadline comes before every "cannot measure right now" answer below: a page that is
+        // not the dashboard or a content that is not measured yet must not be able to postpone the
+        // freeze past the deadline (the unconditional timer in InitializeWindowSize is the second
+        // safety net for the case where this method is never called at all).
+        if (DateTimeOffset.UtcNow > _fitDeadline)
+        {
+            FreezeWindowHeight();
+            return;
+        }
+
+        if (_firstPageContent is null)
         {
             return;
         }
@@ -186,12 +233,6 @@ public sealed partial class MainWindow
         if (_firstPageContent.ActualHeight <= 0d || scroll.ActualHeight <= 0d)
         {
             return; // Not measured yet; the next layout pass tries again.
-        }
-
-        if (DateTimeOffset.UtcNow > _fitDeadline)
-        {
-            FreezeWindowHeight();
-            return;
         }
 
         var scale = WindowSizeLimiter.GetScaleForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
@@ -231,6 +272,7 @@ public sealed partial class MainWindow
         }
 
         _fitSettleTimer?.Stop();
+        _fitDeadlineTimer?.Stop();
         _heightFixed = true;
 
         var scale = WindowSizeLimiter.GetScaleForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
@@ -240,12 +282,27 @@ public sealed partial class MainWindow
         _sizeLimiter.MinHeight = targetHeight;
         _sizeLimiter.MaxHeight = targetHeight;
 
-        // The one and only correction of the final measurement (grow or shrink), never again after this.
-        ResizeWindowHeight(targetHeight, scale);
+        // The one and only correction of the final measurement (grow or shrink), never again after
+        // this: it goes straight to the window instead of through ResizeWindowHeight, which refuses
+        // to move a height that is already frozen.
+        ApplyWindowHeight(targetHeight, scale);
     }
 
-    /// <summary>Resizes the window height through the dispatcher (never inside a layout pass).</summary>
+    /// <summary>
+    /// Resizes the window height through the dispatcher (never inside a layout pass). Refuses to run
+    /// once the height is frozen, so no later fit, page or content change can move the window again.
+    /// </summary>
     private void ResizeWindowHeight(double height, double scale)
+    {
+        if (_heightFixed)
+        {
+            return;
+        }
+
+        ApplyWindowHeight(height, scale);
+    }
+
+    private void ApplyWindowHeight(double height, double scale)
     {
         var targetHeight = (int)Math.Round(height * scale);
         if (Math.Abs(AppWindow.Size.Height - targetHeight) <= 1)

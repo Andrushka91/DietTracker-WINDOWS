@@ -59,7 +59,7 @@ user's own Google Drive account and works offline from a local working copy._
 
 ### Settings page
 
-* **No Save button, nothing to forget**: every switch (Reminders, Start with Windows, Minimize to the
+* **No Save button, nothing to forget**: every switch (Start with Windows, Minimize to the
   notification area, 12 hour clock) and the automatic synchronization interval are written the moment
   they change, and the card confirms the write. Filling the page from the database never writes back.
 * **The upload consent switch is gone**: signing in is the consent. Once an account is connected the

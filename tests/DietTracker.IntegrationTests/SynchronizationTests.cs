@@ -18,6 +18,7 @@ public sealed class SynchronizationTests
         var day = await environment.Tracking.GetDayAsync(date);
         var lunch = day.First(e => e.MealCategoryKey == MealCategoryKey.Lunch);
         lunch.Title = title;
+        lunch.Ingredients = "Rice and vegetables";
         await environment.Tracking.SaveEditsAsync(lunch);
         return lunch;
     }
