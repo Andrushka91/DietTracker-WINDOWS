@@ -25,6 +25,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IBackupService _backup;
     private readonly IPrivacyService _privacy;
     private readonly IMealReportService _reports;
+    private readonly ICalendarReportService _calendarReports;
     private readonly ICloudDataSession _cloudData;
     private readonly IFilePickerService _filePicker;
     private readonly IDialogService _dialogs;
@@ -55,6 +56,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         IBackupService backup,
         IPrivacyService privacy,
         IMealReportService reports,
+        ICalendarReportService calendarReports,
         ICloudDataSession cloudData,
         IFilePickerService filePicker,
         IDialogService dialogs,
@@ -73,6 +75,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _backup = backup;
         _privacy = privacy;
         _reports = reports;
+        _calendarReports = calendarReports;
         _cloudData = cloudData;
         _filePicker = filePicker;
         _dialogs = dialogs;
@@ -245,14 +248,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     public async Task InitializeAsync(object? parameter = null)
     {
         _preferences = await _profiles.GetPreferencesAsync();
-
-        // English is the only interface language, so a tag written by an older build is normalized
-        // once here instead of being offered as a choice that could never take effect.
-        if (!string.Equals(_preferences.Language, App.SupportedLanguage, StringComparison.OrdinalIgnoreCase))
-        {
-            _preferences.Language = App.SupportedLanguage;
-            await _profiles.SavePreferencesAsync(_preferences);
-        }
 
         // The switches save themselves when they change, so filling them from the database is done
         // behind the guard: otherwise opening the page would immediately write every value back.
@@ -447,8 +442,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             var preferences = _preferences;
 
-            // English is the only interface language; the stored tag is kept at that value.
-            preferences.Language = App.SupportedLanguage;
             preferences.SyncFrequency = Enum.TryParse<SyncFrequency>(SelectedSyncFrequency, out var syncFrequency)
                 ? syncFrequency
                 : SyncFrequency.Weekly;

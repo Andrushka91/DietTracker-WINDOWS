@@ -13,7 +13,7 @@ public sealed partial class SyncEngine
         var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
         if (account is null)
         {
-            SetState(SyncState.NotConfigured);
+            SetState(SyncState.NotConfigured, trigger: trigger);
             return SyncResult.Failure("sync.not-configured", state: SyncState.NotConfigured);
         }
 
@@ -21,7 +21,7 @@ public sealed partial class SyncEngine
         {
             // An account is connected but uploads are not allowed. That is a pause, and reporting it as
             // "no account connected" would be plainly wrong - the account card shows the e-mail.
-            SetState(SyncState.Paused);
+            SetState(SyncState.Paused, trigger: trigger);
             return SyncResult.Failure("sync.paused", state: SyncState.Paused);
         }
 
@@ -42,11 +42,11 @@ public sealed partial class SyncEngine
         {
             // When the machine is offline the state is reported as Offline; the journal keeps every
             // change so the cycle can be repeated as soon as connectivity returns.
-            SetState(SyncState.Offline);
+            SetState(SyncState.Offline, trigger: trigger);
             return SyncResult.Failure("sync.offline", state: SyncState.Offline);
         }
 
-        SetState(SyncState.Syncing);
+        SetState(SyncState.Syncing, trigger: trigger);
 
         try
         {
@@ -82,25 +82,25 @@ public sealed partial class SyncEngine
             var openConflicts = await _conflicts.CountOpenAsync(cancellationToken).ConfigureAwait(false);
 
             var result = SyncResult.Ok(push.Uploaded, pull.Downloaded, pull.Deleted, openConflicts, push.Skipped + pull.Skipped);
-            SetState(pending > 0 || openConflicts > 0 ? SyncState.PendingChanges : SyncState.Synced, result);
+            SetState(pending > 0 || openConflicts > 0 ? SyncState.PendingChanges : SyncState.Synced, result, trigger);
             return result;
         }
         catch (OperationCanceledException)
         {
-            SetState(SyncState.PendingChanges);
+            SetState(SyncState.PendingChanges, trigger: trigger);
             throw;
         }
         catch (CloudAuthorizationRequiredException ex)
         {
             _logger.LogInformation("The provider requires interactive reauthentication ({Reason}).", ex.ReasonCode);
             var result = SyncResult.Failure("sync.authentication-required", ex.ReasonCode, requiresReauth: true, state: SyncState.AuthenticationRequired);
-            SetState(SyncState.AuthenticationRequired, result);
+            SetState(SyncState.AuthenticationRequired, result, trigger);
             return result;
         }
         catch (CloudQuotaExceededException ex)
         {
             var result = SyncResult.Failure("sync.quota-exceeded", ex.Message, state: SyncState.Error);
-            SetState(SyncState.Error, result);
+            SetState(SyncState.Error, result, trigger);
             return result;
         }
         catch (Exception ex)
@@ -108,12 +108,17 @@ public sealed partial class SyncEngine
             // Local data is untouched: the cycle failed and will be retried with backoff.
             _logger.LogWarning(ex, "Synchronization cycle triggered by {Trigger} failed.", trigger);
             var result = SyncResult.Failure("sync.failed", ex.GetType().Name);
-            SetState(SyncState.Error, result);
+            SetState(SyncState.Error, result, trigger);
             return result;
         }
     }
 
-    private void SetState(SyncState state, SyncResult? result = null)
+    /// <summary>
+    /// Publishes the new state. <paramref name="trigger"/> travels with it so the shell can tell a
+    /// cycle the user started by hand from the automatic ones: only the manual cycle opens the
+    /// status strip and the notification area; everything else synchronizes in silence.
+    /// </summary>
+    private void SetState(SyncState state, SyncResult? result = null, SyncTrigger? trigger = null)
     {
         _state = state;
         StateChanged?.Invoke(this, new SyncStateChangedEventArgs
@@ -121,6 +126,7 @@ public sealed partial class SyncEngine
             State = state,
             LastResult = result,
             LastSuccessfulSyncAt = _lastSuccessfulSyncAt,
+            Trigger = trigger,
         });
     }
 

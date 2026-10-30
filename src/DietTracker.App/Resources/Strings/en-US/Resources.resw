@@ -115,8 +115,11 @@
   <data name="Settings_Integrity" xml:space="preserve"><value>Check integrity</value></data>
   <data name="Settings_PrivacyAndBackup" xml:space="preserve"><value>Privacy and backup</value></data>
   <data name="Settings_PrivacyHint" xml:space="preserve"><value>Nothing is ever deleted from this page. Export writes a backup archive or a printable PDF report, restoring merges a backup into this device and the integrity check only reads the database.</value></data>
+  <data name="Settings_PrivacyLocalHint" xml:space="preserve"><value>Meals and photographs are saved on this device first, so everything works offline; when you sign in, the same data is also kept as a copy in your own cloud account.</value></data>
   <data name="Settings_About" xml:space="preserve"><value>About</value></data>
   <data name="Settings_SyncNow" xml:space="preserve"><value>Synchronize now</value></data>
+  <data name="Settings_ExportCalendar" xml:space="preserve"><value>Export calendar</value></data>
+  <data name="Settings_CalendarPdfCreated" xml:space="preserve"><value>Calendar PDF created for {0}.</value></data>
   <data name="Settings_StorageUsage" xml:space="preserve"><value>Stored photographs: {0:0.##} MB</value></data>
   <data name="Settings_AboutText" xml:space="preserve"><value>Version {0} - {1}</value></data>
   <data name="Settings_BackupCreated" xml:space="preserve"><value>Backup created: {0} meals and {1} photographs.</value></data>
@@ -154,6 +157,7 @@
   <data name="Account_SyncResult" xml:space="preserve"><value>Synchronization finished: {0} uploaded, {1} downloaded.</value></data>
   <data name="Account_NoCloudData" xml:space="preserve"><value>No Diet Tracker data was found in the connected account.</value></data>
   <data name="Account_RestorePreview" xml:space="preserve"><value>In the cloud: {0} meals and {1} photographs.</value></data>
+  <data name="Account_PreviewIntro" xml:space="preserve"><value>This is the content of the connected account:</value></data>
   <data name="Account_RestoreTitle" xml:space="preserve"><value>Restore from the cloud?</value></data>
   <data name="Account_RestoreMessage" xml:space="preserve"><value>Local data is not deleted. Only records that exist in the cloud are added or updated.</value></data>
   <data name="Account_RestoreDone" xml:space="preserve"><value>Restore finished: {0} record(s).</value></data>
@@ -189,6 +193,7 @@
   <data name="Settings_Sync" xml:space="preserve"><value>Synchronization</value></data>
   <data name="Settings_SyncFrequency" xml:space="preserve"><value>Automatic synchronization</value></data>
   <data name="Settings_SyncFrequencyHint" xml:space="preserve"><value>Meals and photographs are uploaded as soon as they are saved; the schedule above decides how often the app also checks the cloud for changes made on other devices.</value></data>
+  
   <data name="Sync_FrequencyWeekly" xml:space="preserve"><value>Every week</value></data>
   <data name="Sync_FrequencyMonthly" xml:space="preserve"><value>Every month</value></data>
   <data name="Sync_FrequencyManual" xml:space="preserve"><value>Only with the button below</value></data>
@@ -222,6 +227,14 @@
   <data name="Report_Summary" xml:space="preserve"><value>{0} meals recorded: {1} done, {2} missed, {3} pending</value></data>
   <data name="Report_Empty" xml:space="preserve"><value>No meals were recorded in this period.</value></data>
   <data name="Report_Page" xml:space="preserve"><value>Page {0} of {1}</value></data>
+  <data name="Report_CalendarTitle" xml:space="preserve"><value>Diet Tracker - Calendar</value></data>
+  <data name="CalendarExport_ChooseTitle" xml:space="preserve"><value>Export calendar</value></data>
+  <data name="CalendarExport_ChooseMessage" xml:space="preserve"><value>Choose what to export as a PDF calendar.</value></data>
+  <data name="CalendarExport_CurrentMonth" xml:space="preserve"><value>Current month</value></data>
+  <data name="CalendarExport_WholeYear" xml:space="preserve"><value>All months of the year</value></data>
+  <data name="CalendarExport_SingleDate" xml:space="preserve"><value>A single date</value></data>
+  <data name="CalendarExport_DateRange" xml:space="preserve"><value>A date range</value></data>
+  <data name="Settings_CalendarPdfCreatedMany" xml:space="preserve"><value>Calendar PDF created: {0} month(s).</value></data>
   <data name="Error_meal_title_tooLong" xml:space="preserve"><value>The title is too long.</value></data>
   <data name="Error_meal_title_required" xml:space="preserve"><value>The title is required.</value></data>
   <data name="Error_meal_ingredients_required" xml:space="preserve"><value>The description is required.</value></data>

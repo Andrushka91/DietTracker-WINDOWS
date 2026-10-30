@@ -29,6 +29,17 @@ public sealed partial class MainWindow
 
     private void OnSyncStateChanged(object? sender, SyncStateChangedEventArgs e)
     {
+        // Background cycles - start-up, the hourly schedule, a local edit, connectivity, the state
+        // refresh of the stored account - synchronize in silence: neither the status strip nor the
+        // notification area is touched, so launching the application never flashes a sync message.
+        // Progress, the confirmation strip and the tray balloon are reserved for the cycle the user
+        // starts by hand with "Synchronize now" (the trigger travels with the event; states that
+        // come from no cycle at all - rebuild, restore, the start-up refresh - carry none).
+        if (e.Trigger is not SyncTrigger.Manual)
+        {
+            return;
+        }
+
         // The engine raises the event from a background thread, so it is marshalled to the UI thread.
         DispatcherQueue.TryEnqueue(() =>
         {

@@ -8,7 +8,7 @@ namespace DietTracker.Infrastructure.Repositories;
 public sealed class SqliteAppPreferencesRepository : IAppPreferencesRepository
 {
     private const string SelectColumns =
-        "LocalProfileId, Language, TimeZone, ShowSnackCards, StartWithWindows, MinimizeToTray, RemindersEnabled, " +
+        "LocalProfileId, TimeZone, ShowSnackCards, StartWithWindows, MinimizeToTray, RemindersEnabled, " +
         "Use12HourClock, SynchronizationEnabled, PreferredProvider, CloudUploadConsentGranted, UpdatedAt, SyncStatus, OnboardingCompleted, SyncFrequency";
 
     private readonly ISqliteConnectionFactory _factory;
@@ -35,13 +35,12 @@ public sealed class SqliteAppPreferencesRepository : IAppPreferencesRepository
         command.CommandText =
             """
             INSERT INTO AppPreferences (
-                LocalProfileId, Language, TimeZone, ShowSnackCards, StartWithWindows, MinimizeToTray, RemindersEnabled,
+                LocalProfileId, TimeZone, ShowSnackCards, StartWithWindows, MinimizeToTray, RemindersEnabled,
                 Use12HourClock, SynchronizationEnabled, PreferredProvider, CloudUploadConsentGranted, UpdatedAt, SyncStatus, OnboardingCompleted, SyncFrequency)
             VALUES (
-                $profile, $language, $timeZone, $snacks, $startWithWindows, $tray, $reminders,
+                $profile, $timeZone, $snacks, $startWithWindows, $tray, $reminders,
                 $clock12, $sync, $provider, $consent, $updatedAt, $syncStatus, $onboarding, $syncFrequency)
             ON CONFLICT (LocalProfileId) DO UPDATE SET
-                Language = excluded.Language,
                 TimeZone = excluded.TimeZone,
                 ShowSnackCards = excluded.ShowSnackCards,
                 StartWithWindows = excluded.StartWithWindows,
@@ -57,7 +56,6 @@ public sealed class SqliteAppPreferencesRepository : IAppPreferencesRepository
                 SyncFrequency = excluded.SyncFrequency;
             """;
         command.Parameters.AddWithValue("$profile", SqliteValue.ToDb(preferences.LocalProfileId));
-        command.Parameters.AddWithValue("$language", preferences.Language ?? string.Empty);
         command.Parameters.AddWithValue("$timeZone", preferences.TimeZone ?? string.Empty);
         command.Parameters.AddWithValue("$snacks", preferences.ShowSnackCards ? 1 : 0);
         command.Parameters.AddWithValue("$startWithWindows", preferences.StartWithWindows ? 1 : 0);

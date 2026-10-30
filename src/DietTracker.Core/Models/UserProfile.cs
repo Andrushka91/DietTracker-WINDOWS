@@ -20,9 +20,6 @@ public sealed class UserProfile
 
     public string Email { get; set; } = string.Empty;
 
-    /// <summary>BCP-47 language tag, for example "ro-RO".</summary>
-    public string Language { get; set; } = "en-US";
-
     /// <summary>IANA time zone identifier, for example "Europe/Bucharest".</summary>
     public string TimeZone { get; set; } = "Europe/Bucharest";
 

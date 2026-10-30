@@ -61,6 +61,15 @@ public interface IDialogService
     /// <summary>Asks the user to choose one of the supplied options (resource keys); returns the index.</summary>
     Task<int> ChooseAsync(string titleResourceKey, string messageResourceKey, IReadOnlyList<string> optionResourceKeys);
 
+    /// <summary>
+    /// Asks which part of the calendar to export - the current month, every month of the year, the
+    /// month of a single date or every month between two dates - with the date fields of the last
+    /// two options inside the very same popup (no follow-up dialog). Returns <see langword="null"/>
+    /// when the dialog is cancelled; otherwise the chosen scope together with the dates the fields
+    /// held (unused fields keep <paramref name="initialDate"/>).
+    /// </summary>
+    Task<CalendarExportChoice?> ChooseCalendarExportAsync(DateOnly initialDate);
+
     /// <summary>Asks the user for a calendar date (for example the target of a copy).</summary>
     Task<DateOnly?> PickDateAsync(string titleResourceKey, DateOnly initialValue);
 
@@ -68,20 +77,48 @@ public interface IDialogService
     Task<string?> PromptTextAsync(string titleResourceKey, string initialValue);
 }
 
-/// <summary>Localized string lookup backed by the application resource files.</summary>
+/// <summary>What the calendar export popup offers; decided by the option the user selects.</summary>
+public enum CalendarExportScope
+{
+    /// <summary>The month of today (the preselected option).</summary>
+    CurrentMonth,
+
+    /// <summary>Every month of the year of today: one page per month.</summary>
+    WholeYear,
+
+    /// <summary>The month that contains the single date of its field.</summary>
+    SingleDate,
+
+    /// <summary>Every month between the two dates of its fields, inclusive.</summary>
+    DateRange,
+}
+
+/// <summary>
+/// Result of the calendar export popup: the selected scope plus the content of the date fields.
+/// The dates always carry a value (the dialog fills them with its initial date), so the caller can
+/// read the fields it needs for the scope without null handling.
+/// </summary>
+/// <param name="Scope">The option the user selected.</param>
+/// <param name="SingleDate">Content of the single date field.</param>
+/// <param name="RangeStart">First date of the range field (the caller normalizes the order).</param>
+/// <param name="RangeEnd">Second date of the range field (the caller normalizes the order).</param>
+public sealed record CalendarExportChoice(
+    CalendarExportScope Scope,
+    DateOnly SingleDate,
+    DateOnly RangeStart,
+    DateOnly RangeEnd);
+
+/// <summary>
+/// Localized string lookup backed by the application resource files. Diet Tracker ships in English
+/// only: en-US is forced at start-up and the resource service simply resolves keys from that file.
+/// </summary>
 public interface ILocalizationService
 {
-    /// <summary>Resolves a resource key for the currently active language.</summary>
+    /// <summary>Resolves a resource key.</summary>
     string Get(string resourceKey);
 
     /// <summary>Resolves a resource key and formats it with the supplied arguments.</summary>
     string Format(string resourceKey, params object?[] args);
-
-    /// <summary>Sets the UI language (empty = follow the Windows UI language).</summary>
-    void SetLanguage(string bcp47Tag);
-
-    /// <summary>Currently active BCP-47 language tag.</summary>
-    string CurrentLanguage { get; }
 }
 
 /// <summary>Keeps the application alive in the notification area and owns window lifetime decisions.</summary>

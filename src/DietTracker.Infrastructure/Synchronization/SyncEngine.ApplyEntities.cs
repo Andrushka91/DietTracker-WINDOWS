@@ -123,8 +123,8 @@ public sealed partial class SyncEngine
         var remote = envelope.Payload;
 
         // Synchronization is intentionally device specific and is therefore not taken over. The
-        // interface language is not synchronized either: Diet Tracker ships in English only, so a value
-        // written by an older build must never be taken over again.
+        // interface language is deliberately absent from the payload: Diet Tracker ships in English
+        // only, and a language field written by an older build is ignored on purpose.
         preferences.TimeZone = remote.TimeZone;
         preferences.ShowSnackCards = remote.ShowSnackCards;
         preferences.RemindersEnabled = remote.RemindersEnabled;

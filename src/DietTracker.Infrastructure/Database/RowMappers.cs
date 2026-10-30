@@ -65,10 +65,9 @@ public static partial class RowMappers
         ProviderUserId = SqliteValue.GetString(reader.GetValue(2)),
         DisplayName = SqliteValue.GetString(reader.GetValue(3)),
         Email = SqliteValue.GetString(reader.GetValue(4)),
-        Language = SqliteValue.GetString(reader.GetValue(5)),
-        TimeZone = SqliteValue.GetString(reader.GetValue(6)),
-        CreatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(7)),
-        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(8)),
-        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(9)),
+        TimeZone = SqliteValue.GetString(reader.GetValue(5)),
+        CreatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(6)),
+        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(7)),
+        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(8)),
     };
 }

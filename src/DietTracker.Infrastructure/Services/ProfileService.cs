@@ -41,7 +41,6 @@ public sealed class ProfileService : IProfileService
             {
                 ProviderType = ProviderType.None,
                 DisplayName = string.Empty,
-                Language = string.Empty,
                 TimeZone = string.Empty,
                 CreatedAt = _clock.UtcNow,
                 UpdatedAt = _clock.UtcNow,
@@ -73,7 +72,6 @@ public sealed class ProfileService : IProfileService
         var defaults = new AppPreferences
         {
             LocalProfileId = profile.Id,
-            Language = string.Empty,
             TimeZone = string.Empty,
             UpdatedAt = _clock.UtcNow,
             SyncStatus = SyncStatus.Synced,

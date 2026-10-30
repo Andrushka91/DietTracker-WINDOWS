@@ -2,13 +2,10 @@ using DietTracker.Core.Enums;
 
 namespace DietTracker.Core.Models;
 
-/// <summary>Application preferences that follow the user across devices.</summary>
+/// <summary>Preferences that follow the user across devices.</summary>
 public sealed class AppPreferences
 {
     public Guid LocalProfileId { get; set; }
-
-    /// <summary>BCP-47 language tag chosen in settings, or empty to follow the Windows UI language.</summary>
-    public string Language { get; set; } = string.Empty;
 
     /// <summary>IANA time zone (empty = follow Windows).</summary>
     public string TimeZone { get; set; } = string.Empty;
@@ -25,7 +22,10 @@ public sealed class AppPreferences
     /// <summary>Master switch for reminders.</summary>
     public bool RemindersEnabled { get; set; } = true;
 
-    /// <summary>Use the 12-hour clock in the UI.</summary>
+    /// <summary>
+    /// Use the 12-hour clock in the UI. Off by default: the application starts on the 24-hour
+    /// clock, and migration 0011 turns the old on-by-default value off on existing installations.
+    /// </summary>
     public bool Use12HourClock { get; set; }
 
     /// <summary>Master switch for cloud synchronization.</summary>

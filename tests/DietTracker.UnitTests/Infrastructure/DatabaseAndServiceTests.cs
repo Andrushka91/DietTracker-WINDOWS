@@ -594,6 +594,67 @@ public sealed class MealTrackingServiceTests
             () => environment.Tracking.AddPhotoAsync(lunch.Id, fake));
     }
 
+    [Fact]
+    public async Task The_24_hour_clock_is_disabled_by_default_and_the_fix_is_queued_for_upload()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        var profiles = environment.Services.GetRequiredService<IProfileService>();
+        var operations = environment.Services.GetRequiredService<ISyncOperationRepository>();
+
+        // Preferences hang off the active profile; the connect flow only creates the account row.
+        await profiles.GetOrCreateActiveProfileAsync();
+
+        // An installation that still carries the old on-by-default value (1 = 12-hour clock).
+        var preferences = await profiles.GetPreferencesAsync();
+        preferences.Use12HourClock = true;
+        await profiles.SavePreferencesAsync(preferences);
+
+        var assembly = typeof(DatabaseInitializer).Assembly;
+        var resourceName = assembly.GetManifestResourceNames()
+            .Single(n => n.EndsWith("0011_default_24_hour_clock.sql", StringComparison.Ordinal));
+        using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        using var reader = new StreamReader(stream);
+        var migrationSql = await reader.ReadToEndAsync();
+
+        var factory = environment.Services.GetRequiredService<ISqliteConnectionFactory>();
+
+        async Task RunMigrationAsync()
+        {
+            await using var connection = await factory.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = migrationSql;
+            await command.ExecuteNonQueryAsync();
+        }
+
+        // Drop whatever preferences upload the connect flow may have queued, so the test measures
+        // exactly the queue the migration itself creates.
+        await using (var setup = await factory.OpenAsync())
+        {
+            await using var setupCommand = setup.CreateCommand();
+            setupCommand.CommandText = "DELETE FROM SyncOperation WHERE EntityType = 5;";
+            await setupCommand.ExecuteNonQueryAsync();
+        }
+
+        await RunMigrationAsync();
+
+        // The switch is off and the row is marked as changed...
+        var updated = await profiles.GetPreferencesAsync();
+        Assert.False(updated.Use12HourClock);
+        Assert.Equal(SyncStatus.PendingUpdate, updated.SyncStatus);
+
+        // ...and exactly one pending upload of the corrected preferences waits for the next cycle,
+        // so the cloud copy (which still holds 1) can never resurrect the 12-hour clock later.
+        var account = await environment.Accounts.GetActiveAsync();
+        Assert.NotNull(account);
+        var pending = await operations.GetPendingAsync(account!.Id, 100);
+        Assert.Equal(1, pending.Count(op => op.EntityType == EntityType.AppPreferences && op.EntityId == updated.LocalProfileId));
+
+        // Running the migration a second time never queues a second upload.
+        await RunMigrationAsync();
+        pending = await operations.GetPendingAsync(account.Id, 100);
+        Assert.Equal(1, pending.Count(op => op.EntityType == EntityType.AppPreferences && op.EntityId == updated.LocalProfileId));
+    }
+
     /// <summary>
     /// Writes a real (1x1 pixel) JPEG so that the Windows Imaging Component can decode it and the
     /// thumbnail pipeline is exercised end to end.

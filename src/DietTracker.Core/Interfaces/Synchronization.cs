@@ -23,6 +23,15 @@ public sealed record SyncStateChangedEventArgs
     public SyncResult? LastResult { get; init; }
 
     public DateTimeOffset? LastSuccessfulSyncAt { get; init; }
+
+    /// <summary>
+    /// Trigger of the cycle that raised this state, or <see langword="null"/> when the state did
+    /// not come from a cycle (the start-up refresh of the stored account, a rebuild, a restore).
+    /// The shell uses it to keep background synchronization silent: progress, the confirmation
+    /// strip and the notification area balloon belong to the cycle the user starts by hand with
+    /// "Synchronize now", never to the automatic ones (start-up, schedule, local edits).
+    /// </summary>
+    public SyncTrigger? Trigger { get; init; }
 }
 
 /// <summary>

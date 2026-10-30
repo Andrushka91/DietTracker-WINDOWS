@@ -4,8 +4,9 @@ using DietTracker.Core.Interfaces;
 namespace DietTracker.App.ViewModels;
 
 /// <summary>
-/// Manual synchronization and restore of the settings screen: the actions that used to live on the
-/// separate account page. Both report what they did in the synchronization card.
+/// Manual synchronization, cloud preview and restore of the settings screen: the actions that used
+/// to live on the separate account page. Synchronization and restore report what they did in the
+/// synchronization card, the preview answers in a popup of its own.
 /// </summary>
 public sealed partial class SettingsViewModel
 {
@@ -38,10 +39,20 @@ public sealed partial class SettingsViewModel
         IsSyncBusy = true;
         try
         {
+            // The answer is shown as a popup: a line at the bottom of the page was too easy to
+            // miss, so pressing the button now always opens a dialog with the result.
             var preview = await _syncEngine.PreviewRestoreAsync();
-            SyncStatusMessage = preview is null
-                ? _localization.Get("Account_NoCloudData")
-                : _localization.Format("Account_RestorePreview", preview.MealEntries, preview.Photos);
+            if (preview is null)
+            {
+                await _dialogs.ShowMessageAsync("Account_Preview", "Account_NoCloudData");
+            }
+            else
+            {
+                await _dialogs.ShowMessageAsync(
+                    "Account_Preview",
+                    "Account_PreviewIntro",
+                    _localization.Format("Account_RestorePreview", preview.MealEntries, preview.Photos));
+            }
         }
         finally
         {

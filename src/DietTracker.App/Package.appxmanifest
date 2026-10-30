@@ -29,8 +29,7 @@
 
   <!--
     English only: the application itself forces en-US (see App.SupportedLanguage), so the package
-    declares exactly the language it can display. The translated resource files stay in the
-    repository but are not advertised to the Store or to Windows.
+    declares exactly the language it can display; there are no other resource languages.
   -->
   <Resources>
     <Resource Language="en-US" />

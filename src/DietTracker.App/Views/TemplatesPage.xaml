@@ -7,23 +7,10 @@
 
     <ScrollViewer Padding="24,16,24,24">
         <StackPanel Spacing="16" MaxWidth="{StaticResource PageMaxContentWidth}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Style="{StaticResource PageTitleStyle}" x:Uid="Templates_Title" Text="Templates" />
-                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
-                </StackPanel>
-
-                <Button
-                    Grid.Column="1"
-                    x:Uid="Dashboard_SaveDayTemplate"
-                    Content="Save day as template"
-                    Command="{x:Bind ViewModel.SaveTodayCommand}" />
-            </Grid>
+            <StackPanel>
+                <TextBlock Style="{StaticResource PageTitleStyle}" x:Uid="Templates_Title" Text="Templates" />
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+            </StackPanel>
 
             <TextBlock
                 Style="{StaticResource CaptionStyle}"

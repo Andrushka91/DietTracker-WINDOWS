@@ -71,6 +71,9 @@ public static class ServiceCollectionExtensions
         // Printable PDF report of the stored meals (read-only, no cloud and no account needed).
         services.AddSingleton<IMealReportService, MealReportService>();
 
+        // Printable one-page month calendar in the layout of the calendar screen.
+        services.AddSingleton<ICalendarReportService, CalendarReportService>();
+
         // Authentication
         services.AddSingleton<IUserInterfaceContext, HeadlessUserInterfaceContext>();
         services.AddSingleton<GoogleAuthenticationProvider>();

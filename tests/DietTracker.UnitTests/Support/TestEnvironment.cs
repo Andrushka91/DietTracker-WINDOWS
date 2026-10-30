@@ -97,6 +97,7 @@ public sealed class TestEnvironment : IAsyncDisposable
         services.AddSingleton<IAppEnvironment, AppEnvironment>();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IMealReportService, MealReportService>();
+        services.AddSingleton<ICalendarReportService, CalendarReportService>();
         services.AddSingleton<IPrivacyService, PrivacyService>();
         services.AddSingleton<ICloudDataSession, CloudDataSession>();
         services.AddSingleton<IReminderScheduler, ReminderScheduler>();

@@ -11,21 +11,20 @@ public static partial class RowMappers
     public static AppPreferences MapAppPreferences(SqliteDataReader reader) => new()
     {
         LocalProfileId = SqliteValue.GetGuid(reader.GetValue(0)),
-        Language = SqliteValue.GetString(reader.GetValue(1)),
-        TimeZone = SqliteValue.GetString(reader.GetValue(2)),
-        ShowSnackCards = SqliteValue.GetBool(reader.GetValue(3)),
-        StartWithWindows = SqliteValue.GetBool(reader.GetValue(4)),
-        MinimizeToTray = SqliteValue.GetBool(reader.GetValue(5)),
-        RemindersEnabled = SqliteValue.GetBool(reader.GetValue(6)),
-        Use12HourClock = SqliteValue.GetBool(reader.GetValue(7)),
-        SynchronizationEnabled = SqliteValue.GetBool(reader.GetValue(8)),
-        PreferredProvider = SqliteValue.GetEnum<ProviderType>(reader.GetValue(9)),
-        CloudUploadConsentGranted = SqliteValue.GetBool(reader.GetValue(10)),
-        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(11)),
-        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(12)),
-        OnboardingCompleted = reader.FieldCount > 13 && SqliteValue.GetBool(reader.GetValue(13)),
-        SyncFrequency = reader.FieldCount > 14
-            ? SqliteValue.GetEnum<SyncFrequency>(reader.GetValue(14))
+        TimeZone = SqliteValue.GetString(reader.GetValue(1)),
+        ShowSnackCards = SqliteValue.GetBool(reader.GetValue(2)),
+        StartWithWindows = SqliteValue.GetBool(reader.GetValue(3)),
+        MinimizeToTray = SqliteValue.GetBool(reader.GetValue(4)),
+        RemindersEnabled = SqliteValue.GetBool(reader.GetValue(5)),
+        Use12HourClock = SqliteValue.GetBool(reader.GetValue(6)),
+        SynchronizationEnabled = SqliteValue.GetBool(reader.GetValue(7)),
+        PreferredProvider = SqliteValue.GetEnum<ProviderType>(reader.GetValue(8)),
+        CloudUploadConsentGranted = SqliteValue.GetBool(reader.GetValue(9)),
+        UpdatedAt = SqliteValue.GetDateTimeOffset(reader.GetValue(10)),
+        SyncStatus = SqliteValue.GetEnum<SyncStatus>(reader.GetValue(11)),
+        OnboardingCompleted = reader.FieldCount > 12 && SqliteValue.GetBool(reader.GetValue(12)),
+        SyncFrequency = reader.FieldCount > 13
+            ? SqliteValue.GetEnum<SyncFrequency>(reader.GetValue(13))
             : SyncFrequency.Weekly,
     };
 

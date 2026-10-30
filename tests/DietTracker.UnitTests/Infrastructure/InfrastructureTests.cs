@@ -189,10 +189,11 @@ public sealed class PathSanitizerTests
     }
 }
 
-/// <summary>Localization completeness: the three shipped languages must expose the same keys.</summary>
-public sealed class ResourceParityTests
+/// <summary>Localization completeness of the single shipped language: no duplicate keys and the
+/// keys the interface relies on always present.</summary>
+public sealed class ResourceFileTests
 {
-    private static readonly string[] Languages = ["ro-RO", "en-US", "es-ES"];
+    private const string ShippedLanguage = "en-US";
 
     private static IReadOnlyList<string> ReadKeys(string language)
     {
@@ -208,15 +209,11 @@ public sealed class ResourceParityTests
     }
 
     [Fact]
-    public void All_languages_declare_exactly_the_same_keys()
+    public void The_shipped_resource_file_declares_no_duplicate_key()
     {
-        var reference = ReadKeys("ro-RO");
+        var keys = ReadKeys(ShippedLanguage);
 
-        foreach (var language in Languages.Skip(1))
-        {
-            var keys = ReadKeys(language);
-            Assert.Equal(reference, keys);
-        }
+        Assert.Equal(keys.Count, keys.Distinct(StringComparer.Ordinal).Count());
     }
 
     [Theory]
@@ -231,26 +228,22 @@ public sealed class ResourceParityTests
     [InlineData("Account_CloudSaveHint")]
     [InlineData("Settings_PrivacyHint")]
     [InlineData("Report_Title")]
-    public void Required_keys_exist_in_every_language(string key)
+    public void Required_keys_exist_in_the_shipped_language(string key)
     {
-        foreach (var language in Languages)
-        {
-            Assert.Contains(key, ReadKeys(language));
-        }
+        Assert.Contains(key, ReadKeys(ShippedLanguage));
     }
 
     [Fact]
-    public void No_language_contains_an_empty_value()
+    public void The_shipped_resource_file_contains_no_empty_value()
     {
-        foreach (var language in Languages)
-        {
-            var path = Path.Combine(AppContext.BaseDirectory, "Resources", language, "Resources.resw");
-            var document = System.Xml.Linq.XDocument.Load(path);
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", ShippedLanguage, "Resources.resw");
+        var document = System.Xml.Linq.XDocument.Load(path);
 
-            foreach (var element in document.Root!.Elements("data"))
-            {
-                Assert.False(string.IsNullOrWhiteSpace(element.Element("value")?.Value), $"Empty value for {element.Attribute("name")?.Value} in {language}");
-            }
+        foreach (var element in document.Root!.Elements("data"))
+        {
+            Assert.False(
+                string.IsNullOrWhiteSpace(element.Element("value")?.Value),
+                $"Empty value for {element.Attribute("name")?.Value} in {ShippedLanguage}");
         }
     }
 }

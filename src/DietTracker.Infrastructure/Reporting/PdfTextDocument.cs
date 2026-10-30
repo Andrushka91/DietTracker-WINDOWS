@@ -119,6 +119,58 @@ public sealed class PdfTextDocument
             .Append(Number(x2)).Append(' ').Append(Number(y)).Append(" l\nS\n");
     }
 
+    /// <summary>
+    /// Writes one line of text on the last page in an RGB colour (0..1 per channel) instead of the
+    /// grayscale ink of <see cref="DrawText(double, double, string, double, bool, double)"/>. Used by
+    /// the calendar, whose day states read through colour.
+    /// </summary>
+    public void DrawText(double x, double y, string text, double fontSize, bool bold, double red, double green, double blue)
+        => DrawTextOnPage(_pages.Count - 1, x, y, text, fontSize, bold, red, green, blue);
+
+    /// <summary>Writes one line of text in an RGB colour; the geometry matches the grayscale overload.</summary>
+    public void DrawTextOnPage(int pageIndex, double x, double y, string text, double fontSize, bool bold, double red, double green, double blue)
+    {
+        if (string.IsNullOrEmpty(text) || pageIndex < 0 || pageIndex >= _pages.Count)
+        {
+            return;
+        }
+
+        var content = _pages[pageIndex];
+        content.Append(Number(red)).Append(' ').Append(Number(green)).Append(' ').Append(Number(blue)).Append(" rg\n");
+        content.Append("BT\n/").Append(bold ? BoldFont : RegularFont).Append(' ').Append(Number(fontSize)).Append(" Tf\n");
+        content.Append(Number(x)).Append(' ').Append(Number(y)).Append(" Td\n");
+        content.Append('(').Append(Encode(text)).Append(") Tj\nET\n");
+    }
+
+    /// <summary>Strokes the outline of a rectangle on the last page with an RGB colour.</summary>
+    public void DrawRectangle(double x, double y, double width, double height, double thickness, double red, double green, double blue)
+    {
+        if (_pages.Count == 0 || width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        _pages[^1]
+            .Append(Number(red)).Append(' ').Append(Number(green)).Append(' ').Append(Number(blue)).Append(" RG\n")
+            .Append(Number(thickness)).Append(" w\n")
+            .Append(Number(x)).Append(' ').Append(Number(y)).Append(' ')
+            .Append(Number(width)).Append(' ').Append(Number(height)).Append(" re\nS\n");
+    }
+
+    /// <summary>Fills a rectangle on the last page with an RGB colour.</summary>
+    public void FillRectangle(double x, double y, double width, double height, double red, double green, double blue)
+    {
+        if (_pages.Count == 0 || width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        _pages[^1]
+            .Append(Number(red)).Append(' ').Append(Number(green)).Append(' ').Append(Number(blue)).Append(" rg\n")
+            .Append(Number(x)).Append(' ').Append(Number(y)).Append(' ')
+            .Append(Number(width)).Append(' ').Append(Number(height)).Append(" re\nf\n");
+    }
+
     /// <summary>Width of a text in points, using the Helvetica metrics.</summary>
     public static double MeasureWidth(string text, double fontSize, bool bold = false)
     {

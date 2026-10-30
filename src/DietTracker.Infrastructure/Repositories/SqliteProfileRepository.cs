@@ -9,7 +9,7 @@ namespace DietTracker.Infrastructure.Repositories;
 public sealed class SqliteProfileRepository : IProfileRepository
 {
     private const string SelectColumns =
-        "Id, ProviderType, ProviderUserId, DisplayName, Email, Language, TimeZone, CreatedAt, UpdatedAt, SyncStatus";
+        "Id, ProviderType, ProviderUserId, DisplayName, Email, TimeZone, CreatedAt, UpdatedAt, SyncStatus";
 
     private readonly ISqliteConnectionFactory _factory;
 
@@ -60,14 +60,13 @@ public sealed class SqliteProfileRepository : IProfileRepository
         await using var command = connection.CreateCommand();
         command.CommandText =
             """
-            INSERT INTO UserProfile (Id, ProviderType, ProviderUserId, DisplayName, Email, Language, TimeZone, IsActive, CreatedAt, UpdatedAt, SyncStatus, CloudRevision)
-            VALUES ($id, $provider, $providerUserId, $displayName, $email, $language, $timeZone, 1, $createdAt, $updatedAt, $syncStatus, NULL)
+            INSERT INTO UserProfile (Id, ProviderType, ProviderUserId, DisplayName, Email, TimeZone, IsActive, CreatedAt, UpdatedAt, SyncStatus, CloudRevision)
+            VALUES ($id, $provider, $providerUserId, $displayName, $email, $timeZone, 1, $createdAt, $updatedAt, $syncStatus, NULL)
             ON CONFLICT (Id) DO UPDATE SET
                 ProviderType = excluded.ProviderType,
                 ProviderUserId = excluded.ProviderUserId,
                 DisplayName = excluded.DisplayName,
                 Email = excluded.Email,
-                Language = excluded.Language,
                 TimeZone = excluded.TimeZone,
                 UpdatedAt = excluded.UpdatedAt,
                 SyncStatus = excluded.SyncStatus;
@@ -77,7 +76,6 @@ public sealed class SqliteProfileRepository : IProfileRepository
         command.Parameters.AddWithValue("$providerUserId", profile.ProviderUserId ?? string.Empty);
         command.Parameters.AddWithValue("$displayName", profile.DisplayName ?? string.Empty);
         command.Parameters.AddWithValue("$email", profile.Email ?? string.Empty);
-        command.Parameters.AddWithValue("$language", profile.Language ?? "en-US");
         command.Parameters.AddWithValue("$timeZone", profile.TimeZone ?? "Europe/Bucharest");
         command.Parameters.AddWithValue("$createdAt", SqliteValue.ToDb(profile.CreatedAt));
         command.Parameters.AddWithValue("$updatedAt", SqliteValue.ToDb(profile.UpdatedAt));

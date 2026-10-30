@@ -64,8 +64,6 @@ public sealed partial class TemplatesViewModel : ObservableObject
 
     public string ApplyLabel => _localization.Get("Template_Apply");
 
-    public string SaveDayLabel => _localization.Get("Dashboard_SaveDayTemplate");
-
     /// <summary>Loads the templates of the active profile.</summary>
     public async Task InitializeAsync(object? parameter = null) => await LoadAsync();
 
@@ -104,19 +102,5 @@ public sealed partial class TemplatesViewModel : ObservableObject
 
         await _tracking.ApplyTemplateAsync(item.Id, target.Value);
         StatusMessage = _localization.Format("Template_Applied", target.Value.ToString("d"));
-    }
-
-    [RelayCommand]
-    private async Task SaveTodayAsync()
-    {
-        var name = await _dialogs.PromptTextAsync("Template_NameTitle", $"{_clock.Today:yyyy-MM-dd}");
-        if (string.IsNullOrEmpty(name))
-        {
-            return;
-        }
-
-        await _tracking.SaveDayTemplateAsync(_clock.Today, name);
-        StatusMessage = _localization.Get("Template_Saved");
-        await LoadAsync();
     }
 }

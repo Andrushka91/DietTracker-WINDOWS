@@ -82,36 +82,41 @@
                 </Grid.RowDefinitions>
 
                 <!-- Row 0 left: the connected account. The title stays on top, the framed user glyph
-                     fills the free space under it and everything else forms one contiguous block at
-                     the bottom: provider/quota line, identity, sign-in button and the texts that
-                     explain what an account keeps. The block starts 14 px below the glyph - the same
-                     gap the other icon panels (Synchronization, Privacy and backup) leave under
-                     theirs - and every following element is 14 px below the previous one, so
-                     "Not signed in" sits right above the button and the button right above its
-                     texts. Auto rows with per-element margins keep that rhythm even when a line
-                     collapses (the confirmation is empty), and the star row above pushes the whole
-                     block onto the bottom padding of the card. -->
+                     follows 24 px below it (the 14 px of the title style plus the 10 px margin of the
+                     tile - and 24 px again between the glyph and the block, the same two gaps the
+                     sync and privacy cards use), and everything else forms one contiguous block:
+                     provider/quota line, identity, sign-in button and the texts that explain what an
+                     account keeps. Auto rows with per-element margins keep that rhythm even when a
+                     line collapses (the confirmation is empty), and the trailing star row takes
+                     whatever height the card has left over, so the block always ends near the bottom
+                     padding of the card. -->
                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <!-- Same recipe as the sync and privacy cards: fixed tile row (title ->
+                                 tile = 24 px), block 24 px below the tile, trailing star row taking
+                                 the rest of the card height. -->
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="120" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Style="{StaticResource SettingsSectionHeaderStyle}" x:Uid="Settings_Account" Text="Account" />
 
                         <!-- The free space under the title carries the framed user glyph, pinned to the
-                             left so the tile lines up with the text below it. When the connected account
-                             has a photo, the picture fills this very tile instead of the glyph - the tile
-                             itself (120 x 120, frame and rounding) does not change; without a photo the
-                             glyph stays exactly as it is. -->
+                             left so the tile lines up with the text below it - 24 px below the title,
+                             the same gap the sync and privacy tiles use. When the connected account
+                             has a photo, the picture fills this very tile instead of the glyph - the
+                             tile itself (120 x 120, frame and rounding) does not change; without a
+                             photo the glyph stays exactly as it is. -->
                         <Border
                             Grid.Row="1"
                             Width="120"
                             Height="120"
+                            Margin="0,10,0,0"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             Background="{StaticResource GalleryFillBrush}"
                             BorderBrush="{StaticResource GalleryBorderBrush}"
                             BorderThickness="2"
@@ -136,7 +141,7 @@
 
                         <!-- The block sits 14 px under the glyph tile, exactly like the text of the
                              Synchronization and Privacy and backup panels sits under theirs. -->
-                        <Grid Grid.Row="2" Margin="0,14,0,0">
+                        <Grid Grid.Row="2" Margin="0,24,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -223,21 +228,31 @@
                 </Border>
 
                 <!-- Row 1 left: everything the engine really reports, pushed to the bottom of the
-                     panel. A framed sync glyph sits on the left under the title; below it the state
-                     line, the schedule, the hint and the confirmation follow in one contiguous
-                     block (14 px apart) and the actions close the card right-aligned on the tight
-                     footer padding this card overrides (12 on the right and 12 on the bottom
-                     instead of the shared 24), so "Synchronize now" sits close to the bottom-right
-                     corner. Buttons wrap through UniformWrapPanel, so a narrow window moves
-                     "Restore from the cloud" to a second line. -->
+                     panel. A framed sync glyph sits on the left, 24 px below the title (the 14 px of
+                     the title style plus the 10 px margin of the tile - the same two values the card
+                     next to it uses, so all three icon cards start their glyph at exactly the same
+                     height); below it the state line, the schedule and the hint follow in one
+                     contiguous block - 24 px under the glyph, the same space that sits above it and
+                     on the two other icon cards, then 14 px between the lines - and a star row pushes
+                     only the actions to the bottom - right-aligned on the tight footer padding this
+                     card overrides (12 on the right and 12 on the bottom instead of the shared 24),
+                     so "Synchronize now" sits close to the bottom-right corner. The four actions are
+                     sized to stay on ONE line (13 px text, 8/4 padding, 6 px gaps) at the widths
+                     this window opens at, signed in included; only a much narrower window moves
+                     "Restore from the cloud" to a second line through UniformWrapPanel. -->
                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SettingsCardStyle}" Padding="24,24,12,12">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <!-- The tile sits in a fixed Auto row, so the title -> tile gap is always
+                                 14 + 10 = 24 px on every icon card; the content follows 24 px below
+                                 the tile and the star row before the actions pushes only the button
+                                 line to the bottom. -->
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="120" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -247,8 +262,9 @@
                             Grid.Row="1"
                             Width="120"
                             Height="120"
+                            Margin="0,10,0,0"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             Background="{StaticResource GalleryFillBrush}"
                             BorderBrush="{StaticResource GalleryBorderBrush}"
                             BorderThickness="2"
@@ -261,7 +277,7 @@
                                 Foreground="{StaticResource SubtleTextBrush}" />
                         </Border>
 
-                        <Grid Grid.Row="2" Margin="0,14,0,0" ColumnSpacing="12">
+                        <Grid Grid.Row="2" Margin="0,24,0,0" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -283,6 +299,10 @@
                             DisplayMemberPath="DisplayName"
                             SelectedValuePath="Tag"
                             SelectedValue="{x:Bind ViewModel.SelectedSyncFrequency, Mode=TwoWay}" />
+
+                        <!-- Restored caption: it fills the space between the schedule and the actions
+                             with the two facts the schedule itself cannot say (uploads are immediate,
+                             the combo only paces the checks for changes made elsewhere). -->
                         <TextBlock
                             Grid.Row="4"
                             Margin="0,14,0,0"
@@ -297,50 +317,70 @@
                              Busy_Restoring) with its own ring, message and closing block, so
                              nothing can push these buttons off the edge. -->
                         <controls:UniformWrapPanel
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Margin="0,14,0,0"
                             HorizontalAlignment="Right"
                             UniformHeight="False"
                             MinItemWidth="150"
-                            HorizontalSpacing="8"
+                            HorizontalSpacing="6"
                             VerticalSpacing="8">
+                            <!-- Compact sizing (13 px, 8/4 padding): the four actions of the signed in
+                                 state share one line at the width the window opens with; the two
+                                 cloud buttons appear only when an account is connected. -->
                             <Button
                                 x:Uid="Settings_SyncNow"
                                 Content="Synchronize now"
-                                FontSize="15"
+                                FontSize="13"
+                                Padding="8,4"
                                 Command="{x:Bind ViewModel.SyncNowCommand}"
                                 IsEnabled="{x:Bind ViewModel.IsSignedIn, Mode=OneWay}" />
+                            <!-- The calendar export is local like the report export above: it never
+                                 needs the account, so it stays enabled even while the button next to
+                                 it is disabled for a signed out user. -->
+                            <Button
+                                x:Uid="Settings_ExportCalendar"
+                                Content="Export calendar"
+                                FontSize="13"
+                                Padding="8,4"
+                                Command="{x:Bind ViewModel.ExportCalendarCommand}" />
                             <Button
                                 x:Uid="Account_Preview"
                                 Content="What is in the cloud?"
-                                FontSize="15"
+                                FontSize="13"
+                                Padding="8,4"
                                 Command="{x:Bind ViewModel.PreviewRestoreCommand}"
                                 Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
                             <Button
                                 x:Uid="Account_Restore"
                                 Content="Restore from the cloud"
-                                FontSize="15"
+                                FontSize="13"
+                                Padding="8,4"
                                 Command="{x:Bind ViewModel.RestoreCommand}"
                                 Visibility="{x:Bind ViewModel.SignedInVisibility, Mode=OneWay}" />
                         </controls:UniformWrapPanel>
                     </Grid>
                 </Border>
 
-                <!-- Row 1 right: privacy and backup in one card with everything pushed to the bottom:
-                     a framed lock glyph sits on the left under the title, the explanatory texts
-                     and the confirmation form the bottom block (directly above the actions) and
-                     the three buttons close the card right-aligned on the tight footer padding
-                     this card overrides (12 on the right and 12 on the bottom instead of the
-                     shared 24), so they sit close to the bottom-right corner. The three actions
-                     are the three that never remove anything: export (backup archive or PDF
-                     report), restore a backup and verify the database. The destructive buttons
-                     are gone on purpose. -->
+                <!-- Row 1 right: privacy and backup in one card, built exactly like the sync card
+                     next to it: a framed lock glyph 24 px below the title (the 14 px of the title
+                     style plus the 10 px margin of the tile), the explanatory texts 24 px under the
+                     glyph - the same space that sits above it and on the two other icon cards -
+                     filling the card down towards the actions, and a star row that pushes only the
+                     button line to the bottom (12 on the right and 12 on the bottom instead of
+                     the shared 24, so they sit close to the bottom-right corner). The three actions
+                     are the three that never remove anything: export (backup archive or a PDF
+                     report), restore a backup and verify the database. The destructive buttons are
+                     gone on purpose. -->
                 <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsCardStyle}" Padding="24,24,12,12">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <!-- Same structure as the sync card: fixed tile row (title -> tile = 24 px),
+                                 content 24 px below the tile, star row pushing only the actions to the
+                                 bottom. -->
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="120" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -350,8 +390,9 @@
                             Grid.Row="1"
                             Width="120"
                             Height="120"
+                            Margin="0,10,0,0"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             Background="{StaticResource GalleryFillBrush}"
                             BorderBrush="{StaticResource GalleryBorderBrush}"
                             BorderThickness="2"
@@ -364,24 +405,31 @@
                                 Foreground="{StaticResource SubtleTextBrush}" />
                         </Border>
 
-                        <StackPanel Grid.Row="2" Margin="0,14,0,0" Spacing="14">
+                        <StackPanel Grid.Row="2" Margin="0,24,0,0" Spacing="14">
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" x:Uid="Settings_PrivacyHint" Text="Your data stays on this device unless you are signed in. Export writes a backup archive or a printable PDF report; restoring merges a backup; the integrity check only reads the database." />
+
+                            <!-- Second explanatory line: the local first rule, which is what makes the
+                                 offline behaviour and the cloud copy understandable - and it fills the
+                                 space between the glyph and the actions the card used to leave open. -->
+                            <TextBlock Style="{StaticResource SettingsCaptionStyle}" x:Uid="Settings_PrivacyLocalHint" Text="Meals and photographs are saved on this device first, so everything works offline; when you sign in, the same data is also kept as a copy in your own cloud account." />
 
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.StorageText, Mode=OneWay}" />
                             <TextBlock Style="{StaticResource SettingsCaptionStyle}" Text="{x:Bind ViewModel.DatabasePath}" IsTextSelectionEnabled="True" />
                         </StackPanel>
 
+                        <!-- Same compact sizing as the sync card, so the two action rows of the row sit
+                             at the same height and read as one line across both cards. -->
                         <controls:UniformWrapPanel
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Margin="0,14,0,0"
                             HorizontalAlignment="Right"
                             UniformHeight="False"
                             MinItemWidth="120"
-                            HorizontalSpacing="8"
+                            HorizontalSpacing="6"
                             VerticalSpacing="8">
-                            <Button x:Uid="Settings_Export" Content="Export data" FontSize="15" Command="{x:Bind ViewModel.ExportDataCommand}" />
-                            <Button x:Uid="Settings_Import" Content="Restore backup" FontSize="15" Command="{x:Bind ViewModel.ImportBackupCommand}" />
-                            <Button x:Uid="Settings_Integrity" Content="Check integrity" FontSize="15" Command="{x:Bind ViewModel.CheckIntegrityCommand}" />
+                            <Button x:Uid="Settings_Export" Content="Export data" FontSize="13" Padding="8,4" Command="{x:Bind ViewModel.ExportDataCommand}" />
+                            <Button x:Uid="Settings_Import" Content="Restore backup" FontSize="13" Padding="8,4" Command="{x:Bind ViewModel.ImportBackupCommand}" />
+                            <Button x:Uid="Settings_Integrity" Content="Check integrity" FontSize="13" Padding="8,4" Command="{x:Bind ViewModel.CheckIntegrityCommand}" />
                         </controls:UniformWrapPanel>
                     </Grid>
                 </Border>

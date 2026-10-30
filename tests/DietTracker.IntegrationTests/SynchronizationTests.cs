@@ -416,6 +416,34 @@ public sealed class SynchronizationTests
         Assert.Equal("Cloud only", stored!.Title);
     }
 
+    [Fact]
+    public async Task Background_cycles_stay_silent_by_reporting_their_trigger()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        await SeedLunchAsync(environment, new DateOnly(2026, 3, 24), "Trigger lunch");
+
+        var triggers = new List<SyncTrigger?>();
+        environment.Sync.StateChanged += (_, e) => triggers.Add(e.Trigger);
+
+        // A cycle the user did not start (start-up, the schedule, a local edit) carries its own
+        // trigger, so the shell keeps quiet: no status strip, no tray balloon.
+        await environment.Sync.SynchronizeAsync(SyncTrigger.PostSignIn);
+        Assert.NotEmpty(triggers);
+        Assert.All(triggers, trigger => Assert.Equal(SyncTrigger.PostSignIn, trigger));
+
+        // The "Synchronize now" button carries Manual - the only trigger the shell shows.
+        triggers.Clear();
+        await environment.Sync.SynchronizeAsync(SyncTrigger.Manual);
+        Assert.NotEmpty(triggers);
+        Assert.All(triggers, trigger => Assert.Equal(SyncTrigger.Manual, trigger));
+
+        // The start-up refresh of the stored account comes from no cycle at all: no trigger.
+        triggers.Clear();
+        await environment.Sync.RefreshStateAsync();
+        Assert.NotEmpty(triggers);
+        Assert.All(triggers, trigger => Assert.Null(trigger));
+    }
+
     /// <summary>Points a second environment at the cloud store of the first one (a shared account).</summary>
     private static void ShareCloud(TestEnvironment from, TestEnvironment to)
     {
