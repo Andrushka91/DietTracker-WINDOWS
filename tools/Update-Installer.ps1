@@ -65,12 +65,28 @@ Set-Location $repositoryRoot
     before the application is allowed to start.
 #>
 
-# Locates the LocalState folder of the installed Diet Tracker package.
+# Locates the LocalState folder of the installed Diet Tracker package. A freshly installed package
+# may not have created that folder yet, so -Create derives it from the installed package family and
+# creates it, which is where Windows would put it on the first launch anyway.
 function Get-DietTrackerLocalState {
-    Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'DietTracker.Desktop_*' -ErrorAction SilentlyContinue |
+    param([switch] $Create)
+
+    $found = Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'DietTracker.Desktop_*' -ErrorAction SilentlyContinue |
         ForEach-Object { Join-Path $_.FullName 'LocalState' } |
         Where-Object { Test-Path -LiteralPath $_ } |
         Select-Object -First 1
+    if ($found -or -not $Create) {
+        return $found
+    }
+
+    $package = Get-AppxPackage -Name 'DietTracker.Desktop' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $package) {
+        return $null
+    }
+
+    $path = Join-Path $env:LOCALAPPDATA ('Packages\' + $package.PackageFamilyName + '\LocalState')
+    New-Item -ItemType Directory -Force -Path $path | Out-Null
+    return $path
 }
 
 # Copies LocalState to a timestamped folder outside the package. Returns that folder, or $null.
@@ -107,7 +123,7 @@ function Remove-InstalledPackage {
 function Restore-PackageData {
     param([Parameter(Mandatory)][string] $From)
 
-    $localState = Get-DietTrackerLocalState
+    $localState = Get-DietTrackerLocalState -Create
     if (-not $localState) {
         throw "The package data folder could not be found after the install; the rescued copy is at $From"
     }
