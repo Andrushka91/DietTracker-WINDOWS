@@ -16,7 +16,7 @@ public sealed partial class SqliteSyncOperationRepository : ISyncOperationReposi
     public SqliteSyncOperationRepository(ISqliteConnectionFactory factory) => _factory = factory;
 
     /// <summary>Returns the operations that are due now, honouring the exponential backoff timestamp.</summary>
-    public async Task<IReadOnlyList<SyncOperation>> GetPendingAsync(Guid cloudAccountId, int maxCount, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SyncOperation>> GetPendingAsync(Guid cloudAccountId, int maxCount, bool includeDeferred = false, CancellationToken cancellationToken = default)
     {
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
@@ -25,11 +25,12 @@ public sealed partial class SqliteSyncOperationRepository : ISyncOperationReposi
              SELECT {SelectColumns} FROM SyncOperation
              WHERE CloudAccountId = $account
                AND Status IN (0, 3)
-               AND (NextAttemptAt IS NULL OR NextAttemptAt <= $now)
+               AND ($includeDeferred OR NextAttemptAt IS NULL OR NextAttemptAt <= $now)
              ORDER BY CreatedAt
              LIMIT $limit;
              """;
         command.Parameters.AddWithValue("$account", SqliteValue.ToDb(cloudAccountId));
+        command.Parameters.AddWithValue("$includeDeferred", includeDeferred);
         command.Parameters.AddWithValue("$now", SqliteValue.ToDb(DateTimeOffset.UtcNow));
         command.Parameters.AddWithValue("$limit", maxCount);
 

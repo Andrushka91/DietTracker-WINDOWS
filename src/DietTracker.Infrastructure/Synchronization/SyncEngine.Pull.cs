@@ -33,10 +33,12 @@ public sealed partial class SyncEngine
         var downloaded = 0;
         var deleted = 0;
         var skipped = 0;
+        var conflicted = 0;
+        DateTimeOffset? retryFrom = null;
 
         // Photograph documents are applied last: a photograph is only accepted when its meal slot is
-        // already local, and the change feed never returns the same document twice, so a skipped
-        // photograph would otherwise stay missing on this device for good.
+        // already local. A document that cannot be applied yet does not advance the cursor past it -
+        // retryFrom keeps the next change query behind such a document so it is fetched again.
         var documents = changeSet.Items
             .Where(item => item.Path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             .OrderBy(item => CloudObjectPaths.GetEntityType(item.Path) == EntityType.MealPhoto ? 1 : 0)
@@ -50,7 +52,9 @@ public sealed partial class SyncEngine
 
             if (json is null)
             {
+                // Listed but not downloadable: retried, never silently counted as synchronized.
                 skipped++;
+                retryFrom = Earliest(retryFrom, item.ModifiedAt);
                 continue;
             }
 
@@ -80,22 +84,64 @@ public sealed partial class SyncEngine
                 {
                     deleted++;
                 }
+                else
+                {
+                    // A deletion marker for a record this device never had: nothing to remove.
+                    _logger.LogDebug(
+                        "Deletion marker for {EntityType} {EntityId} ignored: no such record locally.",
+                        info.EntityType, info.EntityId);
+                }
 
                 continue;
             }
 
-            if (await ApplyRemoteEntityAsync(provider, item, json, info, account.Id, cancellationToken).ConfigureAwait(false))
+            var outcome = await ApplyRemoteEntityAsync(provider, item, json, info, account.Id, cancellationToken).ConfigureAwait(false);
+            switch (outcome)
             {
-                downloaded++;
-            }
-            else
-            {
-                skipped++;
+                case ApplyOutcome.Applied:
+                    downloaded++;
+                    break;
+
+                case ApplyOutcome.Conflicted:
+                    conflicted++;
+                    break;
+
+                case ApplyOutcome.Retry:
+                    skipped++;
+                    retryFrom = Earliest(retryFrom, item.ModifiedAt);
+                    break;
+
+                default:
+                    skipped++;
+                    break;
             }
         }
 
-        return new PullOutcome(downloaded, deleted, skipped, changeSet.NextCursor?.Value);
+        // The stored cursor may not pass a document that still has to be retried: clamping it one
+        // second before the oldest such document makes the next cycle pick it up again.
+        var next = changeSet.NextCursor;
+        if (retryFrom is not null)
+        {
+            var clamped = retryFrom.Value.AddSeconds(-1);
+            var value = next?.Watermark is { } watermark && watermark <= clamped
+                ? next.Value
+                : clamped.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture);
+
+            next = new SyncCursor
+            {
+                ProviderType = account.ProviderType,
+                ProviderUserId = account.ProviderUserId,
+                Watermark = next?.Watermark is { } existing && existing <= clamped ? existing : clamped,
+                Value = value,
+            };
+        }
+
+        return new PullOutcome(downloaded, deleted, skipped, conflicted, next?.Value);
     }
+
+    /// <summary>The older of two optional timestamps.</summary>
+    private static DateTimeOffset Earliest(DateTimeOffset? current, DateTimeOffset candidate)
+        => current is { } existing && existing <= candidate ? existing : candidate;
 
     private async Task<string?> DownloadTextAsync(ICloudStorageProvider provider, string objectId, CancellationToken cancellationToken)
     {
@@ -176,5 +222,5 @@ public sealed partial class SyncEngine
     }
 
     /// <summary>Outcome counters of the pull phase.</summary>
-    private sealed record PullOutcome(int Downloaded, int Deleted, int Skipped, string? Cursor);
+    private sealed record PullOutcome(int Downloaded, int Deleted, int Skipped, int Conflicted, string? Cursor);
 }

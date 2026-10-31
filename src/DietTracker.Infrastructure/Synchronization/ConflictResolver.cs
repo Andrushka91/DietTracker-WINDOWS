@@ -82,6 +82,15 @@ public sealed partial class ConflictResolver : IConflictResolver
     {
         ArgumentNullException.ThrowIfNull(context);
 
+        // No local record (or no local payload) means this device cannot have edited the record: a
+        // freshly published remote record is genuinely new here and must be applied - even at
+        // revision zero. Without this rule a new record published by the mobile app (whose envelopes
+        // carried revision 0) was parked as an unresolvable conflict in an empty cache.
+        if (string.IsNullOrEmpty(context.LocalContentHash) && context.LocalRevision <= 0)
+        {
+            return ConflictDecision.AcceptRemote;
+        }
+
         if (!string.IsNullOrEmpty(context.LocalContentHash)
             && !string.IsNullOrEmpty(context.RemoteContentHash)
             && string.Equals(context.LocalContentHash, context.RemoteContentHash, StringComparison.Ordinal))

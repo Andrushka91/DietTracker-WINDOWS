@@ -12,7 +12,13 @@ public sealed partial class SyncEngine
     /// <summary>Upper bound of photographs journaled per cycle by the reconciliation step.</summary>
     private const int MaxReconciledPhotosPerCycle = 50;
 
-    private async Task<PushOutcome> PushPendingAsync(ICloudStorageProvider provider, CloudAccount account, CancellationToken cancellationToken)
+    /// <summary>
+    /// Pushes the journal operations and the deletion markers. With <paramref name="ignoreBackoff"/>
+    /// operations that failed earlier and wait for their retry are uploaded right away: an account
+    /// transition must drain the journal now, because it counts every not-yet-uploaded change as
+    /// pending and would otherwise be refused while a backoff counts down.
+    /// </summary>
+    private async Task<PushOutcome> PushPendingAsync(ICloudStorageProvider provider, CloudAccount account, bool ignoreBackoff, CancellationToken cancellationToken)
     {
         var uploaded = 0;
         var skipped = 0;
@@ -20,7 +26,7 @@ public sealed partial class SyncEngine
 
         await JournalUnjournaledPhotosAsync(account, cancellationToken).ConfigureAwait(false);
 
-        var pending = await _operations.GetPendingAsync(account.Id, MaxOperationsPerCycle, cancellationToken).ConfigureAwait(false);
+        var pending = await _operations.GetPendingAsync(account.Id, MaxOperationsPerCycle, ignoreBackoff, cancellationToken).ConfigureAwait(false);
         foreach (var operation in pending)
         {
             try
@@ -46,6 +52,17 @@ public sealed partial class SyncEngine
             catch (CloudAuthorizationRequiredException)
             {
                 throw;
+            }
+            catch (RemoteChangedException ex)
+            {
+                // The cloud already holds a newer version: keep the journal entry and let the pull
+                // phase decide. Retrying soon re-runs the resolution if the pull could not finish.
+                operation.Status = SyncOperationStatus.Pending;
+                operation.RetryCount++;
+                operation.LastError = nameof(RemoteChangedException);
+                operation.NextAttemptAt = _clock.UtcNow + TimeSpan.FromSeconds(30);
+                skipped++;
+                _logger.LogInformation("{Reason}", ex.Message);
             }
             catch (Exception ex)
             {

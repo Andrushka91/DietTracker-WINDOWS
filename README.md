@@ -225,12 +225,23 @@ developers).
 The package (`.msix` plus `.msixbundle`, ~30 MB - the publish profiles keep foreign-architecture and
 foreign-OS native assets out of the payload, which used to push it to 82 MB) is written to
 `artifacts\msix\DietTracker.App_<version>_Test\`; the trusted public certificate is kept at
-`artifacts\msix\DietTracker.cer`. The version in that folder name is the manifest version `1.0.0.0`,
-the same for every refresh: the install passes `-ForceUpdateFromAnyVersion`, which bypasses the
-check that would otherwise refuse a same-version package with different content (0x80073CFB). That
-keeps the repository's single version and the installed package in step, and the package data
-(`LocalState`) survives the refresh. Only the newest artifact folder is kept. The tracked manifest
-is never patched.
+`artifacts\msix\DietTracker.cer`. The version in that folder name is the manifest version, which stays
+**1.0.0.0** - it is the identity of the release and matches the published one.
+
+That has one consequence worth knowing. `-ForceUpdateFromAnyVersion` accepts the same version only
+when the payload is byte-identical; a same-version package with different content is refused with
+`0x80073CFB` ("The provided package is already installed, and reinstallation of the package was
+blocked"), and the only way past it is an uninstall - which deletes the package's private
+`LocalState` folder, i.e. the whole data set. That is how the data "disappeared" once: the installer
+refused the update, `npm run remove -- -KeepData` uninstalled the package, and the rescued copy was
+left in `%LOCALAPPDATA%\DietTracker\LocalState-backup-*` where nothing ever read it again.
+
+`tools\Update-Installer.ps1` now handles the collision itself: when Windows reports `0x80073CFB` it
+copies `LocalState` to `%LOCALAPPDATA%\DietTracker\LocalState-backup-<timestamp>`, removes the package,
+installs the new one and copies the data back into the freshly created `LocalState` before the
+application is started (it never overwrites data the new package already wrote). The rescue folder is
+kept either way. Installing the published 1.0.0.0 package is therefore safe even over a locally
+rebuilt 1.0.0.0, and `-NoInstall` builds the release artifacts without touching the installed copy.
 
 Uninstall with `npm run remove` (add `-- -KeepData` to save the packaged data first). It closes the
 running app before calling `Remove-AppxPackage`, because otherwise the deployment engine waits for

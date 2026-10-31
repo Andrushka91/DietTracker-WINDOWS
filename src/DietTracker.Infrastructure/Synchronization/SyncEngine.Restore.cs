@@ -97,9 +97,17 @@ public sealed partial class SyncEngine
 
             progress?.Report(new RestoreProgress { Stage = "complete", Processed = pull.Downloaded, Total = pull.Downloaded });
 
-            _lastSuccessfulSyncAt = _clock.UtcNow;
-            var result = SyncResult.Ok(0, pull.Downloaded, pull.Deleted, 0, pull.Skipped);
-            SetState(SyncState.Synced, result);
+            // A restore that could not apply every listed document stays pending instead of claiming
+            // success: the skipped documents are retried by the next cycle.
+            var openConflicts = await _conflicts.CountOpenAsync(cancellationToken).ConfigureAwait(false);
+            var retryable = pull.Skipped > 0 || pull.Conflicted > 0 || openConflicts > 0;
+            if (!retryable)
+            {
+                _lastSuccessfulSyncAt = _clock.UtcNow;
+            }
+
+            var result = SyncResult.Ok(0, pull.Downloaded, pull.Deleted, openConflicts, pull.Skipped);
+            SetState(retryable ? SyncState.PendingChanges : SyncState.Synced, result);
             return result;
         }
         catch (CloudAuthorizationRequiredException ex)

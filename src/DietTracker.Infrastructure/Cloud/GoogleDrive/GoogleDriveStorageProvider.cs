@@ -64,6 +64,18 @@ public sealed partial class GoogleDriveStorageProvider : ICloudStorageProvider
         var files = await ListFilesAsync("name,id,version,modifiedTime,size,md5Checksum", q: null, cancellationToken).ConfigureAwait(false);
         foreach (var file in files)
         {
+            if (_fileIndex.TryGetValue(file.Name, out var existing))
+            {
+                // Two uploads raced and produced the same flat name. The newest content wins the
+                // index; the older object is left untouched in Drive (nothing is deleted behind the
+                // user's back) and the situation is logged.
+                _logger.LogWarning("Duplicate cloud object name '{Name}'; keeping the newest content.", file.Name);
+                if (file.ModifiedAt < existing.ModifiedAt)
+                {
+                    continue;
+                }
+            }
+
             _fileIndex[file.Name] = file;
         }
     }

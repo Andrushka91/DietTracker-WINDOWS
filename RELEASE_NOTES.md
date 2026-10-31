@@ -43,9 +43,13 @@ user's own Google Drive account and works offline from a local working copy._
   lives on the settings page.
 * **One account at a time, nothing kept behind**: connecting an account downloads its dataset
   immediately, so the meals of that account are visible at once and the records of a previously
-  connected account are gone. Signing out uploads everything that is still pending and then deletes
-  the meals, photographs, templates and synchronization journal from the device. If a change cannot be
-  uploaded (offline, uploads switched off) the sign-out is refused rather than deleting the only copy.
+  connected account are gone. Signing out uploads everything that is still pending (repeating the
+  upload while changes keep failing, even while synchronization is paused, and a change that is
+  waiting for its retry backoff is uploaded immediately instead of being skipped) and then deletes
+  the meals, photographs, templates and synchronization journal from the device - without a
+  confirmation dialog, because nothing is deleted before the cloud copy exists. If a change still
+  cannot be uploaded (offline, provider error) the sign-out is refused and reported in the status
+  line rather than deleting the only copy.
 * **Uploads leave the device as soon as they are saved** - a meal or a photograph is on its way within
   seconds. The schedule in Settings ("Automatic synchronization") decides how often the app also
   checks the cloud for changes made on other devices; "only with the button below" still keeps every

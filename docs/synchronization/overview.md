@@ -8,15 +8,20 @@ account**. `ICloudDataSession` (`CloudDataSession`) owns the boundaries of that 
 | Moment | What happens |
 |---|---|
 | Start-up | A connected account keeps its cache. Without an account, a cache that survived (a crash between the two steps below) is deleted - unless the journal still holds changes that never reached the cloud, or the installation was never connected: those records are the only copy and survive until a sign-in can upload them. |
-| Before a sign-in | Everything the current account still has pending is uploaded. A change that cannot be uploaded refuses the sign-in; the cache is **not** touched yet, so a cancelled sign-in costs nothing. Records the cloud has never seen (a first sign-in, or a cache that survived a crash) are adopted by the account instead of being deleted. |
+| Before a sign-in | Everything the current account still has pending is uploaded (a push-only cycle that ignores the retry backoff, exactly like before a sign-out). A change that cannot be uploaded refuses the sign-in; the cache is **not** touched yet, so a cancelled sign-in costs nothing. Records the cloud has never seen (a first sign-in, or a cache that survived a crash) are adopted by the account instead of being deleted. |
 | After a sign-in | The cache is emptied (records, photographs, journal, cursor, conflicts and tombstones) and the dataset of the connected account is downloaded at once (`RebuildFromCloudAsync`), so the screens show that account only. |
-| Sign-out | Pending changes are uploaded, the credentials are removed, then the whole local cache is deleted. If changes cannot be uploaded (offline, uploads switched off) the operation is refused, because deleting the cache would delete the only copy; the user can explicitly discard them. |
+| Sign-out | The outgoing journal is uploaded - a push-only cycle that ignores the retry backoff and runs even while automatic uploads are paused - then the credentials are removed and the whole local cache is deleted. If changes still cannot be uploaded (offline, provider error) the operation is refused, because deleting the cache would delete the only copy; the app reports that in the status line and keeps everything. |
 
 Two details make this work reliably:
 
 * **Nothing is deleted before the provider confirmed the upload.** `CountPendingAsync` on the durable
   journal decides whether a sign-out may continue; the refusal carries
-  `AccountTransitionResult.PendingChangesReason` and the number of changes.
+  `AccountTransitionResult.PendingChangesReason` and the number of changes. The upload of a
+  transition is push-only (the change feed is not read for data that is about to be deleted or
+  replaced), runs even while automatic uploads are paused, uploads operations that wait for their
+  retry backoff instead of silently counting them, and is repeated a few times - so a flaky
+  connection waits instead of failing, and the interface reports a persistent refusal in the status
+  line without ever offering to discard the data.
 * **A rebuilt cache must accept its own documents.** The regular pull skips documents whose `deviceId`
   is this installation (they are echoes of a local change that is still in SQLite) - but only while
   the local record still exists. After a purge the same document is missing data and is applied, and
@@ -36,12 +41,36 @@ profile, so a cache written by an earlier account can never be shown to the next
    allowed and the machine is online. The user never waits for the cloud.
 
 Triggers: after sign-in, at startup, after local changes (debounced), when connectivity returns, on
-"Synchronize now", and periodically (the scheduler knocks once an hour).
+"Synchronize now", periodically (the scheduler knocks once an hour) and by the **live pull** of an
+open window.
 
 The schedule chosen in Settings ("Automatic synchronization": weekly, monthly, or only with the
 button) decides how often the engine also *checks the cloud on its own* - it never delays an upload
 that was just journaled. A meal or a photograph is on its way within seconds, which is what makes the
 cloud copy trustworthy; only "only with the button below" keeps every automatic cycle switched off.
+
+### Live pull of an open window
+
+A receiving device must not wait a week to see the other device's meal, so an open window asks for a
+silent, **pull-only** cycle (`SyncTrigger.AutoPull`): every 20 s while it has the focus, every 60 s
+while it is open but unfocused. A window hidden in the notification area asks nothing at all. The
+engine throttles the request (10 s minimum between two passive downloads) and never uploads in this
+mode - a local edit runs its own cycle - so an idle window costs one small change-feed call per
+interval and nothing else.
+
+* Two consecutive triggers coalesce, but a request that arrives **while a cycle is running** is
+  remembered and runs one more pass: an edit committed after the journal was read is uploaded at
+  once instead of waiting for the next scheduled knock.
+* A passive pull that brought no record keeps the previous state, so the status strip does not blink
+  every few seconds; one that materialized records publishes the result, which is what refreshes the
+  visible day. The dashboard reload skips the reload while one of its cards has an open editor, so a
+  background import never discards typing in progress.
+* Windows already reports "unchanged" for a document whose payload it holds, and the mobile port now
+  does the same: the provider re-lists objects inside its clock-skew window, and re-applying them is
+  idempotent, but counting them as downloads would flash the status strip and reload the day.
+
+The same rules exist on Android with the intervals above; the poll pauses while the app is in the
+background and pulls immediately when it comes back to the foreground.
 
 ## Cloud layout (both providers)
 

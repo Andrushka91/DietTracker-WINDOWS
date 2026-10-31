@@ -1,3 +1,4 @@
+using DietTracker.Core.Enums;
 using DietTracker.Core.Models;
 
 namespace DietTracker.Core.Interfaces;
@@ -30,7 +31,13 @@ public interface ISyncOperationRepository
 {
     Task EnqueueAsync(SyncOperation operation, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<SyncOperation>> GetPendingAsync(Guid cloudAccountId, int maxCount, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns the operations that are due now, honouring the exponential backoff timestamp. With
+    /// <paramref name="includeDeferred"/> the operations that still wait for a retry are returned as
+    /// well: an account transition must be able to drain the journal immediately instead of being
+    /// refused while a backoff that nobody is waiting for counts down.
+    /// </summary>
+    Task<IReadOnlyList<SyncOperation>> GetPendingAsync(Guid cloudAccountId, int maxCount, bool includeDeferred = false, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(SyncOperation operation, CancellationToken cancellationToken = default);
 
@@ -66,6 +73,12 @@ public interface IConflictRepository
     Task AddAsync(ConflictRecord conflict, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ConflictRecord>> GetOpenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Every conflict ever recorded for one record (open and resolved). Used to avoid re-opening a
+    /// conflict the user already decided about when the same cloud revision is seen again.
+    /// </summary>
+    Task<IReadOnlyList<ConflictRecord>> GetForEntityAsync(EntityType entityType, Guid entityId, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(ConflictRecord conflict, CancellationToken cancellationToken = default);
 

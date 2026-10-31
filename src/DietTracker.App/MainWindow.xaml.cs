@@ -58,6 +58,10 @@ public sealed partial class MainWindow : Window
 
         AppWindow.Closing += OnWindowClosing;
 
+        // The automatic download loop asks whether the window is being looked at; regaining focus
+        // also asks for a download right away (see MainWindow.Foreground.cs).
+        Activated += OnWindowActivated;
+
         // The overlay reports every long running cloud operation and can lock the close button.
         InitializeBusyOverlay();
 
@@ -196,6 +200,10 @@ public sealed partial class MainWindow : Window
         // explicitly through the tray menu or the Settings page.
         args.Cancel = true;
         AppWindow.Hide();
+
+        // A hidden window is not being looked at: the automatic download loop stops knocking until
+        // the window is restored, so a session left in the tray costs no cloud traffic.
+        IsForeground = false;
         _trayIcon.ShowAsync().GetAwaiter().GetResult();
     }
 

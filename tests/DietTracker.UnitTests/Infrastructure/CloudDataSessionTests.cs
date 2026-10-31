@@ -116,6 +116,52 @@ public sealed class CloudDataSessionTests
     }
 
     [Fact]
+    public async Task Signing_out_uploads_even_while_uploads_are_switched_off()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        var lunch = await SeedLunchAsync(environment, "Uploaded despite the pause");
+
+        // An installation that paused uploads (an older build had a separate switch) must not be
+        // trapped: the confirmed sign-out promises to upload what is pending before the only copy is
+        // deleted, so the transition cycle ignores the pause.
+        await environment.Services.GetRequiredService<IPrivacyService>().SetUploadConsentAsync(false);
+        Assert.False((await environment.Accounts.GetActiveAsync())!.SynchronizationEnabled);
+
+        var result = await Session(environment).SignOutAsync();
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.LocalDataCleared);
+        Assert.Contains($"entities/MealEntry/{lunch.Id:D}.json", environment.Cloud.Paths);
+        Assert.Null(await environment.Entries.GetAsync(lunch.Id));
+        Assert.Null(await environment.Accounts.GetActiveAsync());
+    }
+
+    [Fact]
+    public async Task Signing_out_uploads_an_operation_that_is_waiting_for_its_retry_backoff()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        var lunch = await SeedLunchAsync(environment, "Lunch in the backoff window");
+
+        // An earlier upload failure parked the change in the retry backoff: the regular cycle does
+        // not return it while NextAttemptAt lies ahead, but CountPendingAsync still counts it - the
+        // transition must drain it anyway, or the sign-out is refused for minutes.
+        var operations = environment.Services.GetRequiredService<ISyncOperationRepository>();
+        var account = await environment.Accounts.GetActiveAsync();
+        var pending = await operations.GetPendingAsync(account!.Id, 10);
+        var deferred = pending.Single(op => op.EntityType == EntityType.MealEntry && op.EntityId == lunch.Id);
+        deferred.Status = SyncOperationStatus.Failed;
+        deferred.NextAttemptAt = DateTimeOffset.UtcNow.AddHours(1);
+        await operations.UpdateAsync(deferred);
+
+        var result = await Session(environment).SignOutAsync();
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.LocalDataCleared);
+        Assert.Contains($"entities/MealEntry/{lunch.Id:D}.json", environment.Cloud.Paths);
+        Assert.Empty(await StoredLunchesAsync(environment));
+    }
+
+    [Fact]
     public async Task Preparing_a_sign_in_uploads_the_previous_account_without_deleting_anything()
     {
         await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);

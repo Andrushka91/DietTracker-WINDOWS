@@ -13,6 +13,20 @@ public enum SyncTrigger
     Periodic = 4,
     Manual = 5,
     PostRestore = 6,
+
+    /// <summary>
+    /// The upload before an account transition (signing in to another account, signing out): the
+    /// user confirmed it, so the cycle runs even while automatic uploads are paused - the local
+    /// cache may only be deleted after the cloud copy exists.
+    /// </summary>
+    AccountTransition = 7,
+
+    /// <summary>
+    /// The frequent, silent download that keeps an open window in step with the other devices.
+    /// It never pushes (a local edit runs its own cycle) and it is throttled by the engine, so a
+    /// foreground window costs one small change-feed request per interval instead of a full cycle.
+    /// </summary>
+    AutoPull = 8,
 }
 
 /// <summary>Payload of <see cref="ISyncEngine.StateChanged"/>.</summary>
@@ -49,6 +63,14 @@ public interface ISyncEngine
 
     /// <summary>Requests a cycle; concurrent requests are coalesced through the supplied trigger.</summary>
     Task<SyncResult> SynchronizeAsync(SyncTrigger trigger, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Pushes the journal of the connected account without pulling the change feed. Used by the
+    /// account transitions (sign-in preparation, sign-out): the outgoing changes have to reach the
+    /// cloud immediately - operations that wait for a retry are uploaded right away - while the
+    /// download of the dataset that is about to be replaced or deleted would only waste time.
+    /// </summary>
+    Task<SyncResult> PushOutgoingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Debounced request used after local changes (never blocks the caller).</summary>
     void RequestSync(SyncTrigger trigger);

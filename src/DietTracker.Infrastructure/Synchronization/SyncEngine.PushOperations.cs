@@ -9,6 +9,20 @@ using DietTracker.Core.Utilities;
 
 namespace DietTracker.Infrastructure.Synchronization;
 
+/// <summary>
+/// Raised when the cloud copy of a record changed after this device last synchronized it. The upload
+/// is deferred instead of overwriting the other device's edit: the pull phase of the same cycle
+/// resolves the two versions (newer revision wins, a genuine concurrent edit becomes a conflict).
+/// </summary>
+internal sealed class RemoteChangedException : Exception
+{
+    public RemoteChangedException(string path)
+        : base($"The cloud copy of '{path}' changed on another device; the upload is deferred.")
+        => Path = path;
+
+    public string Path { get; }
+}
+
 /// <summary>Per-entity upload logic, including idempotency through content hashes.</summary>
 public sealed partial class SyncEngine
 {
@@ -59,6 +73,43 @@ public sealed partial class SyncEngine
         }
 
         var path = _serializer.GetObjectPath(EntityType.MealEntry, entry.Id);
+
+        // Compare-and-swap: an update may only overwrite the exact cloud version this device last saw.
+        // A record whose CloudRevision is empty either never reached the cloud or was deliberately
+        // marked "local wins" after a conflict, so it is uploaded unconditionally.
+        if (!string.IsNullOrEmpty(entry.CloudRevision))
+        {
+            var remote = await provider.DownloadAsync(path, cancellationToken).ConfigureAwait(false);
+            if (remote is not null
+                && !string.IsNullOrEmpty(remote.Revision)
+                && !string.Equals(remote.Revision, entry.CloudRevision, StringComparison.Ordinal))
+            {
+                var remoteJson = remote.Content is { Length: > 0 } content ? Encoding.UTF8.GetString(content) : null;
+                var remoteHeader = remoteJson is null ? null : _serializer.ReadHeader(remoteJson);
+
+                if (remoteHeader is { } header && header.Revision < entry.Revision)
+                {
+                    // This device holds the newer revision: it wins, so the stale base is dropped and
+                    // the upload replaces the older cloud copy instead of being deferred forever.
+                    entry.CloudRevision = null;
+                    await _entries.UpsertAsync(entry, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // The cloud holds an equal or newer version. The change feed will not report it
+                    // again (the cursor already passed this document), so it is applied here; the
+                    // journal entry survives and turns into a no-op on its next attempt.
+                    if (remoteJson is not null && remoteHeader is { } applied)
+                    {
+                        await ApplyRemoteEntityAsync(provider, remote, remoteJson, applied, operation.CloudAccountId, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+
+                    throw new RemoteChangedException(path);
+                }
+            }
+        }
+
         var envelope = new CloudEnvelope<MealEntry>
         {
             EntityType = EntityType.MealEntry,

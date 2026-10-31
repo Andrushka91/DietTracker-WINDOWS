@@ -55,6 +55,73 @@ $ProgressPreference = 'SilentlyContinue'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repositoryRoot
 
+<#
+    Data rescue helpers.
+
+    Windows refuses to replace a package when the manifest version is unchanged but the payload is
+    different (0x80073CFB). The documented way out is an uninstall, and an uninstall deletes the
+    package's private LocalState folder - the whole data set. These three helpers make that path
+    safe: the data is copied out first, and it is copied back into the freshly installed package
+    before the application is allowed to start.
+#>
+
+# Locates the LocalState folder of the installed Diet Tracker package.
+function Get-DietTrackerLocalState {
+    Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'DietTracker.Desktop_*' -ErrorAction SilentlyContinue |
+        ForEach-Object { Join-Path $_.FullName 'LocalState' } |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        Select-Object -First 1
+}
+
+# Copies LocalState to a timestamped folder outside the package. Returns that folder, or $null.
+function Backup-PackageData {
+    $localState = Get-DietTrackerLocalState
+    if (-not $localState) {
+        Write-Host 'No packaged data found - nothing to rescue.'
+        return $null
+    }
+
+    $target = Join-Path $env:LOCALAPPDATA ('DietTracker\LocalState-backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    New-Item -ItemType Directory -Force -Path $target | Out-Null
+    Copy-Item -Path (Join-Path $localState '*') -Destination $target -Recurse -Force
+    Write-Host "Packaged data rescued to $target"
+    return $target
+}
+
+# Stops the application and uninstalls the package (which is what deletes LocalState).
+function Remove-InstalledPackage {
+    $running = Get-Process -Name 'DietTracker' -ErrorAction SilentlyContinue
+    if ($running) {
+        $running | Stop-Process -Force
+        Start-Sleep -Milliseconds 700
+    }
+
+    $installed = Get-AppxPackage -Name 'DietTracker.Desktop' -ErrorAction SilentlyContinue
+    if ($installed) {
+        Write-Host "Removing $($installed.PackageFullName)..."
+        Remove-AppxPackage -Package $installed.PackageFullName -ErrorAction Stop
+    }
+}
+
+# Copies a rescued folder back. It never overwrites data the new package already wrote.
+function Restore-PackageData {
+    param([Parameter(Mandatory)][string] $From)
+
+    $localState = Get-DietTrackerLocalState
+    if (-not $localState) {
+        throw "The package data folder could not be found after the install; the rescued copy is at $From"
+    }
+
+    $existing = Get-ChildItem -LiteralPath $localState -Force -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host "The new package already has data; the rescued copy stays at $From"
+        return
+    }
+
+    Copy-Item -Path (Join-Path $From '*') -Destination $localState -Recurse -Force
+    Write-Host "Packaged data restored from $From"
+}
+
 Write-Host "Refreshing the Diet Tracker installer ($Configuration, x64)..."
 
 # 1. The deployment step would wait for a running application's graceful shutdown, and the build
@@ -108,10 +175,12 @@ if (-not $versionMatch.Success) {
 $buildVersion = [version]$versionMatch.Groups[1].Value
 Write-Host ("Package version: " + $buildVersion)
 
-# This compiles, packages and signs in one pass.
+# This compiles, packages and signs in one pass. AppxBundle=Always is pinned because the bundle is
+# what this script installs and verifies: left to the MSBuild default, an incremental build emits
+# only the platform .msix and the script would report "no .msixbundle was produced".
 $project = Join-Path $repositoryRoot 'src\DietTracker.App\DietTracker.App.csproj'
 dotnet build $project -c $Configuration -p:Platform=x64 -m:1 `
-    -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true `
+    -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:AppxBundle=Always `
     "-p:PackageCertificateThumbprint=$($certificate.Thumbprint)"
 
 if ($LASTEXITCODE -ne 0) {
@@ -141,9 +210,28 @@ if (-not $NoInstall) {
     try {
         Add-AppxPackage -Path $bundle.FullName -ForceApplicationShutdown -ForceUpdateFromAnyVersion
     } catch {
-        throw ("The package could not be installed: " + $_.Exception.Message + "`r`n" +
-            "If Windows still refuses the version, run 'npm run remove -- -KeepData' first " +
-            "(it saves the package data) and rerun this script.")
+        # 0x80073CFB: the same identity is already installed with different contents. Windows blocks
+        # the update, and the only way forward is an uninstall - which deletes the package's private
+        # LocalState folder, i.e. the user's whole data set. That is how the data "disappeared" once
+        # before, so the data is rescued here BEFORE the package goes away and put back at once.
+        Write-Host 'The version in the manifest equals the installed one; replacing the package and restoring the data...'
+        $rescued = Backup-PackageData
+        Remove-InstalledPackage
+        try {
+            Add-AppxPackage -Path $bundle.FullName -ForceApplicationShutdown -ForceUpdateFromAnyVersion
+        } catch {
+            if ($rescued) {
+                Restore-PackageData -From $rescued
+            }
+
+            throw ("The package could not be installed: " + $_.Exception.Message)
+        }
+
+        # A fresh package starts with an empty LocalState: the rescued folder is the dataset, so it
+        # goes back before the application is ever started.
+        if ($rescued) {
+            Restore-PackageData -From $rescued
+        }
     }
     $package = Get-AppxPackage -Name 'DietTracker.Desktop' -ErrorAction SilentlyContinue | Select-Object -First 1
 

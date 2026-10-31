@@ -50,7 +50,10 @@ public sealed partial class GoogleDriveStorageProvider
     {
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
 
-        var watermark = cursor?.Watermark;
+        // The engine stores the watermark as the opaque cursor VALUE (a round-trip string) and some
+        // callers pass it as the parsed Watermark. Both are honoured; only a cursor without either
+        // form triggers a full enumeration.
+        var watermark = cursor?.Watermark ?? ParseWatermark(cursor?.Value);
         string? query = null;
 
         if (watermark is null)
@@ -87,6 +90,27 @@ public sealed partial class GoogleDriveStorageProvider
                 Watermark = DateTimeOffset.UtcNow.AddMinutes(-1),
             },
         };
+    }
+
+    /// <summary>
+    /// Reads the stored watermark back. The value is an ISO-8601 instant (optionally with an offset)
+    /// as written by the engine; anything unreadable means "enumerate everything" rather than "skip
+    /// changes", so a malformed cursor can never hide records.
+    /// </summary>
+    private static DateTimeOffset? ParseWatermark(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return DateTimeOffset.TryParse(
+            value,
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+            out var parsed)
+            ? parsed
+            : null;
     }
 
     /// <inheritdoc />

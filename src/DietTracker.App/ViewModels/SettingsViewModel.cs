@@ -528,16 +528,14 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SignOutAsync()
     {
-        var confirmed = await _dialogs.ConfirmAsync("Account_SignOutTitle", "Account_SignOutMessage");
-        if (!confirmed)
-        {
-            return;
-        }
-
         try
         {
             // Signing out synchronizes on its own (upload, then delete the local cache) and locks the
-            // window for its duration: leaving in the middle would leave the cache half deleted.
+            // window for its duration: leaving in the middle would leave the cache half deleted. The
+            // upload is repeated inside the session while changes keep failing, so a flaky connection
+            // waits instead of failing. No confirmation is shown: the flow is safe by construction -
+            // nothing is deleted before the cloud copy exists, and an upload that cannot complete
+            // refuses the sign-out and keeps every record.
             var stage = new Progress<AccountTransitionStage>(value => ReportStage(value, signOut: true));
 
             _busy.Show(_localization.Get("Busy_Synchronizing"), blocksClosing: true);
@@ -553,29 +551,11 @@ public sealed partial class SettingsViewModel : ObservableObject
 
             if (!result.Succeeded && result.FailureReason == AccountTransitionResult.PendingChangesReason)
             {
-                var detail = _localization.Format("Account_SignOutPendingDetail", result.PendingChanges);
-                var discard = await _dialogs.ConfirmAsync(
-                    "Account_SignOutPendingTitle",
-                    "Account_SignOutPendingMessage",
-                    detail);
-
-                if (!discard)
-                {
-                    AccountStatusMessage = _localization.Get("Account_SignOutPendingKept");
-                    return;
-                }
-
-                _busy.Show(_localization.Get("Busy_SigningOut"), blocksClosing: true);
-                try
-                {
-                    await _cloudData.SignOutAsync(discardPendingChanges: true, progress: stage);
-                }
-                finally
-                {
-                    _busy.Hide();
-                }
-
-                AccountStatusMessage = _localization.Get("Account_SignOutDiscarded");
+                // The upload was retried inside the session and still could not complete (offline, a
+                // provider error): nothing is deleted, because the cloud copy is the only copy. The
+                // outcome is reported in the status line - the user is never asked to destroy data
+                // they believe is already in their account.
+                AccountStatusMessage = _localization.Get("Account_SignOutStillPending");
             }
             else
             {

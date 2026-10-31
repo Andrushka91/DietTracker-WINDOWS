@@ -131,13 +131,7 @@
   <data name="Account_GuestInfo" xml:space="preserve"><value>You are using Diet Tracker without an account</value></data>
   <data name="Account_Google" xml:space="preserve"><value>Sign in with Google</value></data>
   <data name="Account_SignOut" xml:space="preserve"><value>Sign out</value></data>
-  <data name="Account_SignOutTitle" xml:space="preserve"><value>Sign out?</value></data>
-  <data name="Account_SignOutMessage" xml:space="preserve"><value>What is still pending is uploaded first. Then every meal, photograph and template is deleted from this device; your data stays in the cloud account.</value></data>
-  <data name="Account_SignOutPendingTitle" xml:space="preserve"><value>Changes could not be uploaded</value></data>
-  <data name="Account_SignOutPendingMessage" xml:space="preserve"><value>Diet Tracker deletes the local data when you sign out, because your cloud account is the only copy.</value></data>
-  <data name="Account_SignOutPendingDetail" xml:space="preserve"><value>{0} change(s) are still waiting for the cloud. Sign out and delete them anyway?</value></data>
-  <data name="Account_SignOutPendingKept" xml:space="preserve"><value>Sign-out cancelled. Nothing was deleted and the changes stay on this device.</value></data>
-  <data name="Account_SignOutDiscarded" xml:space="preserve"><value>Signed out. The changes that could not be uploaded were deleted with the local data.</value></data>
+  <data name="Account_SignOutStillPending" xml:space="preserve"><value>Sign-out cancelled. The changes could not be uploaded right now, so nothing was deleted and they stay on this device.</value></data>
   <data name="Account_SignInPendingChanges" xml:space="preserve"><value>{0} change(s) could not be uploaded yet. Go online and synchronize before signing in to another account.</value></data>
   <data name="Account_CloudDataLoaded" xml:space="preserve"><value>{0} record(s) synchronized. This account's data is on the device now.</value></data>
   <data name="Account_CloudDataPending" xml:space="preserve"><value>Signed in, but the data could not be loaded yet. Use "Synchronize now" once you are online.</value></data>

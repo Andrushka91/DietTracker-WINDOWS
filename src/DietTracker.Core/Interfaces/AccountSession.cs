@@ -117,8 +117,10 @@ public interface ICloudDataSession
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Signs out and removes the local cache. Changes that are still pending make the operation refuse
-    /// unless <paramref name="discardPendingChanges"/> is set - the cloud copy is the only copy.
+    /// Signs out and removes the local cache. Pending changes are uploaded first - the upload is
+    /// repeated while they keep failing, and it runs even while automatic uploads are paused. If they
+    /// still cannot be uploaded the operation refuses (the cloud copy is the only copy) unless
+    /// <paramref name="discardPendingChanges"/> is set explicitly.
     /// </summary>
     Task<AccountTransitionResult> SignOutAsync(
         bool discardPendingChanges = false,

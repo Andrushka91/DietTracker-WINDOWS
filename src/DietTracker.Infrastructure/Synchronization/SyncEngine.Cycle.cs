@@ -8,7 +8,13 @@ namespace DietTracker.Infrastructure.Synchronization;
 /// <summary>One synchronization cycle: push the journal, then pull provider changes.</summary>
 public sealed partial class SyncEngine
 {
-    private async Task<SyncResult> RunCycleAsync(SyncTrigger trigger, CancellationToken cancellationToken)
+    /// <summary>
+    /// Minimum distance between two automatic downloads of an open window. The foreground loop asks
+    /// more often than this; the extra calls collapse into "not due" before any request leaves.
+    /// </summary>
+    private static readonly TimeSpan AutoPullInterval = TimeSpan.FromSeconds(10);
+
+    private async Task<SyncResult> RunCycleAsync(SyncTrigger trigger, CancellationToken cancellationToken, bool pushOnly = false, bool pullOnly = false)
     {
         var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
         if (account is null)
@@ -17,10 +23,13 @@ public sealed partial class SyncEngine
             return SyncResult.Failure("sync.not-configured", state: SyncState.NotConfigured);
         }
 
-        if (!account.SynchronizationEnabled)
+        if (!account.SynchronizationEnabled && trigger is not SyncTrigger.AccountTransition)
         {
             // An account is connected but uploads are not allowed. That is a pause, and reporting it as
             // "no account connected" would be plainly wrong - the account card shows the e-mail.
+            // An account transition is the exception: the confirmed dialog promises that everything
+            // still pending is uploaded before the only copy of the data is deleted, so holding the
+            // cycle back here would block signing out forever (or push the user into discarding).
             SetState(SyncState.Paused, trigger: trigger);
             return SyncResult.Failure("sync.paused", state: SyncState.Paused);
         }
@@ -38,6 +47,19 @@ public sealed partial class SyncEngine
             return SyncResult.NotDue();
         }
 
+        // The passive download of an open window is throttled on its own: the foreground loop asks
+        // every few seconds, but only one small change-feed request per interval actually leaves.
+        if (pullOnly)
+        {
+            var sinceLastPull = _lastAutoPullAt is { } lastPull ? _clock.UtcNow - lastPull : (TimeSpan?)null;
+            if (sinceLastPull is { } age && age < AutoPullInterval)
+            {
+                return SyncResult.NotDue();
+            }
+
+            _lastAutoPullAt = _clock.UtcNow;
+        }
+
         if (!_connectivity.IsOnline)
         {
             // When the machine is offline the state is reported as Offline; the journal keeps every
@@ -46,7 +68,15 @@ public sealed partial class SyncEngine
             return SyncResult.Failure("sync.offline", state: SyncState.Offline);
         }
 
-        SetState(SyncState.Syncing, trigger: trigger);
+        // The passive download of an open window keeps its state quiet: announcing "Synchronizing"
+        // every few seconds would make the status area blink for work the user did not start. A
+        // download that actually brought records still publishes its new state (and refreshes the
+        // visible day through it), other cycles publish as they always did.
+        var quiet = trigger is SyncTrigger.AutoPull && _state is SyncState.Synced;
+        if (!quiet)
+        {
+            SetState(SyncState.Syncing, trigger: trigger);
+        }
 
         try
         {
@@ -62,8 +92,22 @@ public sealed partial class SyncEngine
 
             metadata.DeviceId = _environment.DeviceId;
 
-            var push = await PushPendingAsync(provider, account, cancellationToken).ConfigureAwait(false);
-            var pull = await PullChangesAsync(provider, account, metadata, cancellationToken).ConfigureAwait(false);
+            // The push decides the outcome of an account transition on its own: a sign-out needs the
+            // journal drained, not a download of the dataset that is about to be deleted locally -
+            // and the download is what made every attempt take half a minute. The transition also
+            // uploads operations that wait for their retry: leaving them out would keep them counted
+            // as pending while the sign-out waits for exactly them.
+            // A pull-only cycle is the opposite case: nothing is journaled, so there is nothing to
+            // upload and the journal of another account must not be touched.
+            var push = pullOnly
+                ? new PushOutcome(0, 0, 0)
+                : await PushPendingAsync(provider, account, trigger is SyncTrigger.AccountTransition, cancellationToken).ConfigureAwait(false);
+
+            // The pull result stays empty for a push-only cycle, so the cursor bookkeeping below
+            // keeps the stored cursor untouched.
+            var pull = pushOnly
+                ? new PullOutcome(0, 0, 0, 0, null)
+                : await PullChangesAsync(provider, account, metadata, cancellationToken).ConfigureAwait(false);
 
             metadata.LastSyncTimestamp = _clock.UtcNow;
             metadata.LastSyncCursor = pull.Cursor ?? metadata.LastSyncCursor;
@@ -76,13 +120,26 @@ public sealed partial class SyncEngine
             account.QuotaRemainingBytes = quota?.RemainingBytes;
             await _accounts.UpdateAsync(account, cancellationToken).ConfigureAwait(false);
 
-            _lastSuccessfulSyncAt = _clock.UtcNow;
-
             var pending = await _operations.CountPendingAsync(account.Id, cancellationToken).ConfigureAwait(false);
             var openConflicts = await _conflicts.CountOpenAsync(cancellationToken).ConfigureAwait(false);
+            var retryable = pending > 0 || openConflicts > 0 || push.Skipped > 0 || pull.Skipped > 0 || pull.Conflicted > 0;
+
+            // "Last successful synchronization" is only claimed when every listed document was applied:
+            // a skipped download or a deferred photograph used to look like success.
+            if (!retryable)
+            {
+                _lastSuccessfulSyncAt = _clock.UtcNow;
+            }
 
             var result = SyncResult.Ok(push.Uploaded, pull.Downloaded, pull.Deleted, openConflicts, push.Skipped + pull.Skipped);
-            SetState(pending > 0 || openConflicts > 0 ? SyncState.PendingChanges : SyncState.Synced, result, trigger);
+
+            // A quiet pull that found nothing keeps the state it had; one that brought records
+            // publishes the result, which is also what refreshes the visible day.
+            if (!quiet || retryable || pull.Downloaded + pull.Deleted > 0)
+            {
+                SetState(retryable ? SyncState.PendingChanges : SyncState.Synced, result, trigger);
+            }
+
             return result;
         }
         catch (OperationCanceledException)
@@ -136,13 +193,24 @@ public sealed partial class SyncEngine
     /// </summary>
     private async Task<bool> IsDueAsync(SyncTrigger trigger, CloudAccount account, CancellationToken cancellationToken)
     {
-        // Explicit actions and consistency repairs always run: the user asked for them.
-        if (trigger is SyncTrigger.Manual or SyncTrigger.PostRestore or SyncTrigger.ConnectivityRestored)
+        // Explicit actions and consistency repairs always run: the user asked for them. The upload
+        // before an account transition belongs here too - it belongs to the confirmed sign-in or
+        // sign-out, not to the schedule.
+        if (trigger is SyncTrigger.Manual or SyncTrigger.PostRestore or SyncTrigger.ConnectivityRestored
+            or SyncTrigger.AccountTransition)
         {
             return true;
         }
 
         var frequency = await ReadSyncFrequencyAsync(cancellationToken).ConfigureAwait(false);
+
+        // The passive download of an open window is not part of the schedule: it exists so that the
+        // other device's changes appear within a minute instead of within a week. "Only with the
+        // button below" is still respected - the user asked for no automatic cloud traffic at all.
+        if (trigger is SyncTrigger.AutoPull)
+        {
+            return frequency != SyncFrequency.Manual;
+        }
 
         // A local change - a meal, a photograph - is uploaded as soon as it is journaled: the outbox
         // exists to get it out, and holding it back until the weekly (or monthly) schedule is due would

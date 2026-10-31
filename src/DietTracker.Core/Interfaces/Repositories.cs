@@ -36,6 +36,14 @@ public interface IMealEntryRepository
     /// <summary>Hard delete, used only by explicit user driven data deletion and by restore.</summary>
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Replaces a local placeholder row with a record received from another device, adopting the
+    /// cloud identity (the cloud document path IS the meal id). Photographs that referenced the local
+    /// row are re-pointed to the incoming id inside the same transaction, so they keep their parent
+    /// and the picture documents of the other device can be applied.
+    /// </summary>
+    Task AdoptCloudIdentityAsync(MealEntry entry, Guid replacedId, CancellationToken cancellationToken = default);
+
     Task<int> CountAsync(Guid profileId, CancellationToken cancellationToken = default);
 }
 

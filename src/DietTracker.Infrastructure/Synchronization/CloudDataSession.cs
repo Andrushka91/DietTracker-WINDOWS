@@ -20,7 +20,9 @@ namespace DietTracker.Infrastructure.Synchronization;
 /// Two situations are deliberately excluded from deletion. A cache that has never been uploaded is kept
 /// (a first sign-in adopts it instead of throwing it away), and a sign-out is refused while changes are
 /// still waiting for the provider: the cloud copy is meant to be the only copy, so nothing is deleted
-/// before it exists there. The caller can override the second rule explicitly.
+/// before it exists there. The upload of a transition is retried and runs even while automatic
+/// uploads are paused, so a refusal is the last resort - and the interface reports it in the
+/// status line instead of asking the user to discard data.
 /// </para>
 /// </remarks>
 public sealed class CloudDataSession : ICloudDataSession
@@ -28,6 +30,9 @@ public sealed class CloudDataSession : ICloudDataSession
     private static readonly DateOnly HistoryStart = new(2000, 1, 1);
 
     private static readonly DateOnly HistoryEnd = new(2100, 1, 1);
+
+    /// <summary>Pause between two upload attempts of an account transition.</summary>
+    private static readonly TimeSpan TransitionRetryDelay = TimeSpan.FromSeconds(3);
 
     private readonly ICloudAccountRepository _accounts;
     private readonly ISyncEngine _engine;
@@ -83,8 +88,7 @@ public sealed class CloudDataSession : ICloudDataSession
                 // The credentials are about to be replaced by the interactive sign-in, so this is the
                 // last moment at which the previous account can still receive its pending changes.
                 progress?.Report(AccountTransitionStage.Uploading);
-                var upload = await UploadPendingAsync(cancellationToken).ConfigureAwait(false);
-                var pending = await CountPendingChangesAsync(account, cancellationToken).ConfigureAwait(false);
+                var (uploaded, pending) = await UploadUntilSettledAsync(account, cancellationToken).ConfigureAwait(false);
 
                 if (pending > 0)
                 {
@@ -97,7 +101,7 @@ public sealed class CloudDataSession : ICloudDataSession
                     return new AccountTransitionResult
                     {
                         Transition = AccountTransition.SignIn,
-                        Uploaded = upload?.Uploaded ?? 0,
+                        Uploaded = uploaded,
                         PendingChanges = pending,
                         FailureReason = AccountTransitionResult.PendingChangesReason,
                     };
@@ -110,7 +114,7 @@ public sealed class CloudDataSession : ICloudDataSession
                 return new AccountTransitionResult
                 {
                     Transition = AccountTransition.SignIn,
-                    Uploaded = upload?.Uploaded ?? 0,
+                    Uploaded = uploaded,
                 };
             }
 
@@ -230,9 +234,7 @@ public sealed class CloudDataSession : ICloudDataSession
                 // Upload first, delete afterwards: the local cache is only given up once the cloud
                 // copy exists. The sign-out button therefore never needs a separate "synchronize now".
                 progress?.Report(AccountTransitionStage.Uploading);
-                var upload = await UploadPendingAsync(cancellationToken).ConfigureAwait(false);
-                uploaded = upload?.Uploaded ?? 0;
-                pending = await CountPendingChangesAsync(account, cancellationToken).ConfigureAwait(false);
+                (uploaded, pending) = await UploadUntilSettledAsync(account, cancellationToken).ConfigureAwait(false);
 
                 if (pending > 0 && !discardPendingChanges)
                 {
@@ -333,14 +335,18 @@ public sealed class CloudDataSession : ICloudDataSession
     }
 
     /// <summary>
-    /// Runs a cycle that is never deferred by the configured frequency. A provider failure is logged and
-    /// reported through <see langword="null"/>; the caller decides whether it may delete anything.
+    /// Runs one push-only cycle for the account transition: never deferred by the configured
+    /// frequency, never held back by the pause of automatic uploads, and never waiting for a retry
+    /// backoff - the transition needs the journal drained now. The change feed is not read: the
+    /// dataset that a sign-out is about to delete (or a sign-in is about to replace) has no role
+    /// here. A provider failure is logged and reported through <see langword="null"/>; the caller
+    /// decides whether it may delete anything.
     /// </summary>
     private async Task<SyncResult?> UploadPendingAsync(CancellationToken cancellationToken)
     {
         try
         {
-            return await _engine.SynchronizeAsync(SyncTrigger.Manual, cancellationToken).ConfigureAwait(false);
+            return await _engine.PushOutgoingAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -350,20 +356,45 @@ public sealed class CloudDataSession : ICloudDataSession
     }
 
     /// <summary>
-    /// Number of changes the cloud does not have yet. Uploads that were switched off count as pending
-    /// whenever records exist locally, because those records have never reached the cloud.
+    /// Uploads the pending changes of the connected account and repeats the cycle while changes are
+    /// still waiting: a single failed cycle (a dropped connection, a busy provider) must not end in
+    /// a refused transition, so the caller waits under its busy overlay instead of being asked what
+    /// to delete. Each attempt is a full cycle that the pause of automatic uploads does not hold
+    /// back.
+    /// </summary>
+    private async Task<(int Uploaded, int Pending)> UploadUntilSettledAsync(
+        CloudAccount account,
+        CancellationToken cancellationToken)
+    {
+        const int MaxAttempts = 3;
+        var uploaded = 0;
+
+        for (var attempt = 1; ; attempt++)
+        {
+            var upload = await UploadPendingAsync(cancellationToken).ConfigureAwait(false);
+            uploaded += upload?.Uploaded ?? 0;
+
+            var pending = await CountPendingChangesAsync(account, cancellationToken).ConfigureAwait(false);
+            if (pending == 0 || attempt >= MaxAttempts)
+            {
+                return (uploaded, pending);
+            }
+
+            _logger.LogInformation(
+                "The upload left {Pending} change(s) waiting for the cloud; the transition waits {Seconds} second(s) and tries again (attempt {Attempt} of {Max}).",
+                pending, TransitionRetryDelay.TotalSeconds, attempt, MaxAttempts);
+
+            await Task.Delay(TransitionRetryDelay, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Number of changes the cloud does not have yet, read from the durable journal. A transition has
+    /// just run an upload cycle that is allowed to bypass the pause, so the journal is the truthful
+    /// measure: a change that is still in it never reached the cloud.
     /// </summary>
     private async Task<int> CountPendingChangesAsync(CloudAccount account, CancellationToken cancellationToken)
-    {
-        var pending = await _operations.CountPendingAsync(account.Id, cancellationToken).ConfigureAwait(false);
-
-        if (!account.SynchronizationEnabled && await HasLocalUserDataAsync(cancellationToken).ConfigureAwait(false))
-        {
-            return Math.Max(pending, 1);
-        }
-
-        return pending;
-    }
+        => await _operations.CountPendingAsync(account.Id, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// True when the journal of any remembered account still holds a change. Those changes exist only

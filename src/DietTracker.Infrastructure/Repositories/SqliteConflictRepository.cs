@@ -1,3 +1,4 @@
+using DietTracker.Core.Enums;
 using DietTracker.Core.Interfaces;
 using DietTracker.Core.Models;
 
@@ -49,6 +50,24 @@ public sealed class SqliteConflictRepository : IConflictRepository
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText = $"SELECT {SelectColumns} FROM ConflictRecord WHERE IsResolved = 0 ORDER BY DetectedAt DESC;";
+
+        var result = new List<ConflictRecord>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            result.Add(RowMappers.MapConflictRecord(reader));
+        }
+
+        return result;
+    }
+
+    public async Task<IReadOnlyList<ConflictRecord>> GetForEntityAsync(EntityType entityType, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT {SelectColumns} FROM ConflictRecord WHERE EntityType = $type AND EntityId = $entity;";
+        command.Parameters.AddWithValue("$type", (int)entityType);
+        command.Parameters.AddWithValue("$entity", SqliteValue.ToDb(entityId));
 
         var result = new List<ConflictRecord>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);

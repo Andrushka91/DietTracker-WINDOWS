@@ -33,7 +33,9 @@ public sealed record SyncResult
         => new()
         {
             Succeeded = true,
-            State = conflicts > 0 ? SyncState.PendingChanges : SyncState.Synced,
+            // Skipped documents (a listed file that could not be downloaded, a photograph whose meal
+            // is not local yet) are unfinished work, not a successful synchronization.
+            State = conflicts > 0 || skipped > 0 ? SyncState.PendingChanges : SyncState.Synced,
             Uploaded = uploaded,
             Downloaded = downloaded,
             Deleted = deleted,

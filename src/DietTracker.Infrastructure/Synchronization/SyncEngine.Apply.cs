@@ -4,10 +4,29 @@ using DietTracker.Core.Models;
 
 namespace DietTracker.Infrastructure.Synchronization;
 
+/// <summary>What happened to one received cloud document.</summary>
+internal enum ApplyOutcome
+{
+    /// <summary>The document was materialized in the local cache.</summary>
+    Applied,
+
+    /// <summary>Nothing to do: identical content, our own echo, an unsupported schema or a picture that is already here.</summary>
+    Unchanged,
+
+    /// <summary>Both versions were preserved; the user decides which one to keep.</summary>
+    Conflicted,
+
+    /// <summary>
+    /// The document cannot be applied yet (missing bytes, parent record not local). The cursor is kept
+    /// behind it, so the next cycle retries it - it is never counted as synchronized.
+    /// </summary>
+    Retry,
+}
+
 /// <summary>Dispatches remote payloads to the matching local apply operation.</summary>
 public sealed partial class SyncEngine
 {
-    private async Task<bool> ApplyRemoteEntityAsync(
+    private async Task<ApplyOutcome> ApplyRemoteEntityAsync(
         ICloudStorageProvider provider,
         CloudObject item,
         string json,
@@ -22,7 +41,11 @@ public sealed partial class SyncEngine
             EntityType.MealTemplate => await ApplyTemplateAsync(json, cancellationToken).ConfigureAwait(false),
             EntityType.ReminderSettings => await ApplyReminderAsync(json, cancellationToken).ConfigureAwait(false),
             EntityType.AppPreferences => await ApplyPreferencesAsync(json, cancellationToken).ConfigureAwait(false),
-            _ => false,
+            EntityType.MealCategory => await ApplyCategoryAsync(json, cancellationToken).ConfigureAwait(false),
+
+            // Profiles are per installation (the provider identity is the key) and are never replaced
+            // by another device's document.
+            _ => ApplyOutcome.Unchanged,
         };
     }
 

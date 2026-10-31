@@ -169,6 +169,21 @@ public sealed partial class DashboardViewModel : ObservableObject, IMealCardHost
         }
     }
 
+    /// <summary>
+    /// Reloads the day after a background synchronization applied changes from another device, so the
+    /// cards (and their editors) never keep a stale snapshot that a later save would write back.
+    /// An open editor is left alone: the user's typing must not be discarded mid-edit.
+    /// </summary>
+    public async Task RefreshAfterRemoteChangeAsync()
+    {
+        if (Cards.Any(card => card.IsEditing))
+        {
+            return;
+        }
+
+        await LoadAsync();
+    }
+
     /// <summary>Reloads the photographs of one card from the local photo store.</summary>
     private async Task AttachPhotosAsync(MealCardViewModel card, CancellationToken cancellationToken)
     {

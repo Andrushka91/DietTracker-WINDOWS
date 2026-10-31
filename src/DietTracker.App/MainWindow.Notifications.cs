@@ -29,6 +29,19 @@ public sealed partial class MainWindow
 
     private void OnSyncStateChanged(object? sender, SyncStateChangedEventArgs e)
     {
+        // A cycle that materialized records of another device refreshes the visible day, so the cards
+        // (and any editor they hold) do not keep a stale snapshot after a background pull.
+        if (e.LastResult is { } applied && (applied.Downloaded > 0 || applied.Deleted > 0))
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (ContentFrame.Content is Views.DashboardPage page)
+                {
+                    _ = page.ViewModel.RefreshAfterRemoteChangeAsync();
+                }
+            });
+        }
+
         // Background cycles - start-up, the hourly schedule, a local edit, connectivity, the state
         // refresh of the stored account - synchronize in silence: neither the status strip nor the
         // notification area is touched, so launching the application never flashes a sync message.

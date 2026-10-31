@@ -24,6 +24,12 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
     /// <summary>When set, every operation fails, which lets tests prove that a failing provider is harmless.</summary>
     public Exception? FailureToThrow { get; set; }
 
+    /// <summary>
+    /// Artificial delay per upload. It lets a test commit an edit <em>while</em> a cycle is still
+    /// running, which is the situation the "one more pass" guarantee exists for.
+    /// </summary>
+    public TimeSpan UploadDelay { get; set; } = TimeSpan.Zero;
+
     /// <summary>Number of uploads performed (used to prove that identical content is not uploaded twice).</summary>
     public int UploadCount => _uploadedPaths.Count;
 
@@ -37,14 +43,19 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
     public Task InitializeAsync(CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
-    public Task<CloudObject> UploadAsync(CloudObject item, CancellationToken cancellationToken = default)
+    public async Task<CloudObject> UploadAsync(CloudObject item, CancellationToken cancellationToken = default)
     {
+        if (UploadDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(UploadDelay, cancellationToken).ConfigureAwait(false);
+        }
+
         ThrowIfFailing();
         _revision++;
         _uploadedPaths.Add(item.Path);
         _objects[item.Path] = new Entry(item.Content ?? [], $"rev-{_revision}", DateTimeOffset.UtcNow, item.ContentHash);
 
-        return Task.FromResult(new CloudObject
+        return new CloudObject
         {
             ObjectId = item.Path,
             Path = item.Path,
@@ -52,7 +63,7 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
             ModifiedAt = DateTimeOffset.UtcNow,
             SizeBytes = item.Content?.LongLength ?? 0,
             ContentHash = item.ContentHash,
-        });
+        };
     }
 
     public Task<CloudObject?> DownloadAsync(string objectId, CancellationToken cancellationToken = default)

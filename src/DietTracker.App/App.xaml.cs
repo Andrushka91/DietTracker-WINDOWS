@@ -229,6 +229,53 @@ public partial class App : Application
         // once an hour makes sure a session that stays open for weeks still synchronizes when the
         // week (or the month) is up. A cycle that is not due does nothing at all, so this is silent.
         _ = RunPeriodicSynchronizationCheckAsync();
+
+        // A second, much shorter loop serves the open window: it is what makes a meal saved on the
+        // phone appear on the desktop within a minute instead of within a week. It only knocks while
+        // the window is in the foreground, and the engine throttles the actual request further, so an
+        // idle window costs one small change-feed call per interval and a minimized one costs none.
+        _ = RunForegroundPullLoopAsync();
+    }
+
+    /// <summary>How often the window being looked at asks the cloud whether another device changed something.</summary>
+    private static readonly TimeSpan ForegroundPullInterval = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// How often an open but unfocused window asks. Slower, because nobody is waiting for the
+    /// change, but still fast enough that switching back to the window shows a current day.
+    /// </summary>
+    private static readonly TimeSpan BackgroundPullInterval = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// Requests a silent download while the window is open. The engine decides whether the request
+    /// is due (throttle, frequency "only with the button", offline, no account), so this loop only
+    /// has to be cheap: no provider is contacted from here. A window hidden in the tray asks
+    /// nothing at all - it is not being used.
+    /// </summary>
+    private async Task RunForegroundPullLoopAsync()
+    {
+        while (_services is { } services)
+        {
+            var interval = MainAppWindow is MainWindow { IsForeground: true }
+                ? ForegroundPullInterval
+                : BackgroundPullInterval;
+
+            await Task.Delay(interval);
+
+            if (MainAppWindow is not MainWindow { Visible: true })
+            {
+                continue;
+            }
+
+            try
+            {
+                services.GetRequiredService<ISyncEngine>().RequestSync(SyncTrigger.AutoPull);
+            }
+            catch (Exception ex)
+            {
+                services.GetService<ILogger<App>>()?.LogWarning(ex, "The foreground synchronization check failed.");
+            }
+        }
     }
 
     /// <summary>

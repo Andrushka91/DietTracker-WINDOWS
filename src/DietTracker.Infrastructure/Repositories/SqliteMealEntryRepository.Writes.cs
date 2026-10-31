@@ -70,6 +70,59 @@ public sealed partial class SqliteMealEntryRepository
     }
 
     /// <inheritdoc />
+    public async Task AdoptCloudIdentityAsync(MealEntry entry, Guid replacedId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
+        // The photograph rows point at a parent that the same transaction inserts two statements
+        // later, so the foreign key check is deferred to the commit.
+        await using (var pragma = connection.CreateCommand())
+        {
+            pragma.Transaction = transaction;
+            pragma.CommandText = "PRAGMA defer_foreign_keys = ON;";
+            await pragma.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        await using (var photos = connection.CreateCommand())
+        {
+            photos.Transaction = transaction;
+            photos.CommandText = "UPDATE MealPhoto SET MealEntryId = $new WHERE MealEntryId = $old;";
+            photos.Parameters.AddWithValue("$new", SqliteValue.ToDb(entry.Id));
+            photos.Parameters.AddWithValue("$old", SqliteValue.ToDb(replacedId));
+            await photos.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        await using (var delete = connection.CreateCommand())
+        {
+            delete.Transaction = transaction;
+            delete.CommandText = "DELETE FROM MealEntry WHERE Id = $id;";
+            delete.Parameters.AddWithValue("$id", SqliteValue.ToDb(replacedId));
+            await delete.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        await using (var insert = connection.CreateCommand())
+        {
+            insert.Transaction = transaction;
+            insert.CommandText =
+                """
+                INSERT INTO MealEntry (
+                    Id, LocalProfileId, Date, MealCategoryId, MealCategoryKey, Title, Ingredients,
+                    PlannedTime, Status, CompletedAt, CreatedAt, UpdatedAt, Revision, SyncStatus, CloudRevision, ContentHash)
+                VALUES (
+                    $id, $profile, $date, $categoryId, $categoryKey, $title, $ingredients,
+                    $plannedTime, $status, $completedAt, $createdAt, $updatedAt, $revision, $syncStatus, $cloudRevision, $contentHash);
+                """;
+            AddParameters(insert, entry);
+            await insert.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<int> CountAsync(Guid profileId, CancellationToken cancellationToken = default)
     {
         await using var connection = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
