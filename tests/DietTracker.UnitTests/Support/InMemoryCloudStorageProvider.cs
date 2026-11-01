@@ -33,6 +33,22 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
     /// <summary>Number of uploads performed (used to prove that identical content is not uploaded twice).</summary>
     public int UploadCount => _uploadedPaths.Count;
 
+    /// <summary>
+    /// When <see langword="false"/> the change feed only lists the objects (no inline payload), so the
+    /// engine has to read every document through <see cref="OpenReadAsync"/> - the path a real provider
+    /// takes, and the one the pull's parallel window is built for.
+    /// </summary>
+    public bool SendChangesInline { get; set; } = true;
+
+    /// <summary>Artificial delay per document read, used to observe the pull's download window.</summary>
+    public TimeSpan DownloadDelay { get; set; } = TimeSpan.Zero;
+
+    /// <summary>Highest number of documents read at the same time (the size of the pull window).</summary>
+    public int MaxConcurrentDownloads => Volatile.Read(ref _maxConcurrentDownloads);
+
+    private int _activeDownloads;
+    private int _maxConcurrentDownloads;
+
     /// <summary>Paths of the uploads in the order they happened (used to prove the upload ordering).</summary>
     public IReadOnlyList<string> UploadedPaths => _uploadedPaths;
 
@@ -86,12 +102,39 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
         });
     }
 
-    public Task<Stream?> OpenReadAsync(string objectId, CancellationToken cancellationToken = default)
+    public async Task<Stream?> OpenReadAsync(string objectId, CancellationToken cancellationToken = default)
     {
         ThrowIfFailing();
-        return Task.FromResult<Stream?>(_objects.TryGetValue(objectId, out var entry)
-            ? new MemoryStream(entry.Content, writable: false)
-            : null);
+
+        var active = Interlocked.Increment(ref _activeDownloads);
+        try
+        {
+            // Record the window size the engine asked for (the pull runs this from several workers).
+            var peak = Volatile.Read(ref _maxConcurrentDownloads);
+            while (active > peak)
+            {
+                var observed = Interlocked.CompareExchange(ref _maxConcurrentDownloads, active, peak);
+                if (observed == peak)
+                {
+                    break;
+                }
+
+                peak = observed;
+            }
+
+            if (DownloadDelay > TimeSpan.Zero)
+            {
+                await Task.Delay(DownloadDelay, cancellationToken).ConfigureAwait(false);
+            }
+
+            return _objects.TryGetValue(objectId, out var entry)
+                ? new MemoryStream(entry.Content, writable: false)
+                : null;
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _activeDownloads);
+        }
     }
 
     public Task<CloudChangeSet> GetChangesAsync(SyncCursor? cursor, CancellationToken cancellationToken = default)
@@ -105,7 +148,7 @@ public sealed class InMemoryCloudStorageProvider : ICloudStorageProvider
             ModifiedAt = kv.Value.ModifiedAt,
             SizeBytes = kv.Value.Content.LongLength,
             ContentHash = kv.Value.ContentHash,
-            Content = kv.Value.Content,
+            Content = SendChangesInline ? kv.Value.Content : null,
         }).ToArray();
 
         return Task.FromResult(new CloudChangeSet

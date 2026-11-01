@@ -62,7 +62,14 @@ public interface ISyncEngine
     event EventHandler<SyncStateChangedEventArgs>? StateChanged;
 
     /// <summary>Requests a cycle; concurrent requests are coalesced through the supplied trigger.</summary>
-    Task<SyncResult> SynchronizeAsync(SyncTrigger trigger, CancellationToken cancellationToken = default);
+    /// <param name="progress">
+    /// Reports the documents a cycle settles (stage "upload" / "download"), so a blocking bar can
+    /// show real progress instead of a spinner. Optional: the background triggers never pass one.
+    /// </param>
+    Task<SyncResult> SynchronizeAsync(
+        SyncTrigger trigger,
+        IProgress<RestoreProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Pushes the journal of the connected account without pulling the change feed. Used by the
@@ -70,7 +77,10 @@ public interface ISyncEngine
     /// cloud immediately - operations that wait for a retry are uploaded right away - while the
     /// download of the dataset that is about to be replaced or deleted would only waste time.
     /// </summary>
-    Task<SyncResult> PushOutgoingAsync(CancellationToken cancellationToken = default);
+    Task<SyncResult> PushOutgoingAsync(
+        IProgress<RestoreProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
 
     /// <summary>Debounced request used after local changes (never blocks the caller).</summary>
     void RequestSync(SyncTrigger trigger);

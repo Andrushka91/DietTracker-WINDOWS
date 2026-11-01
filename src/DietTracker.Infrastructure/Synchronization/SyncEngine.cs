@@ -112,14 +112,21 @@ public sealed partial class SyncEngine : ISyncEngine, IAsyncDisposable
     public event EventHandler<SyncStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
-    public async Task<SyncResult> SynchronizeAsync(SyncTrigger trigger, CancellationToken cancellationToken = default)
+    public async Task<SyncResult> SynchronizeAsync(
+        SyncTrigger trigger,
+        IProgress<RestoreProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         await _cycleGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             // The passive download never uploads: a local edit has its own cycle, and a pull at the
             // same moment would only duplicate the push it is about to run.
-            return await RunCycleAsync(trigger, cancellationToken, pullOnly: trigger is SyncTrigger.AutoPull).ConfigureAwait(false);
+            return await RunCycleAsync(
+                trigger,
+                cancellationToken,
+                pullOnly: trigger is SyncTrigger.AutoPull,
+                progress: progress).ConfigureAwait(false);
         }
         finally
         {
@@ -128,7 +135,9 @@ public sealed partial class SyncEngine : ISyncEngine, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async Task<SyncResult> PushOutgoingAsync(CancellationToken cancellationToken = default)
+    public async Task<SyncResult> PushOutgoingAsync(
+        IProgress<RestoreProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         await _cycleGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -136,13 +145,18 @@ public sealed partial class SyncEngine : ISyncEngine, IAsyncDisposable
             // The push-only cycle of an account transition: the journal is drained without reading
             // the change feed, and operations that wait for their retry are uploaded immediately
             // instead of silently counting as pending while their backoff counts down.
-            return await RunCycleAsync(SyncTrigger.AccountTransition, cancellationToken, pushOnly: true).ConfigureAwait(false);
+            return await RunCycleAsync(
+                SyncTrigger.AccountTransition,
+                cancellationToken,
+                pushOnly: true,
+                progress: progress).ConfigureAwait(false);
         }
         finally
         {
             _cycleGate.Release();
         }
     }
+
 
     /// <inheritdoc />
     public void RequestSync(SyncTrigger trigger)
@@ -195,7 +209,7 @@ public sealed partial class SyncEngine : ISyncEngine, IAsyncDisposable
 
                 try
                 {
-                    await SynchronizeAsync(trigger, cancellationToken).ConfigureAwait(false);
+                    await SynchronizeAsync(trigger, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

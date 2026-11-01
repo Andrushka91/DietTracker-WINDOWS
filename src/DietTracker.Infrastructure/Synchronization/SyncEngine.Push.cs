@@ -18,7 +18,12 @@ public sealed partial class SyncEngine
     /// transition must drain the journal now, because it counts every not-yet-uploaded change as
     /// pending and would otherwise be refused while a backoff counts down.
     /// </summary>
-    private async Task<PushOutcome> PushPendingAsync(ICloudStorageProvider provider, CloudAccount account, bool ignoreBackoff, CancellationToken cancellationToken)
+    private async Task<PushOutcome> PushPendingAsync(
+        ICloudStorageProvider provider,
+        CloudAccount account,
+        bool ignoreBackoff,
+        CancellationToken cancellationToken,
+        IProgress<RestoreProgress>? progress = null)
     {
         var uploaded = 0;
         var skipped = 0;
@@ -27,6 +32,16 @@ public sealed partial class SyncEngine
         await JournalUnjournaledPhotosAsync(account, cancellationToken).ConfigureAwait(false);
 
         var pending = await _operations.GetPendingAsync(account.Id, MaxOperationsPerCycle, ignoreBackoff, cancellationToken).ConfigureAwait(false);
+
+        // "0 of N" first, then one step per settled change: this is what turns the sign-out overlay
+        // from a spinner into the 0-100 % bar the mobile app has always painted.
+        var total = pending.Count;
+        var settled = 0;
+        if (total > 0)
+        {
+            progress?.Report(new RestoreProgress { Stage = "upload", Processed = 0, Total = total });
+        }
+
         foreach (var operation in pending)
         {
             try
@@ -77,6 +92,9 @@ public sealed partial class SyncEngine
             }
 
             await _operations.UpdateAsync(operation, cancellationToken).ConfigureAwait(false);
+
+            settled++;
+            progress?.Report(new RestoreProgress { Stage = "upload", Processed = settled, Total = total });
         }
 
         foreach (var tombstone in await _tombstones.GetPendingAsync(cancellationToken).ConfigureAwait(false))

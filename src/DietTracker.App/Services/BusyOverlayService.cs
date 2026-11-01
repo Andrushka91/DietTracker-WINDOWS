@@ -10,6 +10,15 @@ namespace DietTracker.App.Services;
 public sealed record BusyOverlayState(bool IsBusy, string Message, bool BlocksClosing)
 {
     public static BusyOverlayState Idle { get; } = new(false, string.Empty, false);
+
+    /// <summary>
+    /// 0-1 of the determinate bar, or <see langword="null"/> while the operation cannot count its
+    /// documents (the overlay then shows the spinner and the sentence alone).
+    /// </summary>
+    public double? Progress { get; init; }
+
+    /// <summary>"12 of 40 change(s) synced with the cloud" under the bar (null: nothing to count).</summary>
+    public string? Detail { get; init; }
 }
 
 /// <summary>
@@ -31,6 +40,17 @@ public interface IBusyOverlayService
 
     /// <summary>Shows the overlay. Repeated calls update the message instead of stacking overlays.</summary>
     void Show(string message, bool blocksClosing = false);
+
+    /// <summary>
+    /// Shows (or switches to) the determinate bar of an operation that counts its documents:
+    /// a sign-out uploading its journal, a sign-in downloading the account's dataset.
+    /// </summary>
+    /// <param name="message">Sentence above the bar ("Signing out…").</param>
+    /// <param name="processed">Documents the phase already settled.</param>
+    /// <param name="total">Documents the phase has to settle (0 = keep the spinner).</param>
+    /// <param name="detail">Localized "12 of 40 …" line under the bar.</param>
+    /// <param name="blocksClosing">True while the window may not be closed.</param>
+    void ShowProgress(string message, int processed, int total, string? detail = null, bool blocksClosing = false);
 
     /// <summary>Replaces the message of a visible overlay (a stage of the same operation).</summary>
     void Update(string message);
@@ -65,6 +85,19 @@ public sealed class BusyOverlayService : IBusyOverlayService
         => Publish(new BusyOverlayState(true, message ?? string.Empty, blocksClosing));
 
     /// <inheritdoc />
+    public void ShowProgress(string message, int processed, int total, string? detail = null, bool blocksClosing = false)
+    {
+        // A phase without a count (the browser round trip, preparing the profile) keeps the spinner:
+        // an empty bar would claim progress that is not measurable yet.
+        var bounded = total <= 0 ? 0 : Math.Min(processed, total);
+        Publish(new BusyOverlayState(true, message ?? string.Empty, blocksClosing)
+        {
+            Progress = total <= 0 ? null : (double)bounded / total,
+            Detail = total <= 0 ? null : detail,
+        });
+    }
+
+    /// <inheritdoc />
     public void Update(string message)
     {
         BusyOverlayState next;
@@ -76,7 +109,7 @@ public sealed class BusyOverlayService : IBusyOverlayService
                 return;
             }
 
-            next = _state with { Message = message ?? string.Empty };
+            next = _state with { Message = message ?? string.Empty, Progress = null, Detail = null };
             _state = next;
         }
 

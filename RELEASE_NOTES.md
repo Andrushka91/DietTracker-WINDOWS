@@ -32,6 +32,13 @@ user's own Google Drive account and works offline from a local working copy._
   sees other files in the user's Drive.
 * **Change tracking and conflict handling** with content hashes, provider revisions and an explicit
   conflict resolution; uploads are idempotent.
+* **Parallel synchronization**: the pull downloads documents through a bounded window of eight
+  in-flight requests (photographs travel with their metadata) while applying them in the change-feed
+  order, so a first synchronization of a full account finishes in a fraction of the time instead of
+  waiting for one round trip per document.
+* **A real progress bar while the account changes**: signing in and signing out count the documents
+  they upload or download ("12 of 40 change(s) synced with the cloud") instead of leaving the user in
+  front of a spinner - the same bar the mobile app paints.
 * **Visible feedback**: the status bar reports the synchronization state, the settings page shows the
   last successful synchronization, and a tray notification reports how many records were uploaded and
   downloaded.

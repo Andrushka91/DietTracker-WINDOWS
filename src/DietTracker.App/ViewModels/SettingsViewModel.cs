@@ -90,12 +90,14 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Turns the stage of a cloud-only transition into the sentence shown under the busy spinner.
-    /// Signing out and signing in traverse the same stages but mean different things to the user.
+    /// Turns one frame of a cloud-only transition into the language of the busy overlay: the stage
+    /// sentence, and - when the phase can count its documents - the determinate bar with the same
+    /// wording the mobile app uses ("12 of 40 changes synced with the cloud"). Signing out and
+    /// signing in traverse the same stages but mean different things to the user.
     /// </summary>
-    private void ReportStage(AccountTransitionStage stage, bool signOut)
+    private void ReportTransition(AccountTransitionProgress frame, bool signOut)
     {
-        var key = (stage, signOut) switch
+        var key = (frame.Stage, signOut) switch
         {
             (AccountTransitionStage.Uploading, true) => "Busy_Synchronizing",
             (AccountTransitionStage.Uploading, false) => "Busy_UploadingChanges",
@@ -105,10 +107,30 @@ public sealed partial class SettingsViewModel : ObservableObject
             _ => null,
         };
 
-        if (key is not null)
+        if (key is null)
         {
-            _busy.Update(_localization.Get(key));
+            return;
         }
+
+        var message = _localization.Get(key);
+        if (frame.Total <= 0)
+        {
+            // Nothing to count yet (preparing, clearing the cache): the spinner and the sentence.
+            _busy.Update(message);
+            return;
+        }
+
+        // The upload counts changes, the download counts documents.
+        var template = frame.Stage == AccountTransitionStage.Downloading
+            ? "Busy_DownloadDetail"
+            : "Busy_UploadDetail";
+
+        _busy.ShowProgress(
+            message,
+            frame.Processed,
+            frame.Total,
+            _localization.Format(template, frame.Processed, frame.Total),
+            blocksClosing: signOut);
     }
 
     /// <summary>
@@ -477,7 +499,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             // The overlay covers the window while the account changes; the window stays closable
             // because the sign-in itself happens in the browser.
-            var stage = new Progress<AccountTransitionStage>(value => ReportStage(value, signOut: false));
+            var stage = new Progress<AccountTransitionProgress>(value => ReportTransition(value, signOut: false));
             _busy.Show(_localization.Get("Busy_UploadingChanges"));
             overlayShown = true;
 
@@ -536,7 +558,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             // waits instead of failing. No confirmation is shown: the flow is safe by construction -
             // nothing is deleted before the cloud copy exists, and an upload that cannot complete
             // refuses the sign-out and keeps every record.
-            var stage = new Progress<AccountTransitionStage>(value => ReportStage(value, signOut: true));
+            var stage = new Progress<AccountTransitionProgress>(value => ReportTransition(value, signOut: true));
 
             _busy.Show(_localization.Get("Busy_Synchronizing"), blocksClosing: true);
             AccountTransitionResult result;

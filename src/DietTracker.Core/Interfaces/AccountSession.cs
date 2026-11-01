@@ -32,6 +32,29 @@ public enum AccountTransitionStage
     Completed = 3,
 }
 
+/// <summary>
+/// What an account transition is doing right now, with the counts of a real 0-100 % bar.
+/// </summary>
+/// <remarks>
+/// The stage alone could only drive a spinner. A sign-out with a few hundred photographs and a
+/// sign-in that downloads a whole dataset are long enough that the user needs to see the operation
+/// ADVANCE - the same bar the mobile app paints ("12 of 40 documents received from the cloud").
+/// </remarks>
+public sealed record AccountTransitionProgress
+{
+    /// <summary>Phase of the transition.</summary>
+    public required AccountTransitionStage Stage { get; init; }
+
+    /// <summary>Documents (or changes) this phase already settled.</summary>
+    public int Processed { get; init; }
+
+    /// <summary>Documents (or changes) this phase has to settle; 0 while it is not counted yet.</summary>
+    public int Total { get; init; }
+
+    /// <summary>0-1 of the bar.</summary>
+    public double Percentage => Total <= 0 ? 0d : Math.Min(1d, (double)Processed / Total);
+}
+
 /// <summary>Outcome of a cloud-only lifecycle operation.</summary>
 public sealed record AccountTransitionResult
 {
@@ -103,7 +126,7 @@ public interface ICloudDataSession
     /// adopted by the account that is about to sign in.
     /// </summary>
     Task<AccountTransitionResult> PrepareForSignInAsync(
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -113,7 +136,7 @@ public interface ICloudDataSession
     /// </summary>
     Task<AccountTransitionResult> CompleteSignInAsync(
         bool adoptLocalData,
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -124,7 +147,7 @@ public interface ICloudDataSession
     /// </summary>
     Task<AccountTransitionResult> SignOutAsync(
         bool discardPendingChanges = false,
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

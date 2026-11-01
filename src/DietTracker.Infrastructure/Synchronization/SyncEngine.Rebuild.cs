@@ -48,6 +48,7 @@ public sealed partial class SyncEngine
                     DeviceId = _environment.DeviceId,
                     LastSyncCursor = null,
                 },
+                progress,
                 cancellationToken,
                 ignoreDeviceEcho: true).ConfigureAwait(false);
 

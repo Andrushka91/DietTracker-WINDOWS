@@ -9,15 +9,26 @@ namespace DietTracker.Infrastructure.Synchronization;
 /// <summary>Pull side of a synchronization cycle: apply provider changes to the local database.</summary>
 public sealed partial class SyncEngine
 {
+    /// <summary>Documents the pull phase keeps in flight while it applies the previous one.</summary>
+    private const int PullConcurrency = 8;
+
+    /// <summary>Photograph binaries held in memory ahead of the apply cursor.</summary>
+    private const int PhotoPrefetchLimit = 2;
+
     /// <param name="ignoreDeviceEcho">
     /// When <see langword="true"/> a document uploaded by this very installation is applied like any
     /// other one. The regular cycle skips those documents because the local record already holds the
     /// change, but a cache that was emptied on purpose (an account change) would otherwise stay empty.
     /// </param>
+    /// <param name="progress">
+    /// Reports "0 of N" and then one step per document, so a blocking bar can show real progress
+    /// instead of a spinner. The background cycles never pass one.
+    /// </param>
     private async Task<PullOutcome> PullChangesAsync(
         ICloudStorageProvider provider,
         CloudAccount account,
         SyncMetadata metadata,
+        IProgress<RestoreProgress>? progress,
         CancellationToken cancellationToken,
         bool ignoreDeviceEcho = false)
     {
@@ -44,11 +55,30 @@ public sealed partial class SyncEngine
             .OrderBy(item => CloudObjectPaths.GetEntityType(item.Path) == EntityType.MealPhoto ? 1 : 0)
             .ToArray();
 
+        // The bar starts empty and moves one step per document ("12 of 40 documents received from
+        // the cloud"), which is what a sign-in barrier needs.
+        progress?.Report(new RestoreProgress { Stage = "download", Processed = 0, Total = documents.Length });
+
+        // The downloads of the next documents travel while the loop applies the current one: the
+        // pull is limited by the network again instead of by one round trip per document. A
+        // photograph's binary starts as soon as its metadata arrived, so the picture is already in
+        // memory (or on its way) when the apply step needs it.
+        var binaries = new PhotoBytePrefetcher(PhotoPrefetchLimit);
+        await using var downloads = new OrderedPrefetcher<CloudObject, string?>(
+            documents,
+            PullConcurrency,
+            (item, _, token) => FetchDocumentAsync(provider, item, binaries, token),
+            cancellationToken);
+
         foreach (var item in documents)
         {
-            var json = item.Content is { Length: > 0 }
-                ? Encoding.UTF8.GetString(item.Content)
-                : await DownloadTextAsync(provider, item.ObjectId, cancellationToken).ConfigureAwait(false);
+            var json = await downloads.NextAsync(cancellationToken).ConfigureAwait(false);
+            progress?.Report(new RestoreProgress
+            {
+                Stage = "download",
+                Processed = downloads.Consumed,
+                Total = documents.Length,
+            });
 
             if (json is null)
             {
@@ -95,7 +125,7 @@ public sealed partial class SyncEngine
                 continue;
             }
 
-            var outcome = await ApplyRemoteEntityAsync(provider, item, json, info, account.Id, cancellationToken).ConfigureAwait(false);
+            var outcome = await ApplyRemoteEntityAsync(provider, item, json, info, account.Id, binaries, cancellationToken).ConfigureAwait(false);
             switch (outcome)
             {
                 case ApplyOutcome.Applied:
@@ -137,6 +167,48 @@ public sealed partial class SyncEngine
         }
 
         return new PullOutcome(downloaded, deleted, skipped, conflicted, next?.Value);
+    }
+
+    /// <summary>
+    /// Downloads one document (or reuses the payload the provider already returned) and starts the
+    /// download of a photograph's binary as soon as its metadata has arrived.
+    /// </summary>
+    private async Task<string?> FetchDocumentAsync(
+        ICloudStorageProvider provider,
+        CloudObject item,
+        PhotoBytePrefetcher binaries,
+        CancellationToken cancellationToken)
+    {
+        var json = item.Content is { Length: > 0 }
+            ? Encoding.UTF8.GetString(item.Content)
+            : await DownloadTextAsync(provider, item.ObjectId, cancellationToken).ConfigureAwait(false);
+
+        if (json is not null
+            && CloudObjectPaths.GetEntityType(item.Path) == EntityType.MealPhoto
+            && Guid.TryParse(Path.GetFileNameWithoutExtension(item.Path), out var photoId))
+        {
+            var objectPath = _serializer.GetPhotoObjectPath(photoId);
+            binaries.Prefetch(photoId, () => ReadBytesAsync(provider, objectPath, cancellationToken));
+        }
+
+        return json;
+    }
+
+    /// <summary>The complete content of one provider object, or null when it does not exist.</summary>
+    private static async Task<byte[]?> ReadBytesAsync(
+        ICloudStorageProvider provider,
+        string objectPath,
+        CancellationToken cancellationToken)
+    {
+        await using var stream = await provider.OpenReadAsync(objectPath, cancellationToken).ConfigureAwait(false);
+        if (stream is null)
+        {
+            return null;
+        }
+
+        using var buffer = new MemoryStream();
+        await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+        return buffer.ToArray();
     }
 
     /// <summary>The older of two optional timestamps.</summary>

@@ -101,7 +101,7 @@ public sealed partial class SyncEngine
                     // journal entry survives and turns into a no-op on its next attempt.
                     if (remoteJson is not null && remoteHeader is { } applied)
                     {
-                        await ApplyRemoteEntityAsync(provider, remote, remoteJson, applied, operation.CloudAccountId, cancellationToken)
+                        await ApplyRemoteEntityAsync(provider, remote, remoteJson, applied, operation.CloudAccountId, binaries: null, cancellationToken)
                             .ConfigureAwait(false);
                     }
 

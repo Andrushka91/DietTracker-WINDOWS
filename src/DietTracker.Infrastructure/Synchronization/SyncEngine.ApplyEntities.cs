@@ -7,7 +7,12 @@ namespace DietTracker.Infrastructure.Synchronization;
 /// <summary>Applies photographs, templates, reminders, preferences and categories received from the cloud.</summary>
 public sealed partial class SyncEngine
 {
-    private async Task<ApplyOutcome> ApplyPhotoAsync(ICloudStorageProvider provider, CloudObject item, string json, CancellationToken cancellationToken)
+    private async Task<ApplyOutcome> ApplyPhotoAsync(
+        ICloudStorageProvider provider,
+        CloudObject item,
+        string json,
+        PhotoBytePrefetcher? binaries,
+        CancellationToken cancellationToken)
     {
         var envelope = _serializer.Deserialize<MealPhoto>(json);
         var remote = envelope?.Payload;
@@ -36,19 +41,18 @@ public sealed partial class SyncEngine
             return ApplyOutcome.Retry;
         }
 
-        await using var stream = await provider
-            .OpenReadAsync(_serializer.GetPhotoObjectPath(remote.Id), cancellationToken)
-            .ConfigureAwait(false);
+        // The bytes usually travel with the metadata (PhotoBytePrefetcher): awaiting the prefetched
+        // task replaces a second round trip per picture with a memory copy.
+        var prefetched = binaries?.Take(remote.Id);
+        var bytes = prefetched is null
+            ? await ReadBytesAsync(provider, _serializer.GetPhotoObjectPath(remote.Id), cancellationToken).ConfigureAwait(false)
+            : await prefetched.ConfigureAwait(false);
 
-        if (stream is null)
+        if (bytes is null)
         {
             _logger.LogInformation("Photograph {PhotoId} is not applied yet: its bytes could not be downloaded.", remote.Id);
             return ApplyOutcome.Retry;
         }
-
-        using var buffer = new MemoryStream();
-        await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
-        var bytes = buffer.ToArray();
 
         var stored = await _photoStore
             .StoreDownloadedAsync(remote.MealEntryId, remote.OriginalFileName, remote.MimeType, bytes, cancellationToken)

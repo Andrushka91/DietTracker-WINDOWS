@@ -76,7 +76,7 @@ public sealed class CloudDataSession : ICloudDataSession
 
     /// <inheritdoc />
     public async Task<AccountTransitionResult> PrepareForSignInAsync(
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -87,8 +87,8 @@ public sealed class CloudDataSession : ICloudDataSession
             {
                 // The credentials are about to be replaced by the interactive sign-in, so this is the
                 // last moment at which the previous account can still receive its pending changes.
-                progress?.Report(AccountTransitionStage.Uploading);
-                var (uploaded, pending) = await UploadUntilSettledAsync(account, cancellationToken).ConfigureAwait(false);
+                progress?.Report(Frame(AccountTransitionStage.Uploading));
+                var (uploaded, pending) = await UploadUntilSettledAsync(account, progress, cancellationToken).ConfigureAwait(false);
 
                 if (pending > 0)
                 {
@@ -96,7 +96,7 @@ public sealed class CloudDataSession : ICloudDataSession
                         "{Pending} change(s) of the connected account could not be uploaded; the sign-in is refused.",
                         pending);
 
-                    progress?.Report(AccountTransitionStage.Completed);
+                    progress?.Report(Frame(AccountTransitionStage.Completed));
 
                     return new AccountTransitionResult
                     {
@@ -107,7 +107,7 @@ public sealed class CloudDataSession : ICloudDataSession
                     };
                 }
 
-                progress?.Report(AccountTransitionStage.Completed);
+                progress?.Report(Frame(AccountTransitionStage.Completed));
 
                 // Nothing is deleted here on purpose: the cache of the current account must survive a
                 // cancelled sign-in. It is emptied once the new account is really connected.
@@ -127,7 +127,7 @@ public sealed class CloudDataSession : ICloudDataSession
             if (usable && (!everConnected || await HasUnuploadedChangesAsync(cancellationToken).ConfigureAwait(false)))
             {
                 _logger.LogInformation("Local records are adopted by the account that is about to sign in.");
-                progress?.Report(AccountTransitionStage.Completed);
+                progress?.Report(Frame(AccountTransitionStage.Completed));
 
                 return new AccountTransitionResult
                 {
@@ -136,7 +136,7 @@ public sealed class CloudDataSession : ICloudDataSession
                 };
             }
 
-            progress?.Report(AccountTransitionStage.Completed);
+            progress?.Report(Frame(AccountTransitionStage.Completed));
             return new AccountTransitionResult { Transition = AccountTransition.SignIn };
         }
         finally
@@ -148,7 +148,7 @@ public sealed class CloudDataSession : ICloudDataSession
     /// <inheritdoc />
     public async Task<AccountTransitionResult> CompleteSignInAsync(
         bool adoptLocalData,
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -168,9 +168,9 @@ public sealed class CloudDataSession : ICloudDataSession
             {
                 // Every local record is queued and uploaded, so the account starts with the data the
                 // user created before signing in. Nothing is deleted on this path.
-                progress?.Report(AccountTransitionStage.Uploading);
-                var push = await _engine.PushAllAsync(null, cancellationToken).ConfigureAwait(false);
-                progress?.Report(AccountTransitionStage.Completed);
+                progress?.Report(Frame(AccountTransitionStage.Uploading));
+                var push = await _engine.PushAllAsync(StageProgress(progress, AccountTransitionStage.Uploading), cancellationToken).ConfigureAwait(false);
+                progress?.Report(Frame(AccountTransitionStage.Completed));
 
                 _logger.LogInformation(
                     "The local records were adopted by the connected account ({Uploaded} uploaded).",
@@ -188,15 +188,15 @@ public sealed class CloudDataSession : ICloudDataSession
 
             // The sign-in succeeded, so the cache of the previous account can go now: records,
             // photographs, journal, cursor and conflicts. What follows is the new account only.
-            progress?.Report(AccountTransitionStage.ClearingLocalData);
+            progress?.Report(Frame(AccountTransitionStage.ClearingLocalData));
             var files = await _privacy.PurgeLocalCacheAsync(includePhotographs: true, cancellationToken).ConfigureAwait(false);
 
             // ... and its dataset is downloaded immediately, so the user never has to press a restore
             // button and never sees records of the account that was connected before.
-            progress?.Report(AccountTransitionStage.Downloading);
-            var rebuild = await _engine.RebuildFromCloudAsync(null, cancellationToken).ConfigureAwait(false);
+            progress?.Report(Frame(AccountTransitionStage.Downloading));
+            var rebuild = await _engine.RebuildFromCloudAsync(StageProgress(progress, AccountTransitionStage.Downloading), cancellationToken).ConfigureAwait(false);
             await RefreshRemindersAsync(cancellationToken).ConfigureAwait(false);
-            progress?.Report(AccountTransitionStage.Completed);
+            progress?.Report(Frame(AccountTransitionStage.Completed));
 
             _logger.LogInformation(
                 "Signed in. The previous cache was emptied ({Files} photograph file(s)) and {Downloaded} record(s) of the connected account were applied.",
@@ -219,7 +219,7 @@ public sealed class CloudDataSession : ICloudDataSession
     /// <inheritdoc />
     public async Task<AccountTransitionResult> SignOutAsync(
         bool discardPendingChanges = false,
-        IProgress<AccountTransitionStage>? progress = null,
+        IProgress<AccountTransitionProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -233,8 +233,8 @@ public sealed class CloudDataSession : ICloudDataSession
             {
                 // Upload first, delete afterwards: the local cache is only given up once the cloud
                 // copy exists. The sign-out button therefore never needs a separate "synchronize now".
-                progress?.Report(AccountTransitionStage.Uploading);
-                (uploaded, pending) = await UploadUntilSettledAsync(account, cancellationToken).ConfigureAwait(false);
+                progress?.Report(Frame(AccountTransitionStage.Uploading));
+                (uploaded, pending) = await UploadUntilSettledAsync(account, progress, cancellationToken).ConfigureAwait(false);
 
                 if (pending > 0 && !discardPendingChanges)
                 {
@@ -242,7 +242,7 @@ public sealed class CloudDataSession : ICloudDataSession
                         "Sign-out was refused: {Pending} change(s) are still waiting for the cloud.",
                         pending);
 
-                    progress?.Report(AccountTransitionStage.Completed);
+                    progress?.Report(Frame(AccountTransitionStage.Completed));
 
                     return new AccountTransitionResult
                     {
@@ -254,14 +254,14 @@ public sealed class CloudDataSession : ICloudDataSession
                 }
 
                 // Credentials are removed before the records: the tokens must never outlive the session.
-                progress?.Report(AccountTransitionStage.ClearingLocalData);
+                progress?.Report(Frame(AccountTransitionStage.ClearingLocalData));
                 await _privacy.SignOutAsync(cancellationToken).ConfigureAwait(false);
             }
 
             var files = await _privacy.PurgeLocalCacheAsync(includePhotographs: true, cancellationToken).ConfigureAwait(false);
             await RefreshRemindersAsync(cancellationToken).ConfigureAwait(false);
             await _engine.RefreshStateAsync(cancellationToken).ConfigureAwait(false);
-            progress?.Report(AccountTransitionStage.Completed);
+            progress?.Report(Frame(AccountTransitionStage.Completed));
 
             _logger.LogInformation(
                 "Signed out. The local cache was emptied ({Files} photograph file(s); {Pending} change(s) discarded).",
@@ -334,6 +334,29 @@ public sealed class CloudDataSession : ICloudDataSession
         }
     }
 
+    /// <summary>One frame of the account boundary bar (stage plus the counters of the phase).</summary>
+    private static AccountTransitionProgress Frame(
+        AccountTransitionStage stage,
+        int processed = 0,
+        int total = 0)
+        => new() { Stage = stage, Processed = processed, Total = total };
+
+    /// <summary>
+    /// Adapts the per-document progress of the engine ("3 of 12 uploaded") to the frame the busy
+    /// overlay paints. The stage is what the caller is doing, the counters come from the engine.
+    /// </summary>
+    private static IProgress<RestoreProgress>? StageProgress(
+        IProgress<AccountTransitionProgress>? progress,
+        AccountTransitionStage stage)
+        => progress is null
+            ? null
+            : new Progress<RestoreProgress>(update => progress.Report(new AccountTransitionProgress
+            {
+                Stage = stage,
+                Processed = update.Processed,
+                Total = update.Total,
+            }));
+
     /// <summary>
     /// Runs one push-only cycle for the account transition: never deferred by the configured
     /// frequency, never held back by the pause of automatic uploads, and never waiting for a retry
@@ -342,11 +365,11 @@ public sealed class CloudDataSession : ICloudDataSession
     /// here. A provider failure is logged and reported through <see langword="null"/>; the caller
     /// decides whether it may delete anything.
     /// </summary>
-    private async Task<SyncResult?> UploadPendingAsync(CancellationToken cancellationToken)
+    private async Task<SyncResult?> UploadPendingAsync(IProgress<AccountTransitionProgress>? progress, CancellationToken cancellationToken)
     {
         try
         {
-            return await _engine.PushOutgoingAsync(cancellationToken).ConfigureAwait(false);
+            return await _engine.PushOutgoingAsync(StageProgress(progress, AccountTransitionStage.Uploading), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -364,6 +387,7 @@ public sealed class CloudDataSession : ICloudDataSession
     /// </summary>
     private async Task<(int Uploaded, int Pending)> UploadUntilSettledAsync(
         CloudAccount account,
+        IProgress<AccountTransitionProgress>? progress,
         CancellationToken cancellationToken)
     {
         const int MaxAttempts = 3;
@@ -371,7 +395,7 @@ public sealed class CloudDataSession : ICloudDataSession
 
         for (var attempt = 1; ; attempt++)
         {
-            var upload = await UploadPendingAsync(cancellationToken).ConfigureAwait(false);
+            var upload = await UploadPendingAsync(progress, cancellationToken).ConfigureAwait(false);
             uploaded += upload?.Uploaded ?? 0;
 
             var pending = await CountPendingChangesAsync(account, cancellationToken).ConfigureAwait(false);

@@ -61,6 +61,6 @@ public sealed partial class SyncEngine
         await JournalUpsertAsync(account.Id, EntityType.AppPreferences, profile.Id, 1, cancellationToken).ConfigureAwait(false);
 
         progress?.Report(new RestoreProgress { Stage = "upload", Processed = 0, Total = total });
-        return await SynchronizeAsync(SyncTrigger.PostRestore, cancellationToken).ConfigureAwait(false);
+        return await SynchronizeAsync(SyncTrigger.PostRestore, progress, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -72,6 +72,29 @@ interval and nothing else.
 The same rules exist on Android with the intervals above; the poll pauses while the app is in the
 background and pulls immediately when it comes back to the foreground.
 
+### Parallel downloads (why a first synchronization is fast)
+
+A pull is **latency bound**: every document costs one round trip, while applying it costs a few
+milliseconds of SQLite. The pull therefore downloads through a bounded ordered window
+(`OrderedPrefetcher`, 8 documents) and applies the results **in the order of the change feed**:
+
+* up to eight documents are travelling while the current one is applied, so the connection never
+  idles between two documents - the same "transfers" idea every desktop sync client uses;
+* the window is small on purpose: an unbounded `Task.WhenAll` over a few hundred photographs would
+  open one connection per record, exhaust the provider's per-user quota and keep every payload in
+  memory;
+* the order is preserved because the apply side owns the invariants - a photograph is only written
+  after its meal slot, and the cursor may not pass a document that still has to be retried;
+* a photograph's **binary** starts downloading as soon as its metadata document arrived
+  (`PhotoBytePrefetcher`, two pictures in memory), so the apply step awaits bytes that are already on
+  their way instead of asking for them;
+* the mobile app pulls with the same design (`src/cloud/parallel.ts`: window of 8 documents, two
+  prefetched pictures, plus the listing of the push phase reused by the pull phase of the same cycle
+  - one folder listing per cycle instead of two).
+
+The savings are proportional to the number of documents: twenty changes used to cost twenty
+sequential round trips, they now cost three "waves" of eight.
+
 ## Cloud layout (both providers)
 
 ```text
@@ -148,6 +171,21 @@ cannot be closed either - not with the caption bar button and not from the notif
 stopping in the middle would leave the local cache half deleted; a two minute safety limit releases
 the block so a provider that never answers cannot trap the user. The sign-out button performs the
 upload itself, so "Synchronize now" is never a prerequisite for leaving the account.
+
+**A count replaces the spinner whenever the work can be counted.** An account transition and a manual
+synchronization report one frame per settled document (`AccountTransitionProgress` /
+`RestoreProgress`), so the same overlay paints the determinate bar the mobile app has always had:
+
+| Phase | Bar | Line under it |
+|---|---|---|
+| sign-in / sign-out upload | "n of N" of the journal | "n of N change(s) synced with the cloud" |
+| sign-in download (rebuild) | "n of N" of the account's documents | "n of N document(s) received from the cloud" |
+| "Synchronize now" | same two phases, in order | same lines |
+
+A phase that cannot be counted (the browser round trip, emptying the cache) keeps the spinner: an
+empty bar would claim progress that is not measurable yet. The bar is the *visible* half of the
+parallel pull above - a first sign-in of a full account now moves in steps of eight documents instead
+of crawling one document at a time.
 
 ## Restore and recovery
 

@@ -14,7 +14,12 @@ public sealed partial class SyncEngine
     /// </summary>
     private static readonly TimeSpan AutoPullInterval = TimeSpan.FromSeconds(10);
 
-    private async Task<SyncResult> RunCycleAsync(SyncTrigger trigger, CancellationToken cancellationToken, bool pushOnly = false, bool pullOnly = false)
+    private async Task<SyncResult> RunCycleAsync(
+        SyncTrigger trigger,
+        CancellationToken cancellationToken,
+        bool pushOnly = false,
+        bool pullOnly = false,
+        IProgress<RestoreProgress>? progress = null)
     {
         var account = await _accounts.GetActiveAsync(cancellationToken).ConfigureAwait(false);
         if (account is null)
@@ -101,13 +106,13 @@ public sealed partial class SyncEngine
             // upload and the journal of another account must not be touched.
             var push = pullOnly
                 ? new PushOutcome(0, 0, 0)
-                : await PushPendingAsync(provider, account, trigger is SyncTrigger.AccountTransition, cancellationToken).ConfigureAwait(false);
+                : await PushPendingAsync(provider, account, trigger is SyncTrigger.AccountTransition, cancellationToken, progress).ConfigureAwait(false);
 
             // The pull result stays empty for a push-only cycle, so the cursor bookkeeping below
             // keeps the stored cursor untouched.
             var pull = pushOnly
                 ? new PullOutcome(0, 0, 0, 0, null)
-                : await PullChangesAsync(provider, account, metadata, cancellationToken).ConfigureAwait(false);
+                : await PullChangesAsync(provider, account, metadata, progress, cancellationToken).ConfigureAwait(false);
 
             metadata.LastSyncTimestamp = _clock.UtcNow;
             metadata.LastSyncCursor = pull.Cursor ?? metadata.LastSyncCursor;

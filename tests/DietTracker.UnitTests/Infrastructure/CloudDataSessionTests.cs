@@ -116,6 +116,39 @@ public sealed class CloudDataSessionTests
     }
 
     [Fact]
+    public async Task Signing_out_reports_the_changes_it_uploads_on_a_real_bar()
+    {
+        await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);
+        await SeedLunchAsync(environment, "Lunch with a visible bar");
+
+        // The frames arrive through Progress<T>, i.e. posted - so they are collected in a queue and
+        // awaited below instead of being read the instant the call returns.
+        var frames = new System.Collections.Concurrent.ConcurrentQueue<AccountTransitionProgress>();
+
+        var result = await Session(environment).SignOutAsync(
+            progress: new Progress<AccountTransitionProgress>(frames.Enqueue));
+
+        Assert.True(result.Succeeded);
+
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(5);
+        while (frames.IsEmpty && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        var uploaded = frames
+            .Where(frame => frame.Stage == AccountTransitionStage.Uploading && frame.Total > 0)
+            .ToArray();
+
+        // "0 of N" first, then the documents that really reached the cloud: the same determinism the
+        // mobile app has always had for its sign-out barrier.
+        Assert.NotEmpty(uploaded);
+        Assert.Contains(uploaded, frame => frame.Processed == 0);
+        Assert.Contains(uploaded, frame => frame.Processed > 0 && frame.Percentage > 0d);
+        Assert.All(uploaded, frame => Assert.True(frame.Processed <= frame.Total));
+    }
+
+    [Fact]
     public async Task Signing_out_uploads_even_while_uploads_are_switched_off()
     {
         await using var environment = await TestEnvironment.CreateAsync(connectAccount: true);

@@ -32,12 +32,14 @@ public sealed partial class SyncEngine
         string json,
         (int SchemaVersion, EntityType EntityType, Guid EntityId, long Revision, DateTimeOffset UpdatedAt, string DeviceId, bool IsDeleted, string ContentHash) header,
         Guid accountId,
+        PhotoBytePrefetcher? binaries,
         CancellationToken cancellationToken)
     {
         return header.EntityType switch
         {
             EntityType.MealEntry => await ApplyMealEntryAsync(item, json, header, accountId, cancellationToken).ConfigureAwait(false),
-            EntityType.MealPhoto => await ApplyPhotoAsync(provider, item, json, cancellationToken).ConfigureAwait(false),
+            EntityType.MealPhoto => await ApplyPhotoAsync(provider, item, json, binaries, cancellationToken).ConfigureAwait(false),
+
             EntityType.MealTemplate => await ApplyTemplateAsync(json, cancellationToken).ConfigureAwait(false),
             EntityType.ReminderSettings => await ApplyReminderAsync(json, cancellationToken).ConfigureAwait(false),
             EntityType.AppPreferences => await ApplyPreferencesAsync(json, cancellationToken).ConfigureAwait(false),

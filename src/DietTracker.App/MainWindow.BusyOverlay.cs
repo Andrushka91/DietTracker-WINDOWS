@@ -89,13 +89,25 @@ public sealed partial class MainWindow
         {
             BusyMessage.Text = state.Message;
             BusyHint.Text = _localization.Get("Busy_Hint");
-            BusyRing.IsActive = true;
+
+            // A phase that can count its documents paints the determinate bar instead of the
+            // spinner (the mobile app does the same), so a slow upload never looks frozen.
+            var determinate = state.Progress is not null;
+            BusyProgressHost.Visibility = determinate ? Visibility.Visible : Visibility.Collapsed;
+            BusyBar.Value = state.Progress ?? 0d;
+            BusyDetail.Text = state.Detail ?? string.Empty;
+            BusyRing.Visibility = determinate ? Visibility.Collapsed : Visibility.Visible;
+            BusyRing.IsActive = !determinate;
+
             BusyOverlay.Visibility = Visibility.Visible;
             FadeBusyOverlay(1d, BusyFadeIn, null);
             return;
         }
 
         BusyRing.IsActive = false;
+        BusyProgressHost.Visibility = Visibility.Collapsed;
+        BusyDetail.Text = string.Empty;
+        BusyRing.Visibility = Visibility.Visible;
         FadeBusyOverlay(0d, BusyFadeOut, () =>
         {
             if (animation == _busyAnimation)

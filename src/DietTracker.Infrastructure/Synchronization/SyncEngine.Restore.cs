@@ -86,6 +86,7 @@ public sealed partial class SyncEngine
                     DeviceId = _environment.DeviceId,
                     LastSyncCursor = null,
                 },
+                progress,
                 cancellationToken).ConfigureAwait(false);
 
             metadata.LastSyncCursor = pull.Cursor ?? metadata.LastSyncCursor;

@@ -93,6 +93,35 @@
                     IsIndeterminate="True"
                     HorizontalAlignment="Center"
                     Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                <!-- Determinate bar of an operation that can count its documents (a sign-out
+                     uploading its journal, a sign-in downloading the account's dataset). It replaces
+                     the spinner for exactly as long as the operation knows "12 of 40". -->
+                <Grid
+                    x:Name="BusyProgressHost"
+                    Width="320"
+                    Visibility="Collapsed"
+                    RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ProgressBar
+                        x:Name="BusyBar"
+                        Grid.Row="0"
+                        Height="6"
+                        Minimum="0"
+                        Maximum="1"
+                        Value="0"
+                        HorizontalAlignment="Stretch"
+                        Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                    <TextBlock
+                        x:Name="BusyDetail"
+                        Grid.Row="1"
+                        FontSize="13"
+                        Foreground="#E6FFFFFF"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </Grid>
                 <TextBlock
                     x:Name="BusyMessage"
                     FontSize="20"
