@@ -50,6 +50,8 @@ nul
 
 ## Local scratch output (development helper logs)
 _*.log
+build-release.log
+build-release.err
 
 ## Scratch UI screenshots must never land in the repository: the only images owned by the application
 ## live in src/DietTracker.App/Assets, so any image in the root belongs to a temporary verification run.
